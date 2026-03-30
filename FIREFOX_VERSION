@@ -1,0 +1,4 @@
+# Firefox version pin — do not edit manually
+COMMIT_HASH=abc123def456
+VERSION=128.0
+RELEASE_TAG=FIREFOX_128_0_RELEASE

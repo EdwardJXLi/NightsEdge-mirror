@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(dirname "$SCRIPT_DIR")"
+
+# --- Parse arguments ---
+TARGET="${1:-}"
+if [[ -z "$TARGET" ]]; then
+    echo "Usage: build.sh <target>"
+    echo "Targets: linux-x86_64, linux-aarch64, win-x86_64"
+    exit 1
+fi
+
+MOZCONFIG="$REPO_ROOT/mozconfigs/${TARGET}.mozconfig"
+if [[ ! -f "$MOZCONFIG" ]]; then
+    echo "Error: mozconfig not found: $MOZCONFIG"
+    exit 1
+fi
+
+# --- Read version pin ---
+source "$REPO_ROOT/FIREFOX_VERSION"
+
+SOURCE_DIR="${SOURCE_DIR:-$REPO_ROOT/mozilla-release}"
+
+echo "==> NightsEdge build: $TARGET"
+echo "    Firefox $VERSION ($RELEASE_TAG)"
+
+# --- Step 1: Fetch source ---
+echo "==> Fetching source..."
+"$SCRIPT_DIR/fetch-source.sh"
+
+# --- Step 2: Copy mozconfig ---
+echo "==> Installing mozconfig for $TARGET..."
+cp "$MOZCONFIG" "$SOURCE_DIR/.mozconfig"
+
+# --- Step 3: Custom version string ---
+echo "==> Setting version display to hydra-${VERSION}..."
+echo "hydra-${VERSION}" > "$SOURCE_DIR/browser/config/version_display.txt"
+
+# --- Step 4: Install custom prefs ---
+echo "==> Installing custom preferences..."
+PREFS_DIR="$SOURCE_DIR/browser/defaults/preferences"
+mkdir -p "$PREFS_DIR"
+cp "$REPO_ROOT/prefs/nightsedge.js" "$PREFS_DIR/nightsedge.js"
+
+# --- Step 5: Install enterprise policies ---
+echo "==> Installing enterprise policies..."
+POLICIES_DIR="$SOURCE_DIR/browser/defaults/policies"
+mkdir -p "$POLICIES_DIR"
+cp "$REPO_ROOT/policies/policies.json" "$POLICIES_DIR/policies.json"
+
+# --- Step 6: Build ---
+echo "==> Starting build..."
+cd "$SOURCE_DIR"
+export MOZCONFIG="$SOURCE_DIR/.mozconfig"
+./mach build
+
+# --- Step 7: Package ---
+echo "==> Packaging..."
+./mach package
+
+echo "==> Build complete for $TARGET"
+echo "    Artifacts in: $SOURCE_DIR/obj-*/dist/"

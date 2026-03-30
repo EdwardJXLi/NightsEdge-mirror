@@ -1,0 +1,11 @@
+# NightsEdge — Windows x86_64 cross-compile from Linux
+. "$topsrcdir/../mozconfigs/common.mozconfig"
+
+ac_add_options --target=x86_64-pc-windows-msvc
+
+# Cross-compilation toolchain
+# Adjust these paths to match your build environment
+ac_add_options --with-toolchain-prefix=x86_64-w64-mingw32-
+
+export WINE=${WINE:-wine64}
+export MIDL=${MIDL:-widl}

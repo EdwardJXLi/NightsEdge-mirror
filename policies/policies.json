@@ -1,0 +1,25 @@
+{
+  "policies": {
+    "DisableTelemetry": true,
+    "DisableFirefoxStudies": true,
+    "DisablePocket": true,
+    "OverrideFirstRunPage": "",
+    "OverridePostUpdatePage": "",
+    "CaptivePortal": false,
+    "NetworkPrediction": false,
+    "DNSOverHTTPS": {
+      "Enabled": false
+    },
+    "DisableFirefoxAccounts": false,
+    "DontCheckDefaultBrowser": true,
+    "NoDefaultBookmarks": true,
+    "Extensions": {
+      "Uninstall": [
+        "google@search.mozilla.org",
+        "bing@search.mozilla.org",
+        "amazondotcom@search.mozilla.org",
+        "ebay@search.mozilla.org"
+      ]
+    }
+  }
+}

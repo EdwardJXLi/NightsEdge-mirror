@@ -1,0 +1,4 @@
+# NightsEdge — Linux x86_64 native build
+. "$topsrcdir/../mozconfigs/common.mozconfig"
+
+ac_add_options --target=x86_64-pc-linux-gnu

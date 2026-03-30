@@ -1,0 +1,4 @@
+# NightsEdge — Linux aarch64 native build
+. "$topsrcdir/../mozconfigs/common.mozconfig"
+
+ac_add_options --target=aarch64-unknown-linux-gnu
