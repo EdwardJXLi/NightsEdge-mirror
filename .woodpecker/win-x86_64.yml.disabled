@@ -16,5 +16,5 @@ steps:
     commands:
       - apt-get update && apt-get install -y build-essential python3 python3-pip nodejs npm
         git curl wget libgtk-3-dev libdbus-glib-1-dev libxt-dev
-        nasm yasm libclang-dev wine64 mingw-w64
+        nasm yasm libclang-dev llvm wine64 mingw-w64
       - bash scripts/build.sh win-x86_64

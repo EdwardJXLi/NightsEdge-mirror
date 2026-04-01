@@ -43,6 +43,7 @@ A Windmill daily cron runs `scripts/check-and-update-version.sh` which checks mo
 
 - Mercurial (`hg`)
 - Firefox build dependencies (see [Mozilla build docs](https://firefox-source-docs.mozilla.org/setup/linux_build.html))
+- LLVM tools (`llvm-objdump` must be present; on Ubuntu install the `llvm` package)
 - For Windows cross-compile: `mingw-w64`, `wine64`
 
 ## Update Server
