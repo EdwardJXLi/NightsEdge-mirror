@@ -46,6 +46,7 @@ A Windmill daily cron runs `scripts/check-and-update-version.sh` which checks mo
 
 - Mercurial (`hg`)
 - Firefox build dependencies (see [Mozilla build docs](https://firefox-source-docs.mozilla.org/setup/linux_build.html))
+- Linux builds require a host GCC/libstdc++ development toolchain in addition to Mozilla's downloaded clang toolchain
 - Rust toolchain (`rustc`, `cargo`)
 - LLVM tools (`llvm-objdump` must be present; on Ubuntu install the `llvm` package)
 - A recent LLVM toolchain is required; current Firefox builds need `clang/llvm >= 17`
