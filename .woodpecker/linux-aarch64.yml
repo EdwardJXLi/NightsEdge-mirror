@@ -2,7 +2,7 @@ when:
   event: [push, manual]
   branch: main
 
-platform: linux/arm64
+platform: linux/amd64
 
 steps:
   - name: fetch-source
