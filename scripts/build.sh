@@ -61,14 +61,6 @@ if [[ -d "$HOME/.cargo/bin" ]]; then
     export PATH="$HOME/.cargo/bin:$PATH"
 fi
 
-if [[ "$TARGET" == linux-* ]]; then
-    # Mozilla's downloaded clang still relies on the host GCC/libstdc++
-    # toolchain for Linux C++ headers and runtime libraries.
-    export CFLAGS="${CFLAGS:+$CFLAGS }--gcc-toolchain=/usr"
-    export CXXFLAGS="${CXXFLAGS:+$CXXFLAGS }--gcc-toolchain=/usr"
-    export LDFLAGS="${LDFLAGS:+$LDFLAGS }--gcc-toolchain=/usr"
-fi
-
 if [[ "$TARGET" == "linux-aarch64" ]]; then
     echo "==> Installing Rust target aarch64-unknown-linux-gnu..."
     rustup target add aarch64-unknown-linux-gnu

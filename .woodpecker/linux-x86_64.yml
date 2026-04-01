@@ -16,7 +16,7 @@ steps:
       - bash scripts/fetch-source.sh
 
   - name: build
-    image: ubuntu:22.04
+    image: ubuntu:24.04
     environment:
       UPDATE_URL_BASE: https://nightsedge.hydranet.dev
     commands:

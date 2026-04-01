@@ -51,7 +51,6 @@ A Windmill daily cron runs `scripts/check-and-update-version.sh` which checks mo
 - LLVM tools (`llvm-objdump` must be present; on Ubuntu install the `llvm` package)
 - A recent LLVM toolchain is required; current Firefox builds need `clang/llvm >= 17`
 - CI/local builds should run `./mach bootstrap` to provision Mozilla's expected toolchains instead of relying only on distro package versions
-- The Linux Woodpecker jobs intentionally use Ubuntu 22.04 to avoid known GCC 13 host-header conflicts with Mozilla's downloaded sysroot/toolchain
 - `linux-aarch64` is configured as a Linux x86_64-hosted cross-compile and relies on Mozilla's `--enable-bootstrap` flow to provision the AArch64 sysroot/toolchain
 - For Windows cross-compile: `mingw-w64`, `wine64`
 
