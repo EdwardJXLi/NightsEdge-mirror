@@ -72,6 +72,7 @@ Deploy the `output/update-server/` directory to your web server root.
 | Secret | Description |
 |--------|-------------|
 | `update_url_base` | Base URL for update server (e.g., `https://updates.yourdomain.com`) |
+| `FORGEJO_RELEASE_TOKEN` | Forgejo API token used by Woodpecker to upload release artifacts |
 | `deploy_key` | SSH private key for artifact upload |
 | `deploy_host` | Hostname of the artifact/update server |
 | `deploy_user` | SSH user for upload |

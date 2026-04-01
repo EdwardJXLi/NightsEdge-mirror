@@ -1,6 +1,7 @@
 when:
-  event: [push, manual]
-  branch: main
+  - event: [push, manual]
+    branch: main
+  - event: tag
 
 platform: linux/amd64
 
@@ -13,9 +14,31 @@ steps:
 
   - name: build
     image: ubuntu:24.04
+    environment:
+      UPDATE_URL_BASE:
+        from_secret: update_url_base
     commands:
       - apt-get update && apt-get install -y build-essential python3 python3-pip nodejs npm
         git curl wget libgtk-3-dev libdbus-glib-1-dev libxt-dev
         nasm yasm clang lld libclang-dev llvm pkg-config wine64 mingw-w64
         rustc cargo
       - bash scripts/build.sh win-x86_64
+      - bash scripts/generate-mar.sh win-x86_64 "$UPDATE_URL_BASE"
+      - mkdir -p artifacts/win-x86_64
+      - find mozilla-release -path "*/dist/*.zip" -exec cp -t artifacts/win-x86_64 {} +
+      - find mozilla-release -path "*/dist/*.txt" -exec cp -t artifacts/win-x86_64 {} +
+      - cp -r output/mar/win-x86_64 artifacts/win-x86_64/mar
+    artifacts:
+      - artifacts/win-x86_64/**
+
+  - name: upload-forgejo-release
+    image: woodpeckerci/plugin-release:latest
+    settings:
+      base_url: https://forgejo.hydranet.dev
+      api_key:
+        from_secret: FORGEJO_RELEASE_TOKEN
+      files:
+        - artifacts/win-x86_64/**
+    when:
+      - event: tag
+      - event: manual
