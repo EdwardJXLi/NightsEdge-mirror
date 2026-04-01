@@ -51,9 +51,15 @@ mkdir -p "$POLICIES_DIR"
 cp "$REPO_ROOT/policies/policies.json" "$POLICIES_DIR/policies.json"
 
 # --- Step 6: Build ---
-echo "==> Starting build..."
+echo "==> Bootstrapping Firefox toolchains..."
 cd "$SOURCE_DIR"
 export MOZCONFIG="$SOURCE_DIR/.mozconfig"
+./mach --no-interactive bootstrap --application-choice=browser
+
+# Rustup installs into ~/.cargo/bin, which may not already be on PATH in CI.
+if [[ -d "$HOME/.cargo/bin" ]]; then
+    export PATH="$HOME/.cargo/bin:$PATH"
+fi
 
 # Ubuntu commonly installs versioned llvm-objdump binaries without an
 # unversioned PATH entry. Point mach at one if needed.
@@ -67,6 +73,7 @@ if ! command -v llvm-objdump >/dev/null 2>&1; then
     done
 fi
 
+echo "==> Starting build..."
 ./mach build
 
 # --- Step 7: Package ---
