@@ -1,4 +1,7 @@
-# NightsEdge — Linux aarch64 native build
+# NightsEdge — Linux aarch64 cross-compile from x86_64 Linux
 . "$topsrcdir/../mozconfigs/common.mozconfig"
 
+# Mozilla's supported Linux/AArch64 cross-build path uses bootstrap to
+# provision the sysroot/toolchain from an x86_64 Linux host.
 ac_add_options --target=aarch64-unknown-linux-gnu
+ac_add_options --enable-bootstrap

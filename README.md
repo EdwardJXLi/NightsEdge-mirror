@@ -7,7 +7,7 @@ Custom Firefox build: stable release code with nightly branding, all telemetry s
 | Target | Platform | Runner |
 |--------|----------|--------|
 | `linux-x86_64` | Linux x64 native | `linux/amd64` |
-| `linux-aarch64` | Linux ARM native | `linux/arm64` |
+| `linux-aarch64` | Linux ARM cross-compile | `linux/amd64` |
 | `win-x86_64` | Windows x64 cross-compile | `linux/amd64` |
 
 macOS is not currently supported.
@@ -35,6 +35,9 @@ A Windmill daily cron runs `scripts/check-and-update-version.sh` which checks mo
 # Build for Linux x86_64
 ./scripts/build.sh linux-x86_64
 
+# Cross-compile Linux aarch64 from a Linux x86_64 host
+./scripts/build.sh linux-aarch64
+
 # Build for Windows (cross-compile, requires mingw-w64 + wine)
 ./scripts/build.sh win-x86_64
 ```
@@ -44,6 +47,7 @@ A Windmill daily cron runs `scripts/check-and-update-version.sh` which checks mo
 - Mercurial (`hg`)
 - Firefox build dependencies (see [Mozilla build docs](https://firefox-source-docs.mozilla.org/setup/linux_build.html))
 - LLVM tools (`llvm-objdump` must be present; on Ubuntu install the `llvm` package)
+- `linux-aarch64` is configured as a Linux x86_64-hosted cross-compile and relies on Mozilla's `--enable-bootstrap` flow to provision the AArch64 sysroot/toolchain
 - For Windows cross-compile: `mingw-w64`, `wine64`
 
 ## Update Server
