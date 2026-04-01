@@ -11,7 +11,7 @@ steps:
   - name: fetch-source
     image: alpine:latest
     commands:
-      - echo "==> Runner architecture: $(uname -m)"
+      - 'echo "==> Runner architecture: $(uname -m)"'
       - apk add --no-cache git bash curl python3
       - bash scripts/fetch-source.sh
 
