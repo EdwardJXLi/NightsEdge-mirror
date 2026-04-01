@@ -3,7 +3,8 @@ when:
     branch: main
   - event: tag
 
-platform: linux/amd64
+labels:
+  platform: linux/amd64
 
 steps:
   - name: fetch-source
