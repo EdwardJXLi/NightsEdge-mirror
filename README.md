@@ -46,6 +46,7 @@ A Windmill daily cron runs `scripts/check-and-update-version.sh` which checks mo
 
 - Mercurial (`hg`)
 - Firefox build dependencies (see [Mozilla build docs](https://firefox-source-docs.mozilla.org/setup/linux_build.html))
+- Rust toolchain (`rustc`, `cargo`)
 - LLVM tools (`llvm-objdump` must be present; on Ubuntu install the `llvm` package)
 - `linux-aarch64` is configured as a Linux x86_64-hosted cross-compile and relies on Mozilla's `--enable-bootstrap` flow to provision the AArch64 sysroot/toolchain
 - For Windows cross-compile: `mingw-w64`, `wine64`

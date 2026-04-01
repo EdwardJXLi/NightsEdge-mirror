@@ -54,6 +54,19 @@ cp "$REPO_ROOT/policies/policies.json" "$POLICIES_DIR/policies.json"
 echo "==> Starting build..."
 cd "$SOURCE_DIR"
 export MOZCONFIG="$SOURCE_DIR/.mozconfig"
+
+# Ubuntu commonly installs versioned llvm-objdump binaries without an
+# unversioned PATH entry. Point mach at one if needed.
+if ! command -v llvm-objdump >/dev/null 2>&1; then
+    for candidate in /usr/bin/llvm-objdump-*; do
+        if [[ -x "$candidate" ]]; then
+            export LLVM_OBJDUMP="$candidate"
+            echo "==> Using LLVM_OBJDUMP=$LLVM_OBJDUMP"
+            break
+        fi
+    done
+fi
+
 ./mach build
 
 # --- Step 7: Package ---
