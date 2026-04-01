@@ -61,6 +61,11 @@ if [[ -d "$HOME/.cargo/bin" ]]; then
     export PATH="$HOME/.cargo/bin:$PATH"
 fi
 
+if [[ "$TARGET" == "linux-aarch64" ]]; then
+    echo "==> Installing Rust target aarch64-unknown-linux-gnu..."
+    rustup target add aarch64-unknown-linux-gnu
+fi
+
 # Ubuntu commonly installs versioned llvm-objdump binaries without an
 # unversioned PATH entry. Point mach at one if needed.
 if ! command -v llvm-objdump >/dev/null 2>&1; then
