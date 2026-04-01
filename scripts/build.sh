@@ -24,7 +24,7 @@ source "$REPO_ROOT/FIREFOX_VERSION"
 SOURCE_DIR="${SOURCE_DIR:-$REPO_ROOT/mozilla-release}"
 
 echo "==> NightsEdge build: $TARGET"
-echo "    Firefox $VERSION ($RELEASE_TAG)"
+echo "    Firefox $VERSION (hg:$HG_COMMIT_HASH)"
 
 # --- Step 1: Fetch source ---
 echo "==> Fetching source..."
