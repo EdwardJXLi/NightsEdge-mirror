@@ -1,3 +1,6 @@
 # Firefox version pin — do not edit manually
 HG_COMMIT_HASH=b20f603334b8
 VERSION=149.0
+UPSTREAM_REPO=mozilla-release
+FIREFOX_TRACK=release
+RELEASE_TAG=FIREFOX_149_0_RELEASE

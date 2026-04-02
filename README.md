@@ -1,6 +1,6 @@
 # NightsEdge
 
-Custom Firefox build: stable release code with nightly branding, all telemetry stripped, using a custom `nightsedge` update channel with self-hosted MAR updates. Version string displays as `hydra-<version>` in about:firefox.
+Custom Firefox build with nightly branding, all telemetry stripped, using a custom `nightsedge` update channel with self-hosted MAR updates. Version string displays as `hydra-<version>` in about:firefox.
 
 ## Targets
 
@@ -14,14 +14,64 @@ macOS is not currently supported.
 
 ## How It Works
 
-1. `FIREFOX_VERSION` pins a specific mozilla-release commit hash
+1. `FIREFOX_VERSION` pins a specific Firefox hg revision, version, and upstream track
 2. On push to `main`, Woodpecker CI builds all three targets
 3. Each build: fetches source at pinned hash, applies mozconfig + prefs + policies, builds, packages, generates MAR
 4. Artifacts and MARs are uploaded to the update server
 
 ### Version Updates
 
-A Windmill daily cron runs `scripts/check-and-update-version.sh` which checks mozilla-release for new stable tags. If a new version is found, it updates `FIREFOX_VERSION` and pushes to Forgejo, triggering CI builds automatically.
+`scripts/check-and-update-version.sh` supports three upstream tracking modes:
+
+| Track | Upstream Repo | Version Examples | Detection Method |
+|-------|----------------|------------------|------------------|
+| `release` | `mozilla-release` | `149.0`, `149.0.1` | Latest Firefox release tag |
+| `beta` | `mozilla-beta` | `150.0b1`, `150.0b3` | `browser/config/version.txt` at tip |
+| `nightly` | `mozilla-central` | `151.0a1` | `browser/config/version.txt` at tip |
+
+`FIREFOX_VERSION` should contain:
+
+```bash
+HG_COMMIT_HASH=<mozilla hg revision>
+VERSION=<firefox version string>
+UPSTREAM_REPO=<mozilla-release|mozilla-beta|mozilla-central>
+FIREFOX_TRACK=<release|beta|nightly>
+```
+
+For stable release tracking, also include:
+
+```bash
+RELEASE_TAG=FIREFOX_149_0_RELEASE
+```
+
+Examples:
+
+```bash
+# Stable release
+HG_COMMIT_HASH=b20f603334b8
+VERSION=149.0
+UPSTREAM_REPO=mozilla-release
+FIREFOX_TRACK=release
+RELEASE_TAG=FIREFOX_149_0_RELEASE
+```
+
+```bash
+# Beta
+HG_COMMIT_HASH=<beta hg hash>
+VERSION=150.0b3
+UPSTREAM_REPO=mozilla-beta
+FIREFOX_TRACK=beta
+```
+
+```bash
+# Nightly
+HG_COMMIT_HASH=<central hg hash>
+VERSION=151.0a1
+UPSTREAM_REPO=mozilla-central
+FIREFOX_TRACK=nightly
+```
+
+A Windmill cron can run `scripts/check-and-update-version.sh` to refresh `FIREFOX_VERSION` automatically for the configured track, then push the change to Forgejo to trigger CI builds.
 
 ## Telemetry Lockdown (3 Layers)
 
@@ -82,15 +132,15 @@ Deploy the `output/update-server/` directory to your web server root.
 
 ```
 NightsEdge/
-├── FIREFOX_VERSION                # Pinned hg commit hash + version metadata
+├── FIREFOX_VERSION                # Pinned hg revision + version/track metadata
 ├── mozconfigs/                    # Build configurations per target
 ├── policies/policies.json         # Enterprise policies (telemetry lockdown)
 ├── prefs/nightsedge.js            # Default pref overrides
 ├── scripts/
-│   ├── fetch-source.sh            # Clone mozilla-release at pinned hash
+│   ├── fetch-source.sh            # Clone the configured upstream repo at pinned hash
 │   ├── build.sh                   # Main build orchestrator
 │   ├── generate-mar.sh            # Create MAR update files
-│   └── check-and-update-version.sh # Windmill cron: detect new releases
+│   └── check-and-update-version.sh # Windmill cron: detect new release/beta/nightly versions
 ├── update-server/
 │   ├── generate-update-xml.sh     # Generate AUS update XML
 │   └── nginx.conf.example         # Example nginx config

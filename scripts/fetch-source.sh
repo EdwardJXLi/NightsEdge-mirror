@@ -9,14 +9,29 @@ GITHUB_REPO="https://github.com/mozilla-firefox/firefox.git"
 
 # Read version pin
 source "$REPO_ROOT/FIREFOX_VERSION"
+UPSTREAM_REPO="${UPSTREAM_REPO:-mozilla-release}"
+
+case "$UPSTREAM_REPO" in
+    mozilla-central)
+        REPO_URL="https://hg.mozilla.org/mozilla-central"
+        ;;
+    mozilla-release|mozilla-beta)
+        REPO_URL="https://hg.mozilla.org/releases/${UPSTREAM_REPO}"
+        ;;
+    *)
+        echo "ERROR: Unsupported UPSTREAM_REPO '$UPSTREAM_REPO'"
+        exit 1
+        ;;
+esac
 
 echo "==> Fetching Firefox source"
 echo "    Version: $VERSION"
 echo "    Hg hash: $HG_COMMIT_HASH"
+echo "    Repo:    $UPSTREAM_REPO"
 
 # Translate hg hash to git hash via Mozilla's JSON API
 echo "==> Resolving git commit from hg hash..."
-GIT_COMMIT_HASH=$(curl -sL "https://hg.mozilla.org/releases/mozilla-release/json-rev/$HG_COMMIT_HASH" \
+GIT_COMMIT_HASH=$(curl -sL "${REPO_URL}/json-rev/${HG_COMMIT_HASH}" \
     | python3 -c "import sys,json; print(json.load(sys.stdin)['git_commit'])")
 
 if [[ -z "$GIT_COMMIT_HASH" ]]; then

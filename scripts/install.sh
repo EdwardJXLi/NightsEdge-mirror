@@ -11,13 +11,13 @@ DESKTOP_FILE="/usr/share/applications/nightsedge.desktop"
 # --- Find tarball ---
 TARBALL="${1:-}"
 if [[ -z "$TARBALL" ]]; then
-    # Auto-detect from build output
+    # Auto-detect from build output in the default source tree.
     TARBALL=$(find "$REPO_ROOT"/mozilla-release/obj-*/dist \( -name "*.tar.xz" -o -name "*.tar.bz2" \) 2>/dev/null | head -1)
 fi
 
 if [[ -z "$TARBALL" || ! -f "$TARBALL" ]]; then
     echo "Usage: install.sh [path-to-tarball]"
-    echo "If no tarball is given, looks for build output in mozilla-release/obj-*/dist/"
+    echo "If no tarball is given, looks for build output in the default source tree at mozilla-release/obj-*/dist/"
     exit 1
 fi
 

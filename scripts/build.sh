@@ -22,9 +22,13 @@ fi
 source "$REPO_ROOT/FIREFOX_VERSION"
 
 SOURCE_DIR="${SOURCE_DIR:-$REPO_ROOT/mozilla-release}"
+UPSTREAM_REPO="${UPSTREAM_REPO:-mozilla-release}"
+FIREFOX_TRACK="${FIREFOX_TRACK:-release}"
 
 echo "==> NightsEdge build: $TARGET"
 echo "    Firefox $VERSION (hg:$HG_COMMIT_HASH)"
+echo "    Track:   $FIREFOX_TRACK"
+echo "    Repo:    $UPSTREAM_REPO"
 
 # --- Step 1: Fetch source ---
 echo "==> Fetching source..."
