@@ -29,7 +29,7 @@ steps:
       - bash scripts/build.sh linux-aarch64
       - bash scripts/generate-mar.sh linux-aarch64 "$UPDATE_URL_BASE"
       - mkdir -p artifacts/linux-aarch64
-      - find mozilla-release -path "*/dist/*.tar.bz2" -exec cp -t artifacts/linux-aarch64 {} +
+      - find mozilla-release \( -path "*/dist/*.tar.xz" -o -path "*/dist/*.tar.bz2" \) -exec cp -t artifacts/linux-aarch64 {} +
       - find mozilla-release -path "*/dist/*.txt" -exec cp -t artifacts/linux-aarch64 {} +
       - cp -r output/mar/linux-aarch64 artifacts/linux-aarch64/mar
     artifacts:

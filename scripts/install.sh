@@ -12,7 +12,7 @@ DESKTOP_FILE="/usr/share/applications/nightsedge.desktop"
 TARBALL="${1:-}"
 if [[ -z "$TARBALL" ]]; then
     # Auto-detect from build output
-    TARBALL=$(find "$REPO_ROOT"/mozilla-release/obj-*/dist -name "*.tar.bz2" 2>/dev/null | head -1)
+    TARBALL=$(find "$REPO_ROOT"/mozilla-release/obj-*/dist \( -name "*.tar.xz" -o -name "*.tar.bz2" \) 2>/dev/null | head -1)
 fi
 
 if [[ -z "$TARBALL" || ! -f "$TARBALL" ]]; then
@@ -38,7 +38,18 @@ fi
 # --- Extract ---
 echo "==> Extracting to $INSTALL_DIR"
 mkdir -p "$INSTALL_DIR"
-tar -xjf "$TARBALL" --strip-components=1 -C "$INSTALL_DIR"
+case "$TARBALL" in
+    *.tar.xz)
+        tar -xJf "$TARBALL" --strip-components=1 -C "$INSTALL_DIR"
+        ;;
+    *.tar.bz2)
+        tar -xjf "$TARBALL" --strip-components=1 -C "$INSTALL_DIR"
+        ;;
+    *)
+        echo "Error: unsupported tarball format: $TARBALL"
+        exit 1
+        ;;
+esac
 
 # --- Symlink ---
 echo "==> Linking $BIN_LINK -> $INSTALL_DIR/firefox"

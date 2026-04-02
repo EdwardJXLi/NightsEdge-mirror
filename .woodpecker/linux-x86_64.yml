@@ -29,7 +29,7 @@ steps:
       - bash scripts/build.sh linux-x86_64
       - bash scripts/generate-mar.sh linux-x86_64 "$UPDATE_URL_BASE"
       - mkdir -p artifacts/linux-x86_64
-      - find mozilla-release -path "*/dist/*.tar.bz2" -exec cp -t artifacts/linux-x86_64 {} +
+      - find mozilla-release \( -path "*/dist/*.tar.xz" -o -path "*/dist/*.tar.bz2" \) -exec cp -t artifacts/linux-x86_64 {} +
       - find mozilla-release -path "*/dist/*.txt" -exec cp -t artifacts/linux-x86_64 {} +
       - cp -r output/mar/linux-x86_64 artifacts/linux-x86_64/mar
     artifacts:

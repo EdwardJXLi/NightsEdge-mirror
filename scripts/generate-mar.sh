@@ -39,7 +39,7 @@ fi
 # --- Determine package file ---
 case "$TARGET" in
     linux-x86_64|linux-aarch64)
-        PACKAGE=$(find "$DIST_DIR" -name "*.tar.bz2" | head -1)
+        PACKAGE=$(find "$DIST_DIR" \( -name "*.tar.xz" -o -name "*.tar.bz2" \) | head -1)
         PLATFORM="Linux_${TARGET#linux-}"
         ;;
     win-x86_64)
@@ -68,7 +68,18 @@ trap "rm -rf '$WORK_DIR'" EXIT
 
 case "$TARGET" in
     linux-x86_64|linux-aarch64)
-        tar -xjf "$PACKAGE" -C "$WORK_DIR"
+        case "$PACKAGE" in
+            *.tar.xz)
+                tar -xJf "$PACKAGE" -C "$WORK_DIR"
+                ;;
+            *.tar.bz2)
+                tar -xjf "$PACKAGE" -C "$WORK_DIR"
+                ;;
+            *)
+                echo "Error: unsupported Linux package format: $PACKAGE"
+                exit 1
+                ;;
+        esac
         MAR_SOURCE_DIR="$WORK_DIR/firefox"
         ;;
     win-x86_64)
