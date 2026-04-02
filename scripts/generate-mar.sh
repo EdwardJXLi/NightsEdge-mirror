@@ -26,6 +26,7 @@ if [[ -z "$OBJ_DIR" ]]; then
 fi
 
 DIST_DIR="$OBJ_DIR/dist"
+BIN_DIR="$DIST_DIR/bin"
 MAR_OUTPUT_DIR="$REPO_ROOT/output/mar/$TARGET"
 mkdir -p "$MAR_OUTPUT_DIR"
 
@@ -33,6 +34,19 @@ mkdir -p "$MAR_OUTPUT_DIR"
 MAR_TOOL="$OBJ_DIR/dist/host/bin/mar"
 if [[ ! -x "$MAR_TOOL" ]]; then
     echo "Error: MAR tool not found at $MAR_TOOL"
+    exit 1
+fi
+
+APPLICATION_INI="$BIN_DIR/application.ini"
+UPDATE_SETTINGS_INI="$BIN_DIR/update-settings.ini"
+
+if [[ ! -f "$APPLICATION_INI" ]]; then
+    echo "Error: application.ini not found at $APPLICATION_INI"
+    exit 1
+fi
+
+if [[ ! -f "$UPDATE_SETTINGS_INI" ]]; then
+    echo "Error: update-settings.ini not found at $UPDATE_SETTINGS_INI"
     exit 1
 fi
 
@@ -88,7 +102,22 @@ case "$TARGET" in
         ;;
 esac
 
+MOZ_PRODUCT_VERSION=$(grep '^Version=' "$APPLICATION_INI" | head -1 | cut -d= -f2-)
+MAR_CHANNEL_ID=$(grep '^ACCEPTED_MAR_CHANNEL_IDS=' "$UPDATE_SETTINGS_INI" | head -1 | cut -d= -f2-)
+
+if [[ -z "$MOZ_PRODUCT_VERSION" ]]; then
+    echo "Error: failed to read Version from $APPLICATION_INI"
+    exit 1
+fi
+
+if [[ -z "$MAR_CHANNEL_ID" ]]; then
+    echo "Error: failed to read ACCEPTED_MAR_CHANNEL_IDS from $UPDATE_SETTINGS_INI"
+    exit 1
+fi
+
 MAR="$MAR_TOOL" \
+MOZ_PRODUCT_VERSION="$MOZ_PRODUCT_VERSION" \
+MAR_CHANNEL_ID="$MAR_CHANNEL_ID" \
     "$SOURCE_DIR/tools/update-packaging/make_full_update.sh" \
     "$MAR_FILE" \
     "$MAR_SOURCE_DIR"
@@ -98,7 +127,7 @@ echo "==> MAR created: $MAR_FILE"
 # --- Generate update.xml ---
 MAR_HASH=$(sha512sum "$MAR_FILE" | cut -d' ' -f1)
 MAR_SIZE=$(stat -c%s "$MAR_FILE")
-BUILD_ID=$(cat "$OBJ_DIR/dist/bin/application.ini" | grep "^BuildID=" | cut -d= -f2)
+BUILD_ID=$(grep '^BuildID=' "$APPLICATION_INI" | head -1 | cut -d= -f2-)
 MAR_FILENAME=$(basename "$MAR_FILE")
 MAR_URL="${UPDATE_URL_BASE}/mar/${TARGET}/${MAR_FILENAME}"
 
