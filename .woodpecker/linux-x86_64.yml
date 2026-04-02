@@ -35,8 +35,8 @@ steps:
       - apt-get update && apt-get install -y bash curl python3 xz-utils zip unzip
       - bash scripts/generate-mar.sh linux-x86_64 "$UPDATE_URL_BASE"
       - mkdir -p artifacts/linux-x86_64
-      - find mozilla-release \( -path "*/dist/*.tar.xz" -o -path "*/dist/*.tar.bz2" \) -exec cp -t artifacts/linux-x86_64 {} +
-      - find mozilla-release -path "*/dist/*.txt" -exec cp -t artifacts/linux-x86_64 {} +
+      - find mozilla-release -regextype posix-extended -regex '.*/dist/[^/]+\.(tar\.xz|tar\.bz2)' -exec cp -t artifacts/linux-x86_64 {} +
+      - find mozilla-release -regextype posix-extended -regex '.*/dist/[^/]+\.txt' -exec cp -t artifacts/linux-x86_64 {} +
       - cp -r output/mar/linux-x86_64 artifacts/linux-x86_64/mar
     artifacts:
       - artifacts/linux-x86_64/**
