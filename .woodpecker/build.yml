@@ -21,7 +21,7 @@ steps:
   - name: build-x86_64
     image: ubuntu:24.04
     environment:
-      BUILD_X86_64: "true"
+      BUILD_X86_64: "false"
       SCCACHE_VERSION: "0.10.0"
       SCCACHE_DISABLE: 0
       AWS_ACCESS_KEY_ID:
@@ -68,7 +68,7 @@ steps:
   - name: build-aarch64
     image: ubuntu:24.04
     environment:
-      BUILD_AARCH64: "true"
+      BUILD_AARCH64: "false"
       SCCACHE_VERSION: "0.10.0"
       SCCACHE_DISABLE: 0
       AWS_ACCESS_KEY_ID:
