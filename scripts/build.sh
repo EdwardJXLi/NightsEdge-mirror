@@ -30,9 +30,13 @@ echo "    Firefox $VERSION (hg:$HG_COMMIT_HASH)"
 echo "    Track:   $FIREFOX_TRACK"
 echo "    Repo:    $UPSTREAM_REPO"
 
-# --- Step 1: Fetch source ---
-echo "==> Fetching source..."
-"$SCRIPT_DIR/fetch-source.sh"
+# --- Step 1: Fetch source (skip if already present) ---
+if [[ ! -d "$SOURCE_DIR/.git" ]]; then
+    echo "==> Fetching source..."
+    "$SCRIPT_DIR/fetch-source.sh"
+else
+    echo "==> Source already present at $SOURCE_DIR, skipping fetch."
+fi
 
 # --- Step 2: Copy mozconfig ---
 echo "==> Installing mozconfig for $TARGET..."

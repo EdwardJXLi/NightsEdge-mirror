@@ -18,7 +18,13 @@ fi
 source "$REPO_ROOT/FIREFOX_VERSION"
 
 SOURCE_DIR="${SOURCE_DIR:-$REPO_ROOT/mozilla-release}"
-OBJ_DIR=$(find "$SOURCE_DIR" -maxdepth 1 -name "obj-*" -type d | head -1)
+# Map target to the platform triplet Mozilla uses for the obj directory
+case "$TARGET" in
+    linux-x86_64)  OBJ_PATTERN="obj-x86_64-pc-linux-gnu" ;;
+    linux-aarch64) OBJ_PATTERN="obj-aarch64-unknown-linux-gnu" ;;
+    *)             OBJ_PATTERN="obj-*" ;;
+esac
+OBJ_DIR=$(find "$SOURCE_DIR" -maxdepth 1 -name "$OBJ_PATTERN" -type d | head -1)
 
 if [[ -z "$OBJ_DIR" ]]; then
     echo "Error: no obj-* directory found. Run build.sh first."
