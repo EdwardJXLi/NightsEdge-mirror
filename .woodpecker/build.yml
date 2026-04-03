@@ -29,8 +29,8 @@ steps:
         from_secret: AWS_SECRET_ACCESS_KEY
       SCCACHE_BUCKET: nightsedge-cache
       SCCACHE_ENDPOINT: s3.hydranet.dev
-      SCCACHE_REGION: us-east-1
-      SCCACHE_S3_USE_SSL: true
+      SCCACHE_REGION: auto
+      SCCACHE_S3_USE_SSL: "true"
     commands:
       - 'echo "==> Runner architecture: $(uname -m)"'
       - apt-get update && apt-get install -y python3 git curl mercurial sccache
@@ -72,8 +72,8 @@ steps:
         from_secret: AWS_SECRET_ACCESS_KEY
       SCCACHE_BUCKET: nightsedge-cache
       SCCACHE_ENDPOINT: s3.hydranet.dev
-      SCCACHE_REGION: us-east-1
-      SCCACHE_S3_USE_SSL: true
+      SCCACHE_REGION: auto
+      SCCACHE_S3_USE_SSL: "true"
     commands:
       - 'echo "==> Runner architecture: $(uname -m)"'
       - apt-get update && apt-get install -y python3 git curl mercurial sccache
