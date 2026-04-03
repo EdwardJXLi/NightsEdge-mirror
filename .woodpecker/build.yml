@@ -21,6 +21,8 @@ steps:
   - name: build-x86_64
     image: ubuntu:24.04
     environment:
+      BUILD_X86_64: "true"
+      SCCACHE_DISABLE: 0
       AWS_ACCESS_KEY_ID:
         from_secret: AWS_ACCESS_KEY_ID
       AWS_SECRET_ACCESS_KEY:
@@ -32,7 +34,12 @@ steps:
     commands:
       - 'echo "==> Runner architecture: $(uname -m)"'
       - apt-get update && apt-get install -y python3 git curl mercurial sccache
-      - bash scripts/build.sh linux-x86_64
+      - |
+        if [[ "${BUILD_X86_64:-true}" != "true" ]]; then
+          echo "==> Skipping linux-x86_64 build (BUILD_X86_64=${BUILD_X86_64:-unset})"
+          exit 0
+        fi
+        bash scripts/build.sh linux-x86_64
 
   - name: package-x86_64
     image: ubuntu:24.04
@@ -41,7 +48,13 @@ steps:
     commands:
       - 'echo "==> Runner architecture: $(uname -m)"'
       - apt-get update && apt-get install -y xz-utils zip unzip
-      - bash scripts/generate-mar.sh linux-x86_64 "$UPDATE_URL_BASE"
+      - |
+        OBJ_DIR="$(find mozilla-release -maxdepth 1 -name 'obj-x86_64-pc-linux-gnu' -type d | head -1)"
+        if [[ -z "$OBJ_DIR" ]]; then
+          echo "==> Skipping linux-x86_64 package step because no build output was found"
+          exit 0
+        fi
+        bash scripts/generate-mar.sh linux-x86_64 "$UPDATE_URL_BASE"
       - mkdir -p artifacts/linux-x86_64
       - OBJ_DIR="$(find mozilla-release -maxdepth 1 -name 'obj-x86_64-pc-linux-gnu' -type d | head -1)" && test -n "$OBJ_DIR" && find "$OBJ_DIR/dist" -maxdepth 1 -type f \( -name '*.tar.xz' -o -name '*.tar.bz2' -o -name '*.txt' \) -exec cp -t artifacts/linux-x86_64 {} +
       - cp -r output/mar/linux-x86_64 artifacts/linux-x86_64/mar
@@ -51,6 +64,8 @@ steps:
   - name: build-aarch64
     image: ubuntu:24.04
     environment:
+      BUILD_AARCH64: "true"
+      SCCACHE_DISABLE: 0
       AWS_ACCESS_KEY_ID:
         from_secret: AWS_ACCESS_KEY_ID
       AWS_SECRET_ACCESS_KEY:
@@ -62,7 +77,12 @@ steps:
     commands:
       - 'echo "==> Runner architecture: $(uname -m)"'
       - apt-get update && apt-get install -y python3 git curl mercurial sccache
-      - bash scripts/build.sh linux-aarch64
+      - |
+        if [[ "${BUILD_AARCH64:-true}" != "true" ]]; then
+          echo "==> Skipping linux-aarch64 build (BUILD_AARCH64=${BUILD_AARCH64:-unset})"
+          exit 0
+        fi
+        bash scripts/build.sh linux-aarch64
 
   - name: package-aarch64
     image: ubuntu:24.04
@@ -71,7 +91,13 @@ steps:
     commands:
       - 'echo "==> Runner architecture: $(uname -m)"'
       - apt-get update && apt-get install -y xz-utils zip unzip
-      - bash scripts/generate-mar.sh linux-aarch64 "$UPDATE_URL_BASE"
+      - |
+        OBJ_DIR="$(find mozilla-release -maxdepth 1 -name 'obj-aarch64-unknown-linux-gnu' -type d | head -1)"
+        if [[ -z "$OBJ_DIR" ]]; then
+          echo "==> Skipping linux-aarch64 package step because no build output was found"
+          exit 0
+        fi
+        bash scripts/generate-mar.sh linux-aarch64 "$UPDATE_URL_BASE"
       - mkdir -p artifacts/linux-aarch64
       - OBJ_DIR="$(find mozilla-release -maxdepth 1 -name 'obj-aarch64-unknown-linux-gnu' -type d | head -1)" && test -n "$OBJ_DIR" && find "$OBJ_DIR/dist" -maxdepth 1 -type f \( -name '*.tar.xz' -o -name '*.tar.bz2' -o -name '*.txt' \) -exec cp -t artifacts/linux-aarch64 {} +
       - cp -r output/mar/linux-aarch64 artifacts/linux-aarch64/mar

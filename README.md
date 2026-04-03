@@ -124,6 +124,13 @@ Then run the build normally:
 
 Set `SCCACHE_DISABLE=1` to force a build without `sccache`.
 
+### Woodpecker pipeline switches
+
+Set these pipeline environment variables on manual/tag runs when you want to adjust which targets build:
+
+- `BUILD_X86_64=true|false` controls whether the `linux-x86_64` build and package steps run
+- `BUILD_AARCH64=true|false` controls whether the `linux-aarch64` build and package steps run
+
 ## Update Server
 
 Configure your update server using `update-server/nginx.conf.example` as a starting point. After building:
