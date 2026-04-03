@@ -5,3 +5,4 @@
 # provision the sysroot/toolchain from an x86_64 Linux host.
 ac_add_options --target=aarch64-unknown-linux-gnu
 ac_add_options --enable-bootstrap
+mk_add_options MOZ_OBJDIR=@TOPSRCDIR@/obj-aarch64-unknown-linux-gnu

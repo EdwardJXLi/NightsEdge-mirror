@@ -2,3 +2,4 @@
 . "$topsrcdir/../mozconfigs/common.mozconfig"
 
 ac_add_options --target=x86_64-pc-linux-gnu
+mk_add_options MOZ_OBJDIR=@TOPSRCDIR@/obj-x86_64-pc-linux-gnu
