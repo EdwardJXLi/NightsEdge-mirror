@@ -5,7 +5,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(dirname "$SCRIPT_DIR")"
 
 INSTALL_DIR="/opt/nightsedge"
-BIN_LINK="/usr/local/bin/nightsedge"
+BIN_LINK="/usr/local/bin/firefox"
+BIN_LINK2="/usr/local/bin/nightsedge"
 DESKTOP_FILE="/usr/share/applications/nightsedge.desktop"
 
 # --- Find tarball ---
@@ -54,34 +55,36 @@ esac
 # --- Symlink ---
 echo "==> Linking $BIN_LINK -> $INSTALL_DIR/firefox"
 ln -sf "$INSTALL_DIR/firefox" "$BIN_LINK"
+echo "==> Linking $BIN_LINK2 -> $INSTALL_DIR/firefox"
+ln -sf "$INSTALL_DIR/firefox" "$BIN_LINK2"
 
 # --- Desktop entry ---
 echo "==> Installing desktop entry"
 cat > "$DESKTOP_FILE" <<EOF
 [Desktop Entry]
-Name=NightsEdge
+Name=Firefox Nightly (NightsEdge)
 GenericName=Web Browser
-Comment=Custom Firefox build
-Exec=nightsedge %u
+Comment=Custom Firefox build for Hydra
+Exec=firefox %u
 Icon=$INSTALL_DIR/browser/chrome/icons/default/default128.png
 Terminal=false
 Type=Application
 MimeType=text/html;text/xml;application/xhtml+xml;application/vnd.mozilla.xul+xml;text/mml;x-scheme-handler/http;x-scheme-handler/https;
 Categories=Network;WebBrowser;
 StartupNotify=true
-StartupWMClass=NightsEdge
+StartupWMClass=Firefox Nightly (NightsEdge)
 Actions=new-window;new-private-window;
 
 [Desktop Action new-window]
 Name=Open a New Window
-Exec=nightsedge --new-window %u
+Exec=firefox --new-window %u
 
 [Desktop Action new-private-window]
 Name=Open a New Private Window
-Exec=nightsedge --private-window %u
+Exec=firefox --private-window %u
 EOF
 
 echo "==> Updating desktop database"
 update-desktop-database /usr/share/applications 2>/dev/null || true
 
-echo "==> Done. Run 'nightsedge' to launch."
+echo "==> Done. Run 'firefox' to launch."
