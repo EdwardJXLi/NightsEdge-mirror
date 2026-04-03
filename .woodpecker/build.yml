@@ -61,19 +61,7 @@ steps:
           exit 0
         fi
         bash scripts/generate-mar.sh linux-x86_64 "$UPDATE_URL_BASE"
-      - mkdir -p artifacts/linux-x86_64
-      - |
-        . ./FIREFOX_VERSION
-        OBJ_DIR="$(find mozilla-release -maxdepth 1 -name 'obj-x86_64-pc-linux-gnu' -type d | head -1)"
-        test -n "$OBJ_DIR"
-        PACKAGE="$(find "$OBJ_DIR/dist" -maxdepth 1 -type f \( -name '*.tar.xz' -o -name '*.tar.bz2' \) | head -1)"
-        test -n "$PACKAGE"
-        EXT="${PACKAGE##*.tar.}"
-        FINAL_PACKAGE="artifacts/linux-x86_64/nightsedge-${VERSION}-linux-x86_64.tar.${EXT}"
-        cp "$PACKAGE" "$FINAL_PACKAGE"
-        echo "==> Final package: $FINAL_PACKAGE"
-        find "$OBJ_DIR/dist" -maxdepth 1 -type f -name '*.txt' -exec cp -t artifacts/linux-x86_64 {} +
-      - cp -r output/mar/linux-x86_64 artifacts/linux-x86_64/mar
+      - bash scripts/stage-package.sh linux-x86_64
 
   # --- aarch64 build ---
 
@@ -120,19 +108,7 @@ steps:
           exit 0
         fi
         bash scripts/generate-mar.sh linux-aarch64 "$UPDATE_URL_BASE"
-      - mkdir -p artifacts/linux-aarch64
-      - |
-        . ./FIREFOX_VERSION
-        OBJ_DIR="$(find mozilla-release -maxdepth 1 -name 'obj-aarch64-unknown-linux-gnu' -type d | head -1)"
-        test -n "$OBJ_DIR"
-        PACKAGE="$(find "$OBJ_DIR/dist" -maxdepth 1 -type f \( -name '*.tar.xz' -o -name '*.tar.bz2' \) | head -1)"
-        test -n "$PACKAGE"
-        EXT="${PACKAGE##*.tar.}"
-        FINAL_PACKAGE="artifacts/linux-aarch64/nightsedge-${VERSION}-linux-aarch64.tar.${EXT}"
-        cp "$PACKAGE" "$FINAL_PACKAGE"
-        echo "==> Final package: $FINAL_PACKAGE"
-        find "$OBJ_DIR/dist" -maxdepth 1 -type f -name '*.txt' -exec cp -t artifacts/linux-aarch64 {} +
-      - cp -r output/mar/linux-aarch64 artifacts/linux-aarch64/mar
+      - bash scripts/stage-package.sh linux-aarch64
 
   # --- upload both architectures ---
 
