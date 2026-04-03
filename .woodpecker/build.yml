@@ -35,7 +35,7 @@ steps:
       - 'echo "==> Runner architecture: $(uname -m)"'
       - apt-get update && apt-get install -y python3 git curl mercurial sccache
       - |
-        if [[ "${BUILD_X86_64:-true}" != "true" ]]; then
+        if [ "${BUILD_X86_64:-true}" != "true" ]; then
           echo "==> Skipping linux-x86_64 build (BUILD_X86_64=${BUILD_X86_64:-unset})"
           exit 0
         fi
@@ -50,7 +50,7 @@ steps:
       - apt-get update && apt-get install -y xz-utils zip unzip
       - |
         OBJ_DIR="$(find mozilla-release -maxdepth 1 -name 'obj-x86_64-pc-linux-gnu' -type d | head -1)"
-        if [[ -z "$OBJ_DIR" ]]; then
+        if [ -z "$OBJ_DIR" ]; then
           echo "==> Skipping linux-x86_64 package step because no build output was found"
           exit 0
         fi
@@ -78,7 +78,7 @@ steps:
       - 'echo "==> Runner architecture: $(uname -m)"'
       - apt-get update && apt-get install -y python3 git curl mercurial sccache
       - |
-        if [[ "${BUILD_AARCH64:-true}" != "true" ]]; then
+        if [ "${BUILD_AARCH64:-true}" != "true" ]; then
           echo "==> Skipping linux-aarch64 build (BUILD_AARCH64=${BUILD_AARCH64:-unset})"
           exit 0
         fi
@@ -93,7 +93,7 @@ steps:
       - apt-get update && apt-get install -y xz-utils zip unzip
       - |
         OBJ_DIR="$(find mozilla-release -maxdepth 1 -name 'obj-aarch64-unknown-linux-gnu' -type d | head -1)"
-        if [[ -z "$OBJ_DIR" ]]; then
+        if [ -z "$OBJ_DIR" ]; then
           echo "==> Skipping linux-aarch64 package step because no build output was found"
           exit 0
         fi
