@@ -155,19 +155,7 @@ steps:
           exit 0
         fi
         bash scripts/generate-mar.sh windows-x86_64 "$UPDATE_URL_BASE"
-      - mkdir -p artifacts/windows-x86_64
-      - |
-        . ./FIREFOX_VERSION
-        OBJ_DIR="$(find mozilla-release -maxdepth 1 -name 'obj-x86_64-pc-windows-msvc' -type d | head -1)"
-        test -n "$OBJ_DIR"
-        PACKAGE="$(find "$OBJ_DIR/dist" -maxdepth 1 -type f -name '*.zip' | head -1)"
-        test -n "$PACKAGE"
-        FINAL_PACKAGE="artifacts/windows-x86_64/nightsedge-${VERSION}-windows-x86_64.zip"
-        cp "$PACKAGE" "$FINAL_PACKAGE"
-        echo "==> Final package: $FINAL_PACKAGE"
-        find "$OBJ_DIR/dist" -maxdepth 1 -type f -name '*.txt' -exec cp -t artifacts/windows-x86_64 {} +
-        find "$OBJ_DIR/dist" -maxdepth 1 -type f -name '*.exe' -exec cp -t artifacts/windows-x86_64 {} +
-      - cp -r output/mar/windows-x86_64 artifacts/windows-x86_64/mar
+      - bash scripts/stage-package.sh windows-x86_64
 
   # --- upload both architectures ---
 
