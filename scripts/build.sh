@@ -8,7 +8,7 @@ REPO_ROOT="$(dirname "$SCRIPT_DIR")"
 TARGET="${1:-}"
 if [[ -z "$TARGET" ]]; then
     echo "Usage: build.sh <target>"
-    echo "Targets: linux-x86_64, linux-aarch64, win-x86_64"
+    echo "Targets: linux-x86_64, linux-aarch64"
     exit 1
 fi
 

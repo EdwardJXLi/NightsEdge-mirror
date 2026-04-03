@@ -8,14 +8,13 @@ Custom Firefox build with nightly branding, all telemetry stripped, using a cust
 |--------|----------|--------|
 | `linux-x86_64` | Linux x64 native | `linux/amd64` |
 | `linux-aarch64` | Linux ARM cross-compile | `linux/amd64` |
-| `win-x86_64` | Windows x64 cross-compile | `linux/amd64` |
 
 macOS is not currently supported.
 
 ## How It Works
 
 1. `FIREFOX_VERSION` pins a specific Firefox hg revision, version, and upstream track
-2. On push to `main`, Woodpecker CI builds all three targets
+2. On push to `main`, Woodpecker CI builds the configured Linux targets
 3. Each build: fetches source at pinned hash, applies mozconfig + prefs + policies, builds, packages, generates MAR
 4. Artifacts and MARs are uploaded to the update server
 
@@ -88,8 +87,6 @@ A Windmill cron can run `scripts/check-and-update-version.sh` to refresh `FIREFO
 # Cross-compile Linux aarch64 from a Linux x86_64 host
 ./scripts/build.sh linux-aarch64
 
-# Build for Windows (cross-compile, requires mingw-w64 + wine)
-./scripts/build.sh win-x86_64
 ```
 
 ### Prerequisites
@@ -103,7 +100,6 @@ A Windmill cron can run `scripts/check-and-update-version.sh` to refresh `FIREFO
 - A recent LLVM toolchain is required; current Firefox builds need `clang/llvm >= 17`
 - CI/local builds should run `./mach bootstrap` to provision Mozilla's expected toolchains instead of relying only on distro package versions
 - `linux-aarch64` is configured as a Linux x86_64-hosted cross-compile and relies on Mozilla's `--enable-bootstrap` flow to provision the AArch64 sysroot/toolchain
-- For Windows cross-compile: `mingw-w64`, `wine64`
 
 ### `sccache` with MinIO S3
 
@@ -175,5 +171,5 @@ NightsEdge/
 ├── update-server/
 │   ├── generate-update-xml.sh     # Generate AUS update XML
 │   └── nginx.conf.example         # Example nginx config
-└── .woodpecker/                   # CI pipelines (3 targets)
+└── .woodpecker/                   # CI pipelines
 ```

@@ -15,7 +15,7 @@ mkdir -p "$OUTPUT_DIR"
 
 echo "==> Generating AUS update XML files for version $VERSION"
 
-for TARGET in linux-x86_64 linux-aarch64 win-x86_64; do
+for TARGET in linux-x86_64 linux-aarch64; do
     MAR_DIR="$REPO_ROOT/output/mar/$TARGET"
     MAR_FILE=$(find "$MAR_DIR" -name "*.complete.mar" 2>/dev/null | head -1)
 
@@ -33,7 +33,6 @@ for TARGET in linux-x86_64 linux-aarch64 win-x86_64; do
     case "$TARGET" in
         linux-x86_64)   AUS_PLATFORM="Linux_x86_64-gcc3" ;;
         linux-aarch64)  AUS_PLATFORM="Linux_aarch64-gcc3" ;;
-        win-x86_64)     AUS_PLATFORM="WINNT_x86_64-msvc" ;;
     esac
 
     TARGET_DIR="$OUTPUT_DIR/$AUS_PLATFORM"

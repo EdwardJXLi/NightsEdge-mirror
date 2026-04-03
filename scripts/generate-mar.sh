@@ -10,7 +10,7 @@ UPDATE_URL_BASE="${2:-https://updates.example.com}"
 
 if [[ -z "$TARGET" ]]; then
     echo "Usage: generate-mar.sh <target> [update-url-base]"
-    echo "Targets: linux-x86_64, linux-aarch64, win-x86_64"
+    echo "Targets: linux-x86_64, linux-aarch64"
     exit 1
 fi
 
@@ -54,11 +54,6 @@ fi
 case "$TARGET" in
     linux-x86_64|linux-aarch64)
         PACKAGE=$(find "$DIST_DIR" \( -name "*.tar.xz" -o -name "*.tar.bz2" \) | head -1)
-        PLATFORM="Linux_${TARGET#linux-}"
-        ;;
-    win-x86_64)
-        PACKAGE=$(find "$DIST_DIR" -name "*.zip" | head -1)
-        PLATFORM="WINNT_x86_64"
         ;;
     *)
         echo "Error: unknown target $TARGET"
@@ -94,10 +89,6 @@ case "$TARGET" in
                 exit 1
                 ;;
         esac
-        MAR_SOURCE_DIR="$WORK_DIR/firefox"
-        ;;
-    win-x86_64)
-        unzip -q "$PACKAGE" -d "$WORK_DIR"
         MAR_SOURCE_DIR="$WORK_DIR/firefox"
         ;;
 esac
