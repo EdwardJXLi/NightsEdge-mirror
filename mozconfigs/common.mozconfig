@@ -27,3 +27,9 @@ mk_add_options MOZ_REQUIRE_SIGNING=
 ac_add_options --enable-optimize
 ac_add_options --disable-debug
 ac_add_options --enable-release
+
+# build.sh exports SCCACHE_BIN when sccache is available.
+if test -n "$SCCACHE_BIN"; then
+  ac_add_options --with-ccache="$SCCACHE_BIN"
+  mk_add_options "export RUSTC_WRAPPER=$SCCACHE_BIN"
+fi

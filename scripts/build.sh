@@ -65,6 +65,25 @@ if [[ -d "$HOME/.cargo/bin" ]]; then
     export PATH="$HOME/.cargo/bin:$PATH"
 fi
 
+SCCACHE_ENABLED=0
+if [[ "${SCCACHE_DISABLE:-0}" != "1" ]] && command -v sccache >/dev/null 2>&1; then
+    export SCCACHE_BIN="${SCCACHE_BIN:-$(command -v sccache)}"
+    export RUSTC_WRAPPER="${RUSTC_WRAPPER:-$SCCACHE_BIN}"
+    export SCCACHE_IDLE_TIMEOUT="${SCCACHE_IDLE_TIMEOUT:-0}"
+    SCCACHE_ENABLED=1
+
+    echo "==> Enabling sccache via $SCCACHE_BIN"
+    if [[ -n "${SCCACHE_BUCKET:-}" && -n "${SCCACHE_ENDPOINT:-}" ]]; then
+        echo "    Backend: S3"
+        echo "    Bucket:  $SCCACHE_BUCKET"
+        echo "    Endpoint: $SCCACHE_ENDPOINT"
+    else
+        echo "    Backend: local/default (S3 backend not fully configured)"
+    fi
+else
+    echo "==> sccache not enabled (install sccache or unset SCCACHE_DISABLE=1)"
+fi
+
 if [[ "$TARGET" == "linux-aarch64" ]]; then
     echo "==> Installing Rust target aarch64-unknown-linux-gnu..."
     rustup target add aarch64-unknown-linux-gnu
@@ -88,6 +107,11 @@ echo "==> Starting build..."
 # --- Step 7: Package ---
 echo "==> Packaging..."
 ./mach package
+
+if [[ "$SCCACHE_ENABLED" == "1" ]]; then
+    echo "==> sccache stats"
+    "$SCCACHE_BIN" --show-stats || true
+fi
 
 echo "==> Build complete for $TARGET"
 echo "    Artifacts in: $SOURCE_DIR/obj-*/dist/"

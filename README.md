@@ -98,11 +98,35 @@ A Windmill cron can run `scripts/check-and-update-version.sh` to refresh `FIREFO
 - Firefox build dependencies (see [Mozilla build docs](https://firefox-source-docs.mozilla.org/setup/linux_build.html))
 - Linux builds require a host GCC/libstdc++ development toolchain in addition to Mozilla's downloaded clang toolchain
 - Rust toolchain (`rustc`, `cargo`)
+- `sccache` if you want compiler caching enabled during builds
 - LLVM tools (`llvm-objdump` must be present; on Ubuntu install the `llvm` package)
 - A recent LLVM toolchain is required; current Firefox builds need `clang/llvm >= 17`
 - CI/local builds should run `./mach bootstrap` to provision Mozilla's expected toolchains instead of relying only on distro package versions
 - `linux-aarch64` is configured as a Linux x86_64-hosted cross-compile and relies on Mozilla's `--enable-bootstrap` flow to provision the AArch64 sysroot/toolchain
 - For Windows cross-compile: `mingw-w64`, `wine64`
+
+### `sccache` with MinIO S3
+
+If `sccache` is installed, `scripts/build.sh` enables it automatically for both compiler cache integration and Rust builds. To back the cache with a MinIO bucket, export:
+
+```bash
+export AWS_ACCESS_KEY_ID=<minio-access-key>
+export AWS_SECRET_ACCESS_KEY=<minio-secret-key>
+export SCCACHE_BUCKET=<bucket-name>
+export SCCACHE_ENDPOINT=<minio-host:9000>
+export SCCACHE_REGION=<region-name>
+export SCCACHE_S3_USE_SSL=false
+# Optional:
+export SCCACHE_S3_KEY_PREFIX=nightsedge/
+```
+
+Then run the build normally:
+
+```bash
+./scripts/build.sh linux-x86_64
+```
+
+Set `SCCACHE_DISABLE=1` to force a build without `sccache`.
 
 ## Update Server
 
@@ -127,6 +151,13 @@ Deploy the `output/update-server/` directory to your web server root.
 | `deploy_host` | Hostname of the artifact/update server |
 | `deploy_user` | SSH user for upload |
 | `deploy_path` | Remote path for artifacts |
+| `AWS_ACCESS_KEY_ID` | MinIO access key for the `sccache` S3 backend |
+| `AWS_SECRET_ACCESS_KEY` | MinIO secret key for the `sccache` S3 backend |
+| `SCCACHE_BUCKET` | Bucket used by `sccache` |
+| `SCCACHE_ENDPOINT` | MinIO S3 endpoint, for example `minio.internal:9000` |
+| `SCCACHE_REGION` | Region value expected by your MinIO deployment |
+| `SCCACHE_S3_USE_SSL` | `true` or `false` depending on your MinIO endpoint |
+| `SCCACHE_S3_KEY_PREFIX` | Optional object prefix for isolating this cache namespace |
 
 ## Repo Structure
 
