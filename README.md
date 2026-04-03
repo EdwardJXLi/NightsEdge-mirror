@@ -8,13 +8,14 @@ Custom Firefox build with nightly branding, all telemetry stripped, using a cust
 |--------|----------|--------|
 | `linux-x86_64` | Linux x64 native | `linux/amd64` |
 | `linux-aarch64` | Linux ARM cross-compile | `linux/amd64` |
+| `windows-x86_64` | Windows x64 cross-compile via `clang-cl` | `linux/amd64` |
 
 macOS is not currently supported.
 
 ## How It Works
 
 1. `FIREFOX_VERSION` pins a specific Firefox hg revision, version, and upstream track
-2. On push to `main`, Woodpecker CI builds the configured Linux targets
+2. On push to `main`, Woodpecker CI builds the configured targets
 3. Each build: fetches source at pinned hash, applies mozconfig + prefs + policies, builds, packages, generates MAR
 4. Artifacts and MARs are uploaded to the update server
 
@@ -87,6 +88,9 @@ A Windmill cron can run `scripts/check-and-update-version.sh` to refresh `FIREFO
 # Cross-compile Linux aarch64 from a Linux x86_64 host
 ./scripts/build.sh linux-aarch64
 
+# Cross-compile Windows x86_64 from a Linux host
+./scripts/build.sh windows-x86_64
+
 ```
 
 ### Prerequisites
@@ -100,6 +104,19 @@ A Windmill cron can run `scripts/check-and-update-version.sh` to refresh `FIREFO
 - A recent LLVM toolchain is required; current Firefox builds need `clang/llvm >= 17`
 - CI/local builds should run `./mach bootstrap` to provision Mozilla's expected toolchains instead of relying only on distro package versions
 - `linux-aarch64` is configured as a Linux x86_64-hosted cross-compile and relies on Mozilla's `--enable-bootstrap` flow to provision the AArch64 sysroot/toolchain
+- `windows-x86_64` requires a Linux-hosted Firefox cross-build environment: `wine`, the `x86_64-pc-windows-msvc` Rust target, a Windows 10 SDK, and the DIA SDK exposed through `WINDOWSSDKDIR` and `DIA_SDK_PATH`
+- The Windows SDK headers/libs should live on a case-insensitive filesystem mount, matching Mozilla's cross-build expectations for the Windows SDK layout
+
+### Windows cross-build environment
+
+The Windows target follows Mozilla's Linux-hosted `clang-cl` flow. Before running `./scripts/build.sh windows-x86_64`, make sure the host/container provides:
+
+- `wine` on `PATH`
+- `WINDOWSSDKDIR=/path/to/windows-sdk`
+- `DIA_SDK_PATH=/path/to/dia-sdk`
+- `rustup target add x86_64-pc-windows-msvc`
+
+`scripts/build.sh` validates those paths, exports them to `mach`, and fails early if the environment is incomplete.
 
 ### `sccache` with MinIO S3
 
@@ -130,6 +147,13 @@ Set these pipeline environment variables on manual/tag runs when you want to adj
 
 - `BUILD_X86_64=true|false` controls whether the `linux-x86_64` build and package steps run
 - `BUILD_AARCH64=true|false` controls whether the `linux-aarch64` build and package steps run
+- `BUILD_WINDOWS_X86_64=true|false` controls whether the `windows-x86_64` build and package steps run
+
+The Windows Woodpecker job defaults to `true` and downloads Mozilla's Windows SDK/MSVC sysroot into `WINSYSROOT_DIR` on each run, then exports `WINDOWSSDKDIR` and `DIA_SDK_PATH` from that extracted tree before calling `scripts/build.sh`.
+
+That download/bootstrap logic lives in `scripts/fetch-windows-sysroot.sh`.
+
+All shipped mozconfigs pin `MOZ_OBJDIR` explicitly so the build output paths match the packaging logic in CI.
 
 ## Update Server
 
@@ -137,10 +161,12 @@ Configure your update server using `update-server/nginx.conf.example` as a start
 
 ```bash
 # Generate MAR files
-./scripts/generate-mar.sh linux-x86_64 https://updates.yourdomain.com
+./scripts/generate-mar.sh linux-x86_64 https://nightsedge.hydranet.com
+./scripts/generate-mar.sh linux-aarch64 https://nightsedge.hydranet.com
+./scripts/generate-mar.sh windows-x86_64 https://nightsedge.hydranet.com
 
 # Generate AUS-compatible update.xml files for all targets
-./update-server/generate-update-xml.sh https://updates.yourdomain.com
+./update-server/generate-update-xml.sh https://nightsedge.hydranet.com
 ```
 
 Deploy the `output/update-server/` directory to your web server root.
@@ -161,6 +187,7 @@ Deploy the `output/update-server/` directory to your web server root.
 | `SCCACHE_REGION` | Region value expected by your MinIO deployment |
 | `SCCACHE_S3_USE_SSL` | `true` or `false` depending on your MinIO endpoint |
 | `SCCACHE_S3_KEY_PREFIX` | Optional object prefix for isolating this cache namespace |
+| `WINSYSROOT_DIR` | Optional override for where the Windows SDK/MSVC sysroot is downloaded during the `windows-x86_64` Woodpecker build |
 
 ## Repo Structure
 

@@ -10,7 +10,7 @@ UPDATE_URL_BASE="${2:-https://updates.example.com}"
 
 if [[ -z "$TARGET" ]]; then
     echo "Usage: generate-mar.sh <target> [update-url-base]"
-    echo "Targets: linux-x86_64, linux-aarch64"
+    echo "Targets: linux-x86_64, linux-aarch64, windows-x86_64"
     exit 1
 fi
 
@@ -22,6 +22,7 @@ SOURCE_DIR="${SOURCE_DIR:-$REPO_ROOT/mozilla-release}"
 case "$TARGET" in
     linux-x86_64)  OBJ_PATTERN="obj-x86_64-pc-linux-gnu" ;;
     linux-aarch64) OBJ_PATTERN="obj-aarch64-unknown-linux-gnu" ;;
+    windows-x86_64) OBJ_PATTERN="obj-x86_64-pc-windows-msvc" ;;
     *)             OBJ_PATTERN="obj-*" ;;
 esac
 OBJ_DIR=$(find "$SOURCE_DIR" -maxdepth 1 -name "$OBJ_PATTERN" -type d | head -1)
@@ -61,6 +62,9 @@ case "$TARGET" in
     linux-x86_64|linux-aarch64)
         PACKAGE=$(find "$DIST_DIR" \( -name "*.tar.xz" -o -name "*.tar.bz2" \) | head -1)
         ;;
+    windows-x86_64)
+        PACKAGE=$(find "$DIST_DIR" -maxdepth 1 -type f -name "*.zip" | head -1)
+        ;;
     *)
         echo "Error: unknown target $TARGET"
         exit 1
@@ -96,6 +100,11 @@ case "$TARGET" in
                 ;;
         esac
         MAR_SOURCE_DIR="$WORK_DIR/firefox"
+        ;;
+    windows-x86_64)
+        # dist/bin is the packaged application tree for Windows builds and
+        # avoids depending on the archive's internal directory layout.
+        MAR_SOURCE_DIR="$BIN_DIR"
         ;;
 esac
 

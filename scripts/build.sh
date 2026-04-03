@@ -8,7 +8,7 @@ REPO_ROOT="$(dirname "$SCRIPT_DIR")"
 TARGET="${1:-}"
 if [[ -z "$TARGET" ]]; then
     echo "Usage: build.sh <target>"
-    echo "Targets: linux-x86_64, linux-aarch64"
+    echo "Targets: linux-x86_64, linux-aarch64, windows-x86_64"
     exit 1
 fi
 
@@ -24,6 +24,22 @@ source "$REPO_ROOT/FIREFOX_VERSION"
 SOURCE_DIR="${SOURCE_DIR:-$REPO_ROOT/mozilla-release}"
 UPSTREAM_REPO="${UPSTREAM_REPO:-mozilla-release}"
 FIREFOX_TRACK="${FIREFOX_TRACK:-release}"
+
+RUST_TARGET=""
+case "$TARGET" in
+    linux-x86_64)
+        ;;
+    linux-aarch64)
+        RUST_TARGET="aarch64-unknown-linux-gnu"
+        ;;
+    windows-x86_64)
+        RUST_TARGET="x86_64-pc-windows-msvc"
+        ;;
+    *)
+        echo "Error: unsupported target '$TARGET'"
+        exit 1
+        ;;
+esac
 
 echo "==> NightsEdge build: $TARGET"
 echo "    Firefox $VERSION (hg:$HG_COMMIT_HASH)"
@@ -103,8 +119,47 @@ else
 fi
 
 if [[ "$TARGET" == "linux-aarch64" ]]; then
-    echo "==> Installing Rust target aarch64-unknown-linux-gnu..."
-    rustup target add aarch64-unknown-linux-gnu
+    echo "==> Installing Rust target $RUST_TARGET..."
+    rustup target add "$RUST_TARGET"
+fi
+
+if [[ "$TARGET" == "windows-x86_64" ]]; then
+    : "${WINDOWSSDKDIR:?Error: WINDOWSSDKDIR must point at the Windows 10 SDK root}"
+    : "${DIA_SDK_PATH:?Error: DIA_SDK_PATH must point at the DIA SDK root}"
+
+    if [[ ! -d "$WINDOWSSDKDIR" ]]; then
+        echo "Error: WINDOWSSDKDIR does not exist: $WINDOWSSDKDIR"
+        exit 1
+    fi
+
+    if [[ ! -d "$DIA_SDK_PATH" ]]; then
+        echo "Error: DIA_SDK_PATH does not exist: $DIA_SDK_PATH"
+        exit 1
+    fi
+
+    WINE_BIN=""
+    if command -v wine >/dev/null 2>&1; then
+        WINE_BIN="$(command -v wine)"
+    elif command -v wine64 >/dev/null 2>&1; then
+        WINE_BIN="$(command -v wine64)"
+    fi
+
+    if [[ -z "$WINE_BIN" ]]; then
+        echo "Error: wine is required for Windows cross-builds"
+        exit 1
+    fi
+
+    echo "==> Configuring Windows cross-build environment..."
+    export WINDOWSSDKDIR
+    export DIA_SDK_PATH
+    export WINE="${WINE:-$WINE_BIN}"
+
+    echo "    WINDOWSSDKDIR=$WINDOWSSDKDIR"
+    echo "    DIA_SDK_PATH=$DIA_SDK_PATH"
+    echo "    WINE=$WINE"
+
+    echo "==> Installing Rust target $RUST_TARGET..."
+    rustup target add "$RUST_TARGET"
 fi
 
 # Ubuntu commonly installs versioned llvm-objdump binaries without an

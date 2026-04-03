@@ -1,0 +1,10 @@
+# NightsEdge — Windows x86_64 cross-compile from Linux via clang-cl
+. "$topsrcdir/../mozconfigs/common.mozconfig"
+
+# Firefox's supported cross-build path uses a Linux host and clang-cl/lld-link
+# targeting the Windows MSVC ABI, with Wine available for Windows-only tools.
+ac_add_options --target=x86_64-pc-windows-msvc
+ac_add_options --enable-bootstrap
+
+# Keep the objdir stable so CI packaging scripts can locate build outputs.
+mk_add_options MOZ_OBJDIR=@TOPSRCDIR@/obj-x86_64-pc-windows-msvc
