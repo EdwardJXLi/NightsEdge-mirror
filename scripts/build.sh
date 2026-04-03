@@ -84,6 +84,20 @@ if [[ "${SCCACHE_DISABLE:-0}" != "1" ]] && command -v sccache >/dev/null 2>&1; t
     else
         echo "    Backend: local/default (S3 backend not fully configured)"
     fi
+
+    # Stop any stale server, then start fresh so it picks up the current
+    # S3 / credential environment variables.
+    "$SCCACHE_BIN" --stop-server >/dev/null 2>&1 || true
+    "$SCCACHE_BIN" --start-server
+
+    # Verify the backend is reachable by checking the reported storage.
+    # "Cache location" in --show-stats will say "S3" or "Local" etc.
+    SCCACHE_STORAGE=$("$SCCACHE_BIN" --show-stats 2>&1 | grep -i "cache location" || true)
+    echo "    Storage: $SCCACHE_STORAGE"
+    if [[ -n "${SCCACHE_BUCKET:-}" ]] && ! echo "$SCCACHE_STORAGE" | grep -qi "s3"; then
+        echo "WARNING: sccache S3 backend was configured but storage reports: $SCCACHE_STORAGE"
+        echo "         Cache writes may not persist. Check credentials and endpoint."
+    fi
 else
     echo "==> sccache not enabled (install sccache or unset SCCACHE_DISABLE=1)"
 fi
@@ -115,6 +129,8 @@ echo "==> Packaging..."
 if [[ "$SCCACHE_ENABLED" == "1" ]]; then
     echo "==> sccache stats"
     "$SCCACHE_BIN" --show-stats || true
+    echo "==> Stopping sccache server (flushing pending uploads)..."
+    "$SCCACHE_BIN" --stop-server || true
 fi
 
 echo "==> Build complete for $TARGET"
