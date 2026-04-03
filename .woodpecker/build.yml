@@ -143,8 +143,14 @@ steps:
       api_key:
         from_secret: FORGEJO_RELEASE_TOKEN
       files:
-        - artifacts/linux-x86_64/**
-        - artifacts/linux-aarch64/**
+        - artifacts/linux-x86_64/*.tar.*
+        - artifacts/linux-x86_64/*.txt
+        - artifacts/linux-x86_64/mar/*.mar
+        - artifacts/linux-x86_64/mar/*.xml
+        - artifacts/linux-aarch64/*.tar.*
+        - artifacts/linux-aarch64/*.txt
+        - artifacts/linux-aarch64/mar/*.mar
+        - artifacts/linux-aarch64/mar/*.xml
     when:
       - event: tag
       - event: manual
