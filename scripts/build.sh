@@ -46,6 +46,31 @@ echo "    Firefox $VERSION (hg:$HG_COMMIT_HASH)"
 echo "    Track:   $FIREFOX_TRACK"
 echo "    Repo:    $UPSTREAM_REPO"
 
+apply_mozilla_patches() {
+    local patch_file="$REPO_ROOT/patches/mozilla-midl-force-clang-cl-language.patch"
+    local patch_target="$SOURCE_DIR/build/midl.py"
+
+    if [[ "$TARGET" != "windows-x86_64" ]]; then
+        return 0
+    fi
+
+    if [[ ! -f "$patch_target" ]]; then
+        echo "Error: missing Mozilla midl.py at $patch_target"
+        exit 1
+    fi
+
+    if rg -q 'command = preprocessor \+ \["-TP", input\]' "$patch_target"; then
+        echo "==> Mozilla midl.py already forces clang-cl language for IDL preprocessing"
+        return 0
+    fi
+
+    echo "==> Applying Mozilla source patch: $(basename "$patch_file")"
+    if ! git -C "$SOURCE_DIR" apply --whitespace=nowarn "$patch_file"; then
+        echo "Error: failed to apply $patch_file"
+        exit 1
+    fi
+}
+
 # --- Step 1: Fetch source (skip if already present) ---
 if [[ ! -d "$SOURCE_DIR/.git" ]]; then
     echo "==> Fetching source..."
@@ -53,6 +78,8 @@ if [[ ! -d "$SOURCE_DIR/.git" ]]; then
 else
     echo "==> Source already present at $SOURCE_DIR, skipping fetch."
 fi
+
+apply_mozilla_patches
 
 # --- Step 2: Copy mozconfig ---
 echo "==> Installing mozconfig for $TARGET..."

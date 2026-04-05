@@ -1,0 +1,16 @@
+diff --git a/build/midl.py b/build/midl.py
+index 65b0f53d42d1..adf9bb508c89 100755
+--- a/build/midl.py
++++ b/build/midl.py
+@@ -71,7 +71,10 @@ def preprocess(base, input, flags):
+             queue.append(acf)
+         except RuntimeError:
+             pass
+-        command = preprocessor + [input]
++        if input.lower().endswith((".idl", ".acf")):
++            command = preprocessor + ["-TP", input]
++        else:
++            command = preprocessor + [input]
+         preprocessed = os.path.join(base, os.path.basename(input))
+         subprocess.run(command, stdout=open(preprocessed, "wb"), check=True)
+ 
