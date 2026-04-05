@@ -6,6 +6,7 @@ REPO_ROOT="$(dirname "$SCRIPT_DIR")"
 SOURCE_DIR="${SOURCE_DIR:-$REPO_ROOT/mozilla-release}"
 WINSYSROOT_DIR="${1:-${WINSYSROOT_DIR:-/opt/winsysroot}}"
 ENV_FILE="${2:-${WINDOWS_SYSROOT_ENV_FILE:-$WINSYSROOT_DIR/windows-env.sh}}"
+VS_MANIFEST="${VS_MANIFEST:-}"
 
 if [[ ! -d "$SOURCE_DIR" ]]; then
     echo "Error: SOURCE_DIR does not exist: $SOURCE_DIR"
@@ -17,27 +18,32 @@ if [[ ! -x "$SOURCE_DIR/mach" ]]; then
     exit 1
 fi
 
-if [[ ! -f "$SOURCE_DIR/build/vs/generate_yaml.py" ]]; then
-    echo "Error: missing Mozilla VS manifest generator at $SOURCE_DIR/build/vs/generate_yaml.py"
-    exit 1
-fi
-
 if [[ ! -f "$SOURCE_DIR/taskcluster/scripts/misc/get_vs.py" ]]; then
     echo "Error: missing Mozilla VS downloader at $SOURCE_DIR/taskcluster/scripts/misc/get_vs.py"
     exit 1
 fi
 
+if [[ -z "$VS_MANIFEST" ]]; then
+    while IFS= read -r manifest; do
+        VS_MANIFEST="$manifest"
+        break
+    done < <(find "$SOURCE_DIR/build/vs" -maxdepth 1 -type f -name 'vs*.yaml' \
+        ! -name '*-aarch64.yaml' ! -name '*-car.yaml' | sort -V -r)
+fi
+
+if [[ -z "$VS_MANIFEST" || ! -f "$VS_MANIFEST" ]]; then
+    echo "Error: missing Mozilla VS manifest YAML under $SOURCE_DIR/build/vs"
+    exit 1
+fi
+
 echo "==> Downloading Windows SDK/MSVC sysroot into $WINSYSROOT_DIR"
+echo "    Manifest: $VS_MANIFEST"
 rm -rf "$WINSYSROOT_DIR"
 mkdir -p "$WINSYSROOT_DIR"
 
-MANIFEST_FILE="$(mktemp --suffix=.yaml)"
-trap 'rm -f "$MANIFEST_FILE"' EXIT
-
 (
     cd "$SOURCE_DIR"
-    ./mach python --virtualenv build build/vs/generate_yaml.py -o "$MANIFEST_FILE"
-    ./mach python --virtualenv build taskcluster/scripts/misc/get_vs.py -- "$MANIFEST_FILE" "$WINSYSROOT_DIR"
+    ./mach python --virtualenv build taskcluster/scripts/misc/get_vs.py -- "$VS_MANIFEST" "$WINSYSROOT_DIR"
 )
 
 WINDOWSSDKDIR="$WINSYSROOT_DIR/Windows Kits/10"
