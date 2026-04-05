@@ -12,6 +12,11 @@ if [[ ! -d "$SOURCE_DIR" ]]; then
     exit 1
 fi
 
+if [[ ! -x "$SOURCE_DIR/mach" ]]; then
+    echo "Error: missing Mozilla mach runner at $SOURCE_DIR/mach"
+    exit 1
+fi
+
 if [[ ! -f "$SOURCE_DIR/build/vs/generate_yaml.py" ]]; then
     echo "Error: missing Mozilla VS manifest generator at $SOURCE_DIR/build/vs/generate_yaml.py"
     exit 1
@@ -26,11 +31,14 @@ echo "==> Downloading Windows SDK/MSVC sysroot into $WINSYSROOT_DIR"
 rm -rf "$WINSYSROOT_DIR"
 mkdir -p "$WINSYSROOT_DIR"
 
-MANIFEST_FILE="$(mktemp)"
+MANIFEST_FILE="$(mktemp --suffix=.yaml)"
 trap 'rm -f "$MANIFEST_FILE"' EXIT
 
-python3 "$SOURCE_DIR/build/vs/generate_yaml.py" > "$MANIFEST_FILE"
-python3 "$SOURCE_DIR/taskcluster/scripts/misc/get_vs.py" "$MANIFEST_FILE" "$WINSYSROOT_DIR"
+(
+    cd "$SOURCE_DIR"
+    ./mach python --virtualenv build build/vs/generate_yaml.py -o "$MANIFEST_FILE"
+    ./mach python --virtualenv build taskcluster/scripts/misc/get_vs.py -- "$MANIFEST_FILE" "$WINSYSROOT_DIR"
+)
 
 WINDOWSSDKDIR="$WINSYSROOT_DIR/Windows Kits/10"
 DIA_SDK_PATH="$WINSYSROOT_DIR/DIA SDK"
