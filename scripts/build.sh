@@ -166,6 +166,18 @@ if ! command -v llvm-objdump >/dev/null 2>&1; then
     done
 fi
 
+if [[ "$TARGET" == "windows-x86_64" ]]; then
+    echo "==> Running configure for Windows diagnostics..."
+    ./mach configure
+    echo "==> Dumping Windows MIDL build variables..."
+    ./mach python --virtualenv build -c '
+import buildconfig
+
+for key in ("CXXCPP", "INCLUDE", "MIDL", "MIDL_FLAGS", "WINE"):
+    print(f"{key}={buildconfig.substs.get(key)}")
+'
+fi
+
 echo "==> Starting build..."
 ./mach build
 
