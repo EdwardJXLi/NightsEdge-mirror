@@ -41,8 +41,8 @@ steps:
         install -m 0755 "/tmp/sccache-v$SCCACHE_VERSION-x86_64-unknown-linux-musl/sccache" /usr/local/bin/sccache
         sccache --version
       - |
-        if [ "${BUILD_X86_64:-true}" != "true" ]; then
-          echo "==> Skipping linux-x86_64 build (BUILD_X86_64=${BUILD_X86_64:-unset})"
+        if [ "$${BUILD_X86_64:-true}" != "true" ]; then
+          echo "==> Skipping linux-x86_64 build (BUILD_X86_64=$${BUILD_X86_64:-unset})"
           exit 0
         fi
         bash scripts/build.sh linux-x86_64
@@ -88,8 +88,8 @@ steps:
         install -m 0755 "/tmp/sccache-v$SCCACHE_VERSION-x86_64-unknown-linux-musl/sccache" /usr/local/bin/sccache
         sccache --version
       - |
-        if [ "${BUILD_AARCH64:-true}" != "true" ]; then
-          echo "==> Skipping linux-aarch64 build (BUILD_AARCH64=${BUILD_AARCH64:-unset})"
+        if [ "$${BUILD_AARCH64:-true}" != "true" ]; then
+          echo "==> Skipping linux-aarch64 build (BUILD_AARCH64=$${BUILD_AARCH64:-unset})"
           exit 0
         fi
         bash scripts/build.sh linux-aarch64
