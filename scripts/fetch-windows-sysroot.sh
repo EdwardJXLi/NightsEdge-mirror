@@ -44,11 +44,11 @@ fi
 
 mkdir -p "$(dirname "$ENV_FILE")"
 cat > "$ENV_FILE" <<EOF
-export WINDOWSSDKDIR="$WINDOWSSDKDIR"
-export DIA_SDK_PATH="$DIA_SDK_PATH"
+export WINSYSROOT="$WINSYSROOT_DIR"
 EOF
 
 echo "==> Windows sysroot ready"
+echo "    WINSYSROOT=$WINSYSROOT_DIR"
 echo "    WINDOWSSDKDIR=$WINDOWSSDKDIR"
 echo "    DIA_SDK_PATH=$DIA_SDK_PATH"
 echo "    Env file: $ENV_FILE"

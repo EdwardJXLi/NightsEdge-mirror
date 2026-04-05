@@ -104,19 +104,18 @@ A Windmill cron can run `scripts/check-and-update-version.sh` to refresh `FIREFO
 - A recent LLVM toolchain is required; current Firefox builds need `clang/llvm >= 17`
 - CI/local builds should run `./mach bootstrap` to provision Mozilla's expected toolchains instead of relying only on distro package versions
 - `linux-aarch64` is configured as a Linux x86_64-hosted cross-compile and relies on Mozilla's `--enable-bootstrap` flow to provision the AArch64 sysroot/toolchain
-- `windows-x86_64` requires a Linux-hosted Firefox cross-build environment: `wine`, the `x86_64-pc-windows-msvc` Rust target, a Windows 10 SDK, and the DIA SDK exposed through `WINDOWSSDKDIR` and `DIA_SDK_PATH`
+- `windows-x86_64` requires a Linux-hosted Firefox cross-build environment: `wine`, the `x86_64-pc-windows-msvc` Rust target, and a Mozilla Windows sysroot exposed through `WINSYSROOT`
 - The Windows SDK headers/libs should live on a case-insensitive filesystem mount, matching Mozilla's cross-build expectations for the Windows SDK layout
 
 ### Windows cross-build environment
 
-The Windows target follows Mozilla's Linux-hosted `clang-cl` flow. Before running `./scripts/build.sh windows-x86_64`, make sure the host/container provides:
+The Windows target follows Mozilla's Linux-hosted `clang-cl` flow with Mozilla's bootstrapped sysroot. Before running `./scripts/build.sh windows-x86_64`, make sure the host/container provides:
 
 - `wine` on `PATH`
-- `WINDOWSSDKDIR=/path/to/windows-sdk`
-- `DIA_SDK_PATH=/path/to/dia-sdk`
+- `WINSYSROOT=/path/to/winsysroot`
 - `rustup target add x86_64-pc-windows-msvc`
 
-`scripts/build.sh` validates those paths, exports them to `mach`, and fails early if the environment is incomplete.
+You can populate `WINSYSROOT` with `scripts/fetch-windows-sysroot.sh`. `scripts/build.sh` validates that path, exports it to `mach`, and fails early if the environment is incomplete.
 
 ### `sccache` with MinIO S3
 
@@ -149,7 +148,7 @@ Set these pipeline environment variables on manual/tag runs when you want to adj
 - `BUILD_AARCH64=true|false` controls whether the `linux-aarch64` build and package steps run
 - `BUILD_WINDOWS_X86_64=true|false` controls whether the `windows-x86_64` build and package steps run
 
-The Windows Woodpecker job defaults to `true` and downloads Mozilla's Windows SDK/MSVC sysroot into `WINSYSROOT_DIR` on each run, then exports `WINDOWSSDKDIR` and `DIA_SDK_PATH` from that extracted tree before calling `scripts/build.sh`.
+The Windows Woodpecker job defaults to `true` and downloads Mozilla's Windows SDK/MSVC sysroot into `WINSYSROOT_DIR` on each run, then exports `WINSYSROOT` from that extracted tree before calling `scripts/build.sh`.
 
 That download/bootstrap logic lives in `scripts/fetch-windows-sysroot.sh`.
 

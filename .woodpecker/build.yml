@@ -114,6 +114,7 @@ steps:
     image: ubuntu:24.04
     environment:
       BUILD_WINDOWS_X86_64: "true"
+      WINSYSROOT_DIR: /opt/winsysroot
       SCCACHE_VERSION: "0.10.0"
       SCCACHE_DISABLE: 0
       AWS_ACCESS_KEY_ID:
@@ -137,6 +138,8 @@ steps:
           echo "==> Skipping windows-x86_64 build (BUILD_WINDOWS_X86_64=$${BUILD_WINDOWS_X86_64:-unset})"
           exit 0
         fi
+        bash scripts/fetch-windows-sysroot.sh "$${WINSYSROOT_DIR}" "$${WINSYSROOT_DIR}/windows-env.sh"
+        . "$${WINSYSROOT_DIR}/windows-env.sh"
         bash scripts/build.sh windows-x86_64
 
   - name: package-windows-x86_64

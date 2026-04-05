@@ -124,16 +124,10 @@ if [[ "$TARGET" == "linux-aarch64" ]]; then
 fi
 
 if [[ "$TARGET" == "windows-x86_64" ]]; then
-    : "${WINDOWSSDKDIR:?Error: WINDOWSSDKDIR must point at the Windows 10 SDK root}"
-    : "${DIA_SDK_PATH:?Error: DIA_SDK_PATH must point at the DIA SDK root}"
+    : "${WINSYSROOT:?Error: WINSYSROOT must point at the bootstrapped Windows sysroot root}"
 
-    if [[ ! -d "$WINDOWSSDKDIR" ]]; then
-        echo "Error: WINDOWSSDKDIR does not exist: $WINDOWSSDKDIR"
-        exit 1
-    fi
-
-    if [[ ! -d "$DIA_SDK_PATH" ]]; then
-        echo "Error: DIA_SDK_PATH does not exist: $DIA_SDK_PATH"
+    if [[ ! -d "$WINSYSROOT" ]]; then
+        echo "Error: WINSYSROOT does not exist: $WINSYSROOT"
         exit 1
     fi
 
@@ -150,12 +144,10 @@ if [[ "$TARGET" == "windows-x86_64" ]]; then
     fi
 
     echo "==> Configuring Windows cross-build environment..."
-    export WINDOWSSDKDIR
-    export DIA_SDK_PATH
+    export WINSYSROOT
     export WINE="${WINE:-$WINE_BIN}"
 
-    echo "    WINDOWSSDKDIR=$WINDOWSSDKDIR"
-    echo "    DIA_SDK_PATH=$DIA_SDK_PATH"
+    echo "    WINSYSROOT=$WINSYSROOT"
     echo "    WINE=$WINE"
 
     echo "==> Installing Rust target $RUST_TARGET..."
