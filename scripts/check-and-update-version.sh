@@ -8,6 +8,51 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(dirname "$SCRIPT_DIR")"
 VERSION_FILE="$REPO_ROOT/FIREFOX_VERSION"
 
+AUTO_WRITE=false
+AUTO_COMMIT=false
+AUTO_PUSH=false
+
+usage() {
+    cat <<'EOF'
+Usage: check-and-update-version.sh [--write] [--commit] [--push]
+
+Checks upstream Firefox metadata for a new version.
+
+Flags:
+  --write   Update FIREFOX_VERSION when a new version is found
+  --commit  Commit the updated FIREFOX_VERSION (implies --write)
+  --push    Push the update commit to origin main (implies --commit)
+  -h, --help  Show this help text
+EOF
+}
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --write)
+            AUTO_WRITE=true
+            ;;
+        --commit)
+            AUTO_WRITE=true
+            AUTO_COMMIT=true
+            ;;
+        --push)
+            AUTO_WRITE=true
+            AUTO_COMMIT=true
+            AUTO_PUSH=true
+            ;;
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        *)
+            echo "Error: unknown argument '$1'"
+            usage
+            exit 1
+            ;;
+    esac
+    shift
+done
+
 # --- Read current pinned version ---
 source "$VERSION_FILE"
 UPSTREAM_REPO="${UPSTREAM_REPO:-mozilla-release}"
@@ -46,21 +91,48 @@ if [[ -n "$CURRENT_TAG" ]]; then
     echo "    Tag:   $CURRENT_TAG"
 fi
 
+fetch_latest_release_from_raw_tags() {
+    local raw_tags
+    local latest_entry
+
+    raw_tags=$(curl -fsSL "$REPO_URL/raw-tags" 2>/dev/null || true)
+    if [[ -z "$raw_tags" ]]; then
+        return 1
+    fi
+
+    latest_entry=$(
+        printf '%s\n' "$raw_tags" \
+            | awk '
+                /^[[:space:]]*FIREFOX_[0-9]+_[0-9]+(_[0-9]+)?_RELEASE[[:space:]]+[0-9a-f]+[[:space:]]*$/ {
+                    tag = $1
+                    hash = $2
+                    version = tag
+                    sub(/^FIREFOX_/, "", version)
+                    sub(/_RELEASE$/, "", version)
+                    gsub(/_/, ".", version)
+                    printf "%s\t%s\t%s\n", version, tag, hash
+                }
+            ' \
+            | sort -t $'\t' -k1,1V \
+            | tail -n 1
+    )
+
+    if [[ -z "$latest_entry" ]]; then
+        return 1
+    fi
+
+    LATEST_TAG=$(printf '%s\n' "$latest_entry" | cut -f2)
+    NEW_HASH=$(printf '%s\n' "$latest_entry" | cut -f3)
+    return 0
+}
+
 case "$CURRENT_TRACK" in
     release)
         echo "==> Checking ${UPSTREAM_REPO} for new release tags..."
 
-        LATEST_TAG=$(hg log -R "$REPO_URL" -r "max(ancestors(tip) and tag('re:^FIREFOX_[0-9]+_[0-9]+(_[0-9]+)?_RELEASE$'))" \
-            --template '{latesttag}\n' \
-            2>/dev/null || true)
-
-        if [[ -z "$LATEST_TAG" ]]; then
-            LATEST_TAG=$(hg tags -R "$REPO_URL" 2>/dev/null \
-                | grep -oE 'FIREFOX_[0-9]+_[0-9]+(_[0-9]+)?_RELEASE' \
-                | head -1 || true)
-        fi
-
-        if [[ -z "$LATEST_TAG" ]]; then
+        LATEST_TAG=""
+        NEW_HASH=""
+        if ! fetch_latest_release_from_raw_tags; then
             echo "Error: could not determine latest release tag from $REPO_URL"
             exit 1
         fi
@@ -71,10 +143,6 @@ case "$CURRENT_TRACK" in
             echo "==> Already up to date. Nothing to do."
             exit 0
         fi
-
-        NEW_HASH=$(hg log -R "$REPO_URL" -r "tag('$LATEST_TAG')" \
-            --template '{node|short}\n' \
-            2>/dev/null)
 
         if [[ -z "$NEW_HASH" ]]; then
             echo "Error: could not resolve commit hash for $LATEST_TAG"
@@ -137,6 +205,13 @@ esac
 echo "==> New version: $NEW_VERSION"
 echo "==> New commit:  $NEW_HASH"
 
+if [[ "$AUTO_WRITE" != true ]]; then
+    echo "==> Update available. Re-run with --write to update FIREFOX_VERSION."
+    exit 0
+fi
+
+echo "==> Writing updated FIREFOX_VERSION..."
+
 # --- Update FIREFOX_VERSION ---
 cat > "$VERSION_FILE" <<EOF
 # Firefox version pin — do not edit manually
@@ -147,9 +222,14 @@ FIREFOX_TRACK=$CURRENT_TRACK
 EOF
 
 if [[ -n "${LATEST_TAG:-}" ]]; then
-cat >> "$VERSION_FILE" <<EOF
+    cat >> "$VERSION_FILE" <<EOF
 RELEASE_TAG=$LATEST_TAG
 EOF
+fi
+
+if [[ "$AUTO_COMMIT" != true ]]; then
+    echo "==> Wrote FIREFOX_VERSION. Re-run with --commit to create a git commit."
+    exit 0
 fi
 
 # --- Commit and push ---
@@ -160,6 +240,12 @@ if [[ -n "${LATEST_TAG:-}" ]]; then
 else
     git commit -m "Update Firefox ${CURRENT_TRACK} to ${NEW_VERSION}"
 fi
+
+if [[ "$AUTO_PUSH" != true ]]; then
+    echo "==> Created update commit. Re-run with --push to push it to origin main."
+    exit 0
+fi
+
 git push origin main
 
 echo "==> Pushed updated FIREFOX_VERSION. CI will pick up the build."
