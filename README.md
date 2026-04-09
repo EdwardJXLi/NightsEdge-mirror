@@ -25,8 +25,8 @@ macOS is not currently supported.
 | Track | Upstream Repo | Version Examples | Detection Method |
 |-------|----------------|------------------|------------------|
 | `release` | `mozilla-release` | `149.0`, `149.0.1` | Latest Firefox release tag |
-| `beta` | `mozilla-beta` | `150.0b1`, `150.0b3` | `browser/config/version.txt` at tip |
-| `nightly` | `mozilla-central` | `151.0a1` | `browser/config/version.txt` at tip |
+| `beta` | `mozilla-beta` | `150.0b1`, `150.0b3` | `browser/config/version_display.txt` at tip |
+| `nightly` | `mozilla-central` | `151.0a1` | `browser/config/version_display.txt` at tip |
 
 `FIREFOX_VERSION` should contain:
 

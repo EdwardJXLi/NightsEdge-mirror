@@ -59,16 +59,34 @@ UPSTREAM_REPO="${UPSTREAM_REPO:-mozilla-release}"
 CURRENT_TRACK="${FIREFOX_TRACK:-}"
 CURRENT_TAG="${RELEASE_TAG:-}"
 
-if [[ -z "$CURRENT_TRACK" ]]; then
-    case "$UPSTREAM_REPO" in
-        mozilla-release) CURRENT_TRACK="release" ;;
-        mozilla-beta) CURRENT_TRACK="beta" ;;
-        mozilla-central) CURRENT_TRACK="nightly" ;;
+expected_track_from_repo() {
+    case "$1" in
+        mozilla-release) printf '%s\n' "release" ;;
+        mozilla-beta) printf '%s\n' "beta" ;;
+        mozilla-central) printf '%s\n' "nightly" ;;
         *)
-            echo "Error: unsupported UPSTREAM_REPO '$UPSTREAM_REPO'"
-            exit 1
+            return 1
             ;;
     esac
+}
+
+EXPECTED_TRACK="$(expected_track_from_repo "$UPSTREAM_REPO" || true)"
+if [[ -z "$EXPECTED_TRACK" ]]; then
+    echo "Error: unsupported UPSTREAM_REPO '$UPSTREAM_REPO'"
+    exit 1
+fi
+
+if [[ -z "$CURRENT_TRACK" ]]; then
+    CURRENT_TRACK="$EXPECTED_TRACK"
+elif [[ "$CURRENT_TRACK" != "$EXPECTED_TRACK" ]]; then
+    echo "==> Warning: FIREFOX_TRACK=$CURRENT_TRACK does not match UPSTREAM_REPO=$UPSTREAM_REPO"
+    echo "    Using derived track: $EXPECTED_TRACK"
+    CURRENT_TRACK="$EXPECTED_TRACK"
+fi
+
+if [[ "$CURRENT_TRACK" != "release" && -n "$CURRENT_TAG" ]]; then
+    echo "==> Warning: ignoring stale RELEASE_TAG for non-release track"
+    CURRENT_TAG=""
 fi
 
 case "$UPSTREAM_REPO" in
@@ -126,6 +144,27 @@ fetch_latest_release_from_raw_tags() {
     return 0
 }
 
+fetch_tip_version_and_hash() {
+    local version_path="$1"
+    local version_url="$REPO_URL/raw-file/tip/$version_path"
+    local log_url="$REPO_URL/json-log?rev=tip"
+    local log_json
+
+    NEW_VERSION=$(curl -fsSL "$version_url" 2>/dev/null | tr -d '\r\n' || true)
+    log_json=$(curl -fsSL "$log_url" 2>/dev/null || true)
+    NEW_HASH=$(
+        printf '%s' "$log_json" \
+            | python3 -c 'import json, sys; data = json.load(sys.stdin); print(data["node"][:12])' 2>/dev/null \
+            || true
+    )
+
+    if [[ -z "$NEW_VERSION" || -z "$NEW_HASH" ]]; then
+        return 1
+    fi
+
+    return 0
+}
+
 case "$CURRENT_TRACK" in
     release)
         echo "==> Checking ${UPSTREAM_REPO} for new release tags..."
@@ -161,10 +200,7 @@ case "$CURRENT_TRACK" in
     beta)
         echo "==> Checking ${UPSTREAM_REPO} for new beta version..."
 
-        NEW_VERSION=$(hg cat -R "$REPO_URL" -r tip browser/config/version.txt 2>/dev/null | tr -d '\r\n' || true)
-        NEW_HASH=$(hg log -R "$REPO_URL" -r tip --template '{node|short}\n' 2>/dev/null || true)
-
-        if [[ -z "$NEW_VERSION" || -z "$NEW_HASH" ]]; then
+        if ! fetch_tip_version_and_hash "browser/config/version_display.txt"; then
             echo "Error: could not determine latest beta version from $REPO_URL"
             exit 1
         fi
@@ -180,10 +216,7 @@ case "$CURRENT_TRACK" in
     nightly)
         echo "==> Checking ${UPSTREAM_REPO} for new nightly version..."
 
-        NEW_VERSION=$(hg cat -R "$REPO_URL" -r tip browser/config/version.txt 2>/dev/null | tr -d '\r\n' || true)
-        NEW_HASH=$(hg log -R "$REPO_URL" -r tip --template '{node|short}\n' 2>/dev/null || true)
-
-        if [[ -z "$NEW_VERSION" || -z "$NEW_HASH" ]]; then
+        if ! fetch_tip_version_and_hash "browser/config/version_display.txt"; then
             echo "Error: could not determine latest nightly version from $REPO_URL"
             exit 1
         fi
