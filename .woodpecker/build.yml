@@ -113,8 +113,7 @@ steps:
   - name: build-windows-x86_64
     image: ubuntu:24.04
     environment:
-      BUILD_WINDOWS_X86_64: "true"
-      WINE: /bin/true
+      BUILD_WINDOWS_X86_64: "false"
       WINSYSROOT_DIR: /opt/winsysroot
       SCCACHE_VERSION: "0.10.0"
       SCCACHE_DISABLE: 0
