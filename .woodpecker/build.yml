@@ -1,186 +1,178 @@
 depends_on: []
-
 when:
-  event: [push, manual, tag]
-
+  event:
+  - push
+  - manual
+  - tag
 labels:
   platform: linux/amd64
-
 steps:
-  - name: fetch-source
-    image: alpine:latest
-    commands:
-      - 'echo "==> Runner architecture: $(uname -m)"'
-      - apk add --no-cache git bash curl python3
-      - bash scripts/fetch-source.sh
+- name: fetch-source
+  image: alpine:latest
+  commands:
+  - 'echo "==> Runner architecture: $(uname -m)"'
+  - apk add --no-cache git bash curl python3
+  - bash scripts/fetch-source.sh
+- name: build-x86_64
+  image: ubuntu:24.04
+  environment:
+    BUILD_X86_64: 'true'
+    SCCACHE_VERSION: 0.10.0
+    SCCACHE_DISABLE: 0
+    AWS_ACCESS_KEY_ID:
+      from_secret: AWS_ACCESS_KEY_ID
+    AWS_SECRET_ACCESS_KEY:
+      from_secret: AWS_SECRET_ACCESS_KEY
+    SCCACHE_BUCKET: nightsedge-cache
+    SCCACHE_ENDPOINT: s3.hydranet.dev
+    SCCACHE_REGION: auto
+    SCCACHE_S3_USE_SSL: 'true'
+  commands:
+  - 'echo "==> Runner architecture: $(uname -m)"'
+  - apt-get update && apt-get install -y python3 git curl mercurial ca-certificates
+    tar xz-utils bzip2
+  - 'curl -fsSL -o /tmp/sccache.tar.gz "https://github.com/mozilla/sccache/releases/download/v$SCCACHE_VERSION/sccache-v$SCCACHE_VERSION-x86_64-unknown-linux-musl.tar.gz"
 
-  # --- x86_64 build ---
+    tar -xzf /tmp/sccache.tar.gz -C /tmp
 
-  - name: build-x86_64
-    image: ubuntu:24.04
-    environment:
-      BUILD_X86_64: "true"
-      SCCACHE_VERSION: "0.10.0"
-      SCCACHE_DISABLE: 0
-      AWS_ACCESS_KEY_ID:
-        from_secret: AWS_ACCESS_KEY_ID
-      AWS_SECRET_ACCESS_KEY:
-        from_secret: AWS_SECRET_ACCESS_KEY
-      SCCACHE_BUCKET: nightsedge-cache
-      SCCACHE_ENDPOINT: s3.hydranet.dev
-      SCCACHE_REGION: auto
-      SCCACHE_S3_USE_SSL: "true"
-    commands:
-      - 'echo "==> Runner architecture: $(uname -m)"'
-      - apt-get update && apt-get install -y python3 git curl mercurial ca-certificates tar xz-utils bzip2
-      - |
-        curl -fsSL -o /tmp/sccache.tar.gz "https://github.com/mozilla/sccache/releases/download/v$SCCACHE_VERSION/sccache-v$SCCACHE_VERSION-x86_64-unknown-linux-musl.tar.gz"
-        tar -xzf /tmp/sccache.tar.gz -C /tmp
-        install -m 0755 "/tmp/sccache-v$SCCACHE_VERSION-x86_64-unknown-linux-musl/sccache" /usr/local/bin/sccache
-        sccache --version
-      - |
-        if [ "$${BUILD_X86_64:-true}" != "true" ]; then
-          echo "==> Skipping linux-x86_64 build (BUILD_X86_64=$${BUILD_X86_64:-unset})"
-          exit 0
-        fi
-        bash scripts/build.sh linux-x86_64
+    install -m 0755 "/tmp/sccache-v$SCCACHE_VERSION-x86_64-unknown-linux-musl/sccache"
+    /usr/local/bin/sccache
 
-  - name: package-x86_64
-    image: ubuntu:24.04
-    environment:
-      UPDATE_URL_BASE: https://nightsedge.hydranet.dev
-    commands:
-      - 'echo "==> Runner architecture: $(uname -m)"'
-      - apt-get update && apt-get install -y xz-utils zip unzip
-      - |
-        OBJ_DIR="$(find mozilla-release -maxdepth 1 -name 'obj-x86_64-pc-linux-gnu' -type d | head -1)"
-        if [ -z "$OBJ_DIR" ]; then
-          echo "==> Skipping linux-x86_64 package step because no build output was found"
-          exit 0
-        fi
-        bash scripts/generate-mar.sh linux-x86_64 "$UPDATE_URL_BASE"
-      - bash scripts/stage-package.sh linux-x86_64
+    sccache --version
 
-  # --- aarch64 build ---
+    '
+  - "if [ \"$${BUILD_X86_64:-true}\" != \"true\" ]; then\n  echo \"==> Skipping linux-x86_64\
+    \ build (BUILD_X86_64=$${BUILD_X86_64:-unset})\"\n  exit 0\nfi\nbash scripts/build.sh\
+    \ linux-x86_64\n"
+- name: package-x86_64
+  image: ubuntu:24.04
+  environment:
+    UPDATE_URL_BASE: https://nightsedge.hydranet.dev
+  commands:
+  - 'echo "==> Runner architecture: $(uname -m)"'
+  - apt-get update && apt-get install -y xz-utils zip unzip
+  - "OBJ_DIR=\"$(find mozilla-release -maxdepth 1 -name 'obj-x86_64-pc-linux-gnu'\
+    \ -type d | head -1)\"\nif [ -z \"$OBJ_DIR\" ]; then\n  echo \"==> Skipping linux-x86_64\
+    \ package step because no build output was found\"\n  exit 0\nfi\nbash scripts/generate-mar.sh\
+    \ linux-x86_64 \"$UPDATE_URL_BASE\"\n"
+  - bash scripts/stage-package.sh linux-x86_64
+- name: build-aarch64
+  image: ubuntu:24.04
+  environment:
+    BUILD_AARCH64: 'true'
+    SCCACHE_VERSION: 0.10.0
+    SCCACHE_DISABLE: 0
+    AWS_ACCESS_KEY_ID:
+      from_secret: AWS_ACCESS_KEY_ID
+    AWS_SECRET_ACCESS_KEY:
+      from_secret: AWS_SECRET_ACCESS_KEY
+    SCCACHE_BUCKET: nightsedge-cache
+    SCCACHE_ENDPOINT: s3.hydranet.dev
+    SCCACHE_REGION: auto
+    SCCACHE_S3_USE_SSL: 'true'
+  commands:
+  - 'echo "==> Runner architecture: $(uname -m)"'
+  - apt-get update && apt-get install -y python3 git curl mercurial ca-certificates
+    tar xz-utils bzip2
+  - 'curl -fsSL -o /tmp/sccache.tar.gz "https://github.com/mozilla/sccache/releases/download/v$SCCACHE_VERSION/sccache-v$SCCACHE_VERSION-x86_64-unknown-linux-musl.tar.gz"
 
-  - name: build-aarch64
-    image: ubuntu:24.04
-    environment:
-      BUILD_AARCH64: "true"
-      SCCACHE_VERSION: "0.10.0"
-      SCCACHE_DISABLE: 0
-      AWS_ACCESS_KEY_ID:
-        from_secret: AWS_ACCESS_KEY_ID
-      AWS_SECRET_ACCESS_KEY:
-        from_secret: AWS_SECRET_ACCESS_KEY
-      SCCACHE_BUCKET: nightsedge-cache
-      SCCACHE_ENDPOINT: s3.hydranet.dev
-      SCCACHE_REGION: auto
-      SCCACHE_S3_USE_SSL: "true"
-    commands:
-      - 'echo "==> Runner architecture: $(uname -m)"'
-      - apt-get update && apt-get install -y python3 git curl mercurial ca-certificates tar xz-utils bzip2
-      - |
-        curl -fsSL -o /tmp/sccache.tar.gz "https://github.com/mozilla/sccache/releases/download/v$SCCACHE_VERSION/sccache-v$SCCACHE_VERSION-x86_64-unknown-linux-musl.tar.gz"
-        tar -xzf /tmp/sccache.tar.gz -C /tmp
-        install -m 0755 "/tmp/sccache-v$SCCACHE_VERSION-x86_64-unknown-linux-musl/sccache" /usr/local/bin/sccache
-        sccache --version
-      - |
-        if [ "$${BUILD_AARCH64:-true}" != "true" ]; then
-          echo "==> Skipping linux-aarch64 build (BUILD_AARCH64=$${BUILD_AARCH64:-unset})"
-          exit 0
-        fi
-        bash scripts/build.sh linux-aarch64
+    tar -xzf /tmp/sccache.tar.gz -C /tmp
 
-  - name: package-aarch64
-    image: ubuntu:24.04
-    environment:
-      UPDATE_URL_BASE: https://nightsedge.hydranet.dev
-    commands:
-      - 'echo "==> Runner architecture: $(uname -m)"'
-      - apt-get update && apt-get install -y xz-utils zip unzip
-      - |
-        OBJ_DIR="$(find mozilla-release -maxdepth 1 -name 'obj-aarch64-unknown-linux-gnu' -type d | head -1)"
-        if [ -z "$OBJ_DIR" ]; then
-          echo "==> Skipping linux-aarch64 package step because no build output was found"
-          exit 0
-        fi
-        bash scripts/generate-mar.sh linux-aarch64 "$UPDATE_URL_BASE"
-      - bash scripts/stage-package.sh linux-aarch64
+    install -m 0755 "/tmp/sccache-v$SCCACHE_VERSION-x86_64-unknown-linux-musl/sccache"
+    /usr/local/bin/sccache
 
-  # --- Windows x86_64 build ---
+    sccache --version
 
-  - name: build-windows-x86_64
-    image: ubuntu:24.04
-    environment:
-      BUILD_WINDOWS_X86_64: "true"
-      WINE: /bin/true
-      WINSYSROOT_DIR: /opt/winsysroot
-      SCCACHE_VERSION: "0.10.0"
-      SCCACHE_DISABLE: 0
-      AWS_ACCESS_KEY_ID:
-        from_secret: AWS_ACCESS_KEY_ID
-      AWS_SECRET_ACCESS_KEY:
-        from_secret: AWS_SECRET_ACCESS_KEY
-      SCCACHE_BUCKET: nightsedge-cache
-      SCCACHE_ENDPOINT: s3.hydranet.dev
-      SCCACHE_REGION: auto
-      SCCACHE_S3_USE_SSL: "true"
-    commands:
-      - 'echo "==> Runner architecture: $(uname -m)"'
-      - apt-get update && apt-get install -y python3 git curl mercurial ca-certificates tar xz-utils zip unzip wine64 msitools make
-      - |
-        curl -fsSL -o /tmp/sccache.tar.gz "https://github.com/mozilla/sccache/releases/download/v$SCCACHE_VERSION/sccache-v$SCCACHE_VERSION-x86_64-unknown-linux-musl.tar.gz"
-        tar -xzf /tmp/sccache.tar.gz -C /tmp
-        install -m 0755 "/tmp/sccache-v$SCCACHE_VERSION-x86_64-unknown-linux-musl/sccache" /usr/local/bin/sccache
-        sccache --version
-      - |
-        if [ "$${BUILD_WINDOWS_X86_64:-true}" != "true" ]; then
-          echo "==> Skipping windows-x86_64 build (BUILD_WINDOWS_X86_64=$${BUILD_WINDOWS_X86_64:-unset})"
-          exit 0
-        fi
-        bash scripts/fetch-windows-sysroot.sh "$${WINSYSROOT_DIR}" "$${WINSYSROOT_DIR}/windows-env.sh"
-        . "$${WINSYSROOT_DIR}/windows-env.sh"
-        bash scripts/build.sh windows-x86_64
+    '
+  - "if [ \"$${BUILD_AARCH64:-true}\" != \"true\" ]; then\n  echo \"==> Skipping linux-aarch64\
+    \ build (BUILD_AARCH64=$${BUILD_AARCH64:-unset})\"\n  exit 0\nfi\nbash scripts/build.sh\
+    \ linux-aarch64\n"
+- name: package-aarch64
+  image: ubuntu:24.04
+  environment:
+    UPDATE_URL_BASE: https://nightsedge.hydranet.dev
+  commands:
+  - 'echo "==> Runner architecture: $(uname -m)"'
+  - apt-get update && apt-get install -y xz-utils zip unzip
+  - "OBJ_DIR=\"$(find mozilla-release -maxdepth 1 -name 'obj-aarch64-unknown-linux-gnu'\
+    \ -type d | head -1)\"\nif [ -z \"$OBJ_DIR\" ]; then\n  echo \"==> Skipping linux-aarch64\
+    \ package step because no build output was found\"\n  exit 0\nfi\nbash scripts/generate-mar.sh\
+    \ linux-aarch64 \"$UPDATE_URL_BASE\"\n"
+  - bash scripts/stage-package.sh linux-aarch64
+- name: build-windows-x86_64
+  image: ubuntu:24.04
+  environment:
+    BUILD_WINDOWS_X86_64: 'true'
+    WINE: /bin/true
+    WINSYSROOT_DIR: /opt/winsysroot
+    SCCACHE_VERSION: 0.10.0
+    SCCACHE_DISABLE: 0
+    AWS_ACCESS_KEY_ID:
+      from_secret: AWS_ACCESS_KEY_ID
+    AWS_SECRET_ACCESS_KEY:
+      from_secret: AWS_SECRET_ACCESS_KEY
+    SCCACHE_BUCKET: nightsedge-cache
+    SCCACHE_ENDPOINT: s3.hydranet.dev
+    SCCACHE_REGION: auto
+    SCCACHE_S3_USE_SSL: 'true'
+  commands:
+  - 'echo "==> Runner architecture: $(uname -m)"'
+  - apt-get update && apt-get install -y python3 git curl mercurial ca-certificates
+    tar xz-utils zip unzip wine64 msitools make
+  - 'curl -fsSL -o /tmp/sccache.tar.gz "https://github.com/mozilla/sccache/releases/download/v$SCCACHE_VERSION/sccache-v$SCCACHE_VERSION-x86_64-unknown-linux-musl.tar.gz"
 
-  - name: package-windows-x86_64
-    image: ubuntu:24.04
-    environment:
-      UPDATE_URL_BASE: https://nightsedge.hydranet.dev
-    commands:
-      - 'echo "==> Runner architecture: $(uname -m)"'
-      - apt-get update && apt-get install -y zip unzip
-      - |
-        OBJ_DIR="$(find mozilla-release -maxdepth 1 -name 'obj-x86_64-pc-windows-msvc' -type d | head -1)"
-        if [ -z "$OBJ_DIR" ]; then
-          echo "==> Skipping windows-x86_64 package step because no build output was found"
-          exit 0
-        fi
-        bash scripts/generate-mar.sh windows-x86_64 "$UPDATE_URL_BASE"
-      - bash scripts/stage-package.sh windows-x86_64
+    tar -xzf /tmp/sccache.tar.gz -C /tmp
 
-  # --- upload both architectures ---
+    install -m 0755 "/tmp/sccache-v$SCCACHE_VERSION-x86_64-unknown-linux-musl/sccache"
+    /usr/local/bin/sccache
 
-  - name: upload-forgejo-release
-    image: woodpeckerci/plugin-release:latest
-    settings:
-      base_url: https://forgejo.hydranet.dev
-      api_key:
-        from_secret: FORGEJO_RELEASE_TOKEN
-      files:
-        - artifacts/linux-x86_64/*.tar.*
-        - artifacts/linux-x86_64/*.txt
-        - artifacts/linux-x86_64/mar/*.mar
-        - artifacts/linux-x86_64/mar/*.xml
-        - artifacts/linux-aarch64/*.tar.*
-        - artifacts/linux-aarch64/*.txt
-        - artifacts/linux-aarch64/mar/*.mar
-        - artifacts/linux-aarch64/mar/*.xml
-        - artifacts/windows-x86_64/*.zip
-        - artifacts/windows-x86_64/*.exe
-        - artifacts/windows-x86_64/*.txt
-        - artifacts/windows-x86_64/mar/*.mar
-        - artifacts/windows-x86_64/mar/*.xml
-    when:
-      - event: tag
-      - event: manual
+    sccache --version
+
+    '
+  - 'echo "DEBUG: BUILD_WINDOWS_X86_64=$BUILD_WINDOWS_X86_64 WINE=$WINE WINSYSROOT_DIR=$WINSYSROOT_DIR"
+
+    echo "DEBUG: SOURCE_DIR=$SOURCE_DIR"
+
+    ls -la "$SOURCE_DIR/build/vs/" 2>/dev/null || echo "DEBUG: No vs directory found"
+
+    echo "DEBUG: Running fetch-windows-sysroot.sh..."'
+  - "if [ \"$${BUILD_WINDOWS_X86_64:-true}\" != \"true\" ]; then\n  echo \"==> Skipping\
+    \ windows-x86_64 build (BUILD_WINDOWS_X86_64=$${BUILD_WINDOWS_X86_64:-unset})\"\
+    \n  exit 0\nfi\nbash scripts/fetch-windows-sysroot.sh \"$${WINSYSROOT_DIR}\" \"\
+    $${WINSYSROOT_DIR}/windows-env.sh\"\n. \"$${WINSYSROOT_DIR}/windows-env.sh\"\n\
+    bash scripts/build.sh windows-x86_64\n"
+- name: package-windows-x86_64
+  image: ubuntu:24.04
+  environment:
+    UPDATE_URL_BASE: https://nightsedge.hydranet.dev
+  commands:
+  - 'echo "==> Runner architecture: $(uname -m)"'
+  - apt-get update && apt-get install -y zip unzip
+  - "OBJ_DIR=\"$(find mozilla-release -maxdepth 1 -name 'obj-x86_64-pc-windows-msvc'\
+    \ -type d | head -1)\"\nif [ -z \"$OBJ_DIR\" ]; then\n  echo \"==> Skipping windows-x86_64\
+    \ package step because no build output was found\"\n  exit 0\nfi\nbash scripts/generate-mar.sh\
+    \ windows-x86_64 \"$UPDATE_URL_BASE\"\n"
+  - bash scripts/stage-package.sh windows-x86_64
+- name: upload-forgejo-release
+  image: woodpeckerci/plugin-release:latest
+  settings:
+    base_url: https://forgejo.hydranet.dev
+    api_key:
+      from_secret: FORGEJO_RELEASE_TOKEN
+    files:
+    - artifacts/linux-x86_64/*.tar.*
+    - artifacts/linux-x86_64/*.txt
+    - artifacts/linux-x86_64/mar/*.mar
+    - artifacts/linux-x86_64/mar/*.xml
+    - artifacts/linux-aarch64/*.tar.*
+    - artifacts/linux-aarch64/*.txt
+    - artifacts/linux-aarch64/mar/*.mar
+    - artifacts/linux-aarch64/mar/*.xml
+    - artifacts/windows-x86_64/*.zip
+    - artifacts/windows-x86_64/*.exe
+    - artifacts/windows-x86_64/*.txt
+    - artifacts/windows-x86_64/mar/*.mar
+    - artifacts/windows-x86_64/mar/*.xml
+  when:
+  - event: tag
+  - event: manual
