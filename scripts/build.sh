@@ -151,6 +151,12 @@ if [[ "$TARGET" == "linux-aarch64" ]]; then
 fi
 
 if [[ "$TARGET" == "windows-x86_64" ]]; then
+    # Skip if WINE=/bin/true (used to bypass wine requirement when Windows build is disabled)
+    if [[ "$WINE" == "/bin/true" ]]; then
+        echo ">==> Windows build skipped (WINE=/bin/true)"
+        exit 0
+    fi
+
     : "${WINSYSROOT:?Error: WINSYSROOT must point at the bootstrapped Windows sysroot root}"
 
     if [[ ! -d "$WINSYSROOT" ]]; then
