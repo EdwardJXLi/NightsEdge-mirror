@@ -129,13 +129,13 @@ steps:
     sccache --version
 
     '
-  - 'echo "DEBUG: BUILD_WINDOWS_X86_64=$BUILD_WINDOWS_X86_64 WINE=$WINE WINSYSROOT_DIR=$WINSYSROOT_DIR"
-
-    echo "DEBUG: SOURCE_DIR=$SOURCE_DIR"
-
-    ls -la "$SOURCE_DIR/build/vs/" 2>/dev/null || echo "DEBUG: No vs directory found"
-
-    echo "DEBUG: Running fetch-windows-sysroot.sh..."'
+  - echo "=== DEBUG ENVIRONMENT ===" && echo "BUILD_WINDOWS_X86_64=${BUILD_WINDOWS_X86_64}"
+    && echo "WINE=${WINE}" && echo "WINSYSROOT_DIR=${WINSYSROOT_DIR}" && echo "SOURCE_DIR=${SOURCE_DIR}"
+    && echo "PWD=$(pwd)" && echo "=== SOURCE CHECK ===" && ls -la "${SOURCE_DIR:-/home/hydra/projects/NightsEdge/mozilla-release}/"
+    2>&1 | head -20 && echo "=== VS MANIFEST CHECK ===" && find "${SOURCE_DIR:-/home/hydra/projects/NightsEdge/mozilla-release}/build/vs"
+    -maxdepth 1 -type f 2>&1 && echo "=== TEST RUN get_vs.py ===" && cd "${SOURCE_DIR:-/home/hydra/projects/NightsEdge/mozilla-release}"
+    && python3 taskcluster/scripts/misc/get_vs.py --help 2>&1 | head -10 || echo "get_vs.py
+    failed with code $?"
   - "if [ \"$${BUILD_WINDOWS_X86_64:-true}\" != \"true\" ]; then\n  echo \"==> Skipping\
     \ windows-x86_64 build (BUILD_WINDOWS_X86_64=$${BUILD_WINDOWS_X86_64:-unset})\"\
     \n  exit 0\nfi\nbash scripts/fetch-windows-sysroot.sh \"$${WINSYSROOT_DIR}\" \"\
