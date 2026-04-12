@@ -136,11 +136,9 @@ steps:
     -maxdepth 1 -type f 2>&1 && echo "=== TEST RUN get_vs.py ===" && cd "${SOURCE_DIR:-/home/hydra/projects/NightsEdge/mozilla-release}"
     && python3 taskcluster/scripts/misc/get_vs.py --help 2>&1 | head -10 || echo "get_vs.py
     failed with code $?"
-  - "if [ \"$${BUILD_WINDOWS_X86_64:-true}\" != \"true\" ]; then\n  echo \"==> Skipping\
-    \ windows-x86_64 build (BUILD_WINDOWS_X86_64=$${BUILD_WINDOWS_X86_64:-unset})\"\
-    \n  exit 0\nfi\nbash scripts/fetch-windows-sysroot.sh \"$${WINSYSROOT_DIR}\" \"\
-    $${WINSYSROOT_DIR}/windows-env.sh\"\n. \"$${WINSYSROOT_DIR}/windows-env.sh\"\n\
-    bash scripts/build.sh windows-x86_64\n"
+  - 'echo "=== RUNNING fetch-windows-sysroot.sh ===" && bash -x scripts/fetch-windows-sysroot.sh
+    "${WINSYSROOT_DIR}" "${WINSYSROOT_DIR}/windows-env.sh" 2>&1 | tee /tmp/fetch-sysroot.log;
+    echo "EXIT CODE: $?"'
 - name: package-windows-x86_64
   image: ubuntu:24.04
   environment:
