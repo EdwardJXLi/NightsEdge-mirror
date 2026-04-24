@@ -238,6 +238,24 @@ esac
 echo "==> New version: $NEW_VERSION"
 echo "==> New commit:  $NEW_HASH"
 
+# --- Derive Rust toolchain version from Firefox source at the new commit ---
+# Mozilla pins MINIMUM_RUST_VERSION in python/mozboot/mozboot/util.py and uses
+# the matching stable Rust in taskcluster. Building with any other Rust risks
+# drift against nightly-but-whitelisted-via-RUSTC_BOOTSTRAP crates like
+# encoding_rs (portable_simd), whose unstable API moves between releases.
+RUST_UTIL_URL="$REPO_URL/raw-file/$NEW_HASH/python/mozboot/mozboot/util.py"
+NEW_RUST_VERSION=$(
+    curl -fsSL "$RUST_UTIL_URL" 2>/dev/null \
+        | awk -F '"' '/^MINIMUM_RUST_VERSION[[:space:]]*=/ { print $2; exit }'
+)
+
+if [[ -z "$NEW_RUST_VERSION" ]]; then
+    echo "Error: could not derive MINIMUM_RUST_VERSION from $RUST_UTIL_URL"
+    exit 1
+fi
+
+echo "==> Rust version: $NEW_RUST_VERSION"
+
 if [[ "$AUTO_WRITE" != true ]]; then
     echo "==> Update available. Re-run with --write to update FIREFOX_VERSION."
     exit 0
@@ -259,6 +277,10 @@ if [[ -n "${LATEST_TAG:-}" ]]; then
 RELEASE_TAG=$LATEST_TAG
 EOF
 fi
+
+cat >> "$VERSION_FILE" <<EOF
+RUST_VERSION=$NEW_RUST_VERSION
+EOF
 
 if [[ "$AUTO_COMMIT" != true ]]; then
     echo "==> Wrote FIREFOX_VERSION. Re-run with --commit to create a git commit."

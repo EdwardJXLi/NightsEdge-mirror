@@ -25,10 +25,17 @@ SOURCE_DIR="${SOURCE_DIR:-$REPO_ROOT/mozilla-release}"
 UPSTREAM_REPO="${UPSTREAM_REPO:-mozilla-release}"
 FIREFOX_TRACK="${FIREFOX_TRACK:-release}"
 
+if [[ -z "${RUST_VERSION:-}" ]]; then
+    echo "Error: RUST_VERSION is not set in FIREFOX_VERSION." >&2
+    echo "       Re-run scripts/check-and-update-version.sh --write to populate it." >&2
+    exit 1
+fi
+
 echo "==> NightsEdge build: $TARGET"
 echo "    Firefox $VERSION (hg:$HG_COMMIT_HASH)"
 echo "    Track:   $FIREFOX_TRACK"
 echo "    Repo:    $UPSTREAM_REPO"
+echo "    Rust:    $RUST_VERSION"
 
 # --- Step 1: Fetch source (skip if already present) ---
 if [[ ! -d "$SOURCE_DIR/.git" ]]; then
@@ -69,6 +76,17 @@ if [[ -d "$HOME/.cargo/bin" ]]; then
     export PATH="$HOME/.cargo/bin:$PATH"
 fi
 
+# Pin the Rust toolchain to the version Firefox was tested against. Mozilla
+# ships a repacked rust-lang.org tarball of this exact stable release; building
+# with rustup's rolling "stable" drifts into API changes in nightly-but-
+# whitelisted-via-RUSTC_BOOTSTRAP crates (encoding_rs portable_simd et al.) and
+# silently breaks the build. RUSTUP_TOOLCHAIN scopes the pin to this process
+# tree — the user's global `rustup default` is left untouched.
+echo "==> Pinning Rust toolchain to $RUST_VERSION..."
+rustup toolchain install "$RUST_VERSION" --profile minimal --no-self-update
+export RUSTUP_TOOLCHAIN="$RUST_VERSION"
+rustc --version
+
 SCCACHE_ENABLED=0
 if [[ "${SCCACHE_DISABLE:-0}" != "1" ]] && command -v sccache >/dev/null 2>&1; then
     export SCCACHE_BIN="${SCCACHE_BIN:-$(command -v sccache)}"
@@ -103,8 +121,8 @@ else
 fi
 
 if [[ "$TARGET" == "linux-aarch64" ]]; then
-    echo "==> Installing Rust target aarch64-unknown-linux-gnu..."
-    rustup target add aarch64-unknown-linux-gnu
+    echo "==> Installing Rust target aarch64-unknown-linux-gnu for $RUST_VERSION..."
+    rustup target add --toolchain "$RUST_VERSION" aarch64-unknown-linux-gnu
 fi
 
 # Ubuntu commonly installs versioned llvm-objdump binaries without an

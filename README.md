@@ -35,7 +35,10 @@ HG_COMMIT_HASH=<mozilla hg revision>
 VERSION=<firefox version string>
 UPSTREAM_REPO=<mozilla-release|mozilla-beta|mozilla-central>
 FIREFOX_TRACK=<release|beta|nightly>
+RUST_VERSION=<stable rustc pin>
 ```
+
+`RUST_VERSION` must match `MINIMUM_RUST_VERSION` from Firefox's `python/mozboot/mozboot/util.py` at the pinned commit. `build.sh` installs and scopes this exact toolchain via `rustup`/`RUSTUP_TOOLCHAIN`; Mozilla's CI repacks the same stable tarball. Building against rustup's rolling `stable` drifts into breakage on nightly-but-`RUSTC_BOOTSTRAP`-whitelisted crates like `encoding_rs` (portable_simd). `check-and-update-version.sh` derives this field automatically.
 
 For stable release tracking, also include:
 
@@ -52,6 +55,7 @@ VERSION=149.0
 UPSTREAM_REPO=mozilla-release
 FIREFOX_TRACK=release
 RELEASE_TAG=FIREFOX_149_0_RELEASE
+RUST_VERSION=1.90.0
 ```
 
 ```bash
@@ -60,6 +64,7 @@ HG_COMMIT_HASH=<beta hg hash>
 VERSION=150.0b3
 UPSTREAM_REPO=mozilla-beta
 FIREFOX_TRACK=beta
+RUST_VERSION=1.90.0
 ```
 
 ```bash
@@ -68,6 +73,7 @@ HG_COMMIT_HASH=<central hg hash>
 VERSION=151.0a1
 UPSTREAM_REPO=mozilla-central
 FIREFOX_TRACK=nightly
+RUST_VERSION=1.91.0
 ```
 
 A Windmill cron can run `scripts/check-and-update-version.sh` to refresh `FIREFOX_VERSION` automatically for the configured track, then push the change to Forgejo to trigger CI builds.
