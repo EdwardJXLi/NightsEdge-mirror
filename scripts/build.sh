@@ -76,12 +76,7 @@ if [[ -d "$HOME/.cargo/bin" ]]; then
     export PATH="$HOME/.cargo/bin:$PATH"
 fi
 
-# Pin the Rust toolchain to the version Firefox was tested against. Mozilla
-# ships a repacked rust-lang.org tarball of this exact stable release; building
-# with rustup's rolling "stable" drifts into API changes in nightly-but-
-# whitelisted-via-RUSTC_BOOTSTRAP crates (encoding_rs portable_simd et al.) and
-# silently breaks the build. RUSTUP_TOOLCHAIN scopes the pin to this process
-# tree — the user's global `rustup default` is left untouched.
+# Pin Rust to the version Firefox was tested against; rolling "stable" breaks the build
 echo "==> Pinning Rust toolchain to $RUST_VERSION..."
 rustup toolchain install "$RUST_VERSION" --profile minimal --no-self-update
 export RUSTUP_TOOLCHAIN="$RUST_VERSION"
@@ -103,13 +98,11 @@ if [[ "${SCCACHE_DISABLE:-0}" != "1" ]] && command -v sccache >/dev/null 2>&1; t
         echo "    Backend: local/default (S3 backend not fully configured)"
     fi
 
-    # Stop any stale server, then start fresh so it picks up the current
-    # S3 / credential environment variables.
+    # Restart so the server picks up the current S3 credentials
     "$SCCACHE_BIN" --stop-server >/dev/null 2>&1 || true
     "$SCCACHE_BIN" --start-server
 
-    # Verify the backend is reachable by checking the reported storage.
-    # "Cache location" in --show-stats will say "S3" or "Local" etc.
+    # Verify the reported storage backend
     SCCACHE_STORAGE=$("$SCCACHE_BIN" --show-stats 2>&1 | grep -i "cache location" || true)
     echo "    Storage: $SCCACHE_STORAGE"
     if [[ -n "${SCCACHE_BUCKET:-}" ]] && ! echo "$SCCACHE_STORAGE" | grep -qi "s3"; then
@@ -125,8 +118,7 @@ if [[ "$TARGET" == "linux-aarch64" ]]; then
     rustup target add --toolchain "$RUST_VERSION" aarch64-unknown-linux-gnu
 fi
 
-# Ubuntu commonly installs versioned llvm-objdump binaries without an
-# unversioned PATH entry. Point mach at one if needed.
+# Ubuntu often ships only versioned llvm-objdump binaries
 if ! command -v llvm-objdump >/dev/null 2>&1; then
     for candidate in /usr/bin/llvm-objdump-*; do
         if [[ -x "$candidate" ]]; then

@@ -38,7 +38,7 @@ FIREFOX_TRACK=<release|beta|nightly>
 RUST_VERSION=<stable rustc pin>
 ```
 
-`RUST_VERSION` must match `MINIMUM_RUST_VERSION` from Firefox's `python/mozboot/mozboot/util.py` at the pinned commit. `build.sh` installs and scopes this exact toolchain via `rustup`/`RUSTUP_TOOLCHAIN`; Mozilla's CI repacks the same stable tarball. Building against rustup's rolling `stable` drifts into breakage on nightly-but-`RUSTC_BOOTSTRAP`-whitelisted crates like `encoding_rs` (portable_simd). `check-and-update-version.sh` derives this field automatically.
+`RUST_VERSION` pins the rustc release Firefox was tested against — rustup's rolling `stable` can break the build. `check-and-update-version.sh` derives it automatically.
 
 For stable release tracking, also include:
 
