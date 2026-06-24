@@ -22,7 +22,7 @@ steps:
     image: ubuntu:24.04
     environment:
       BUILD_X86_64: "true"
-      SCCACHE_VERSION: "0.10.0"
+      SCCACHE_VERSION: "0.16.0"
       SCCACHE_DISABLE: 0
       AWS_ACCESS_KEY_ID:
         from_secret: AWS_ACCESS_KEY_ID
@@ -69,7 +69,7 @@ steps:
     image: ubuntu:24.04
     environment:
       BUILD_AARCH64: "true"
-      SCCACHE_VERSION: "0.10.0"
+      SCCACHE_VERSION: "0.16.0"
       SCCACHE_DISABLE: 0
       AWS_ACCESS_KEY_ID:
         from_secret: AWS_ACCESS_KEY_ID
