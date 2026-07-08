@@ -7,7 +7,7 @@ REPO_ROOT="$(dirname "$SCRIPT_DIR")"
 TARGET="${1:-}"
 if [[ -z "$TARGET" ]]; then
     echo "Usage: stage-package.sh <target>"
-    echo "Targets: linux-x86_64, linux-aarch64"
+    echo "Targets: linux-x86_64, linux-aarch64, windows-x86_64"
     exit 1
 fi
 
@@ -24,6 +24,10 @@ case "$TARGET" in
         OBJ_PATTERN="obj-aarch64-unknown-linux-gnu"
         ARTIFACT_DIR="$REPO_ROOT/artifacts/linux-aarch64"
         ;;
+    windows-x86_64)
+        OBJ_PATTERN="obj-x86_64-pc-windows-msvc"
+        ARTIFACT_DIR="$REPO_ROOT/artifacts/windows-x86_64"
+        ;;
     *)
         echo "Error: unknown target $TARGET"
         exit 1
@@ -38,15 +42,16 @@ if [[ -z "$OBJ_DIR" ]]; then
     exit 1
 fi
 
-PACKAGE="$(find "$OBJ_DIR/dist" -maxdepth 1 -type f \( -name '*.tar.xz' -o -name '*.tar.bz2' \) | head -1)"
+PACKAGE="$(find "$OBJ_DIR/dist" -maxdepth 1 -type f \( -name '*.tar.xz' -o -name '*.tar.bz2' -o -name '*.zip' \) | head -1)"
 if [[ -z "$PACKAGE" ]]; then
     echo "Error: no package archive found in $OBJ_DIR/dist"
     exit 1
 fi
 
 case "$PACKAGE" in
-    *.tar.xz) EXT="xz" ;;
-    *.tar.bz2) EXT="bz2" ;;
+    *.tar.xz) PACKAGE_SUFFIX="tar.xz" ;;
+    *.tar.bz2) PACKAGE_SUFFIX="tar.bz2" ;;
+    *.zip) PACKAGE_SUFFIX="zip" ;;
     *)
         echo "Error: unsupported package format: $PACKAGE"
         exit 1
@@ -55,9 +60,21 @@ esac
 
 mkdir -p "$ARTIFACT_DIR"
 
-FINAL_PACKAGE="$ARTIFACT_DIR/${ARTIFACT_PREFIX}.tar.${EXT}"
+FINAL_PACKAGE="$ARTIFACT_DIR/${ARTIFACT_PREFIX}.${PACKAGE_SUFFIX}"
 cp "$PACKAGE" "$FINAL_PACKAGE"
 echo "==> Final package: $FINAL_PACKAGE"
+
+# Windows builds also produce an NSIS installer under dist/install/sea/.
+if [[ "$TARGET" == "windows-x86_64" ]]; then
+    INSTALLER="$(find "$OBJ_DIR/dist/install/sea" -maxdepth 1 -type f -name '*.installer.exe' 2>/dev/null | head -1)"
+    if [[ -n "$INSTALLER" ]]; then
+        FINAL_INSTALLER="$ARTIFACT_DIR/${ARTIFACT_PREFIX}.installer.exe"
+        cp "$INSTALLER" "$FINAL_INSTALLER"
+        echo "==> Staged installer: $FINAL_INSTALLER"
+    else
+        echo "==> No installer .exe found in $OBJ_DIR/dist/install/sea (zip-only build)"
+    fi
+fi
 
 PACKAGE_NAME_FILE="$OBJ_DIR/dist/package_name.txt"
 if [[ -f "$PACKAGE_NAME_FILE" ]]; then

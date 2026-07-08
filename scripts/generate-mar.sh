@@ -10,7 +10,7 @@ UPDATE_URL_BASE="${2:-https://updates.example.com}"
 
 if [[ -z "$TARGET" ]]; then
     echo "Usage: generate-mar.sh <target> [update-url-base]"
-    echo "Targets: linux-x86_64, linux-aarch64"
+    echo "Targets: linux-x86_64, linux-aarch64, windows-x86_64"
     exit 1
 fi
 
@@ -20,9 +20,10 @@ source "$REPO_ROOT/FIREFOX_VERSION"
 SOURCE_DIR="${SOURCE_DIR:-$REPO_ROOT/mozilla-release}"
 # Map target to the platform triplet Mozilla uses for the obj directory
 case "$TARGET" in
-    linux-x86_64)  OBJ_PATTERN="obj-x86_64-pc-linux-gnu" ;;
-    linux-aarch64) OBJ_PATTERN="obj-aarch64-unknown-linux-gnu" ;;
-    *)             OBJ_PATTERN="obj-*" ;;
+    linux-x86_64)   OBJ_PATTERN="obj-x86_64-pc-linux-gnu" ;;
+    linux-aarch64)  OBJ_PATTERN="obj-aarch64-unknown-linux-gnu" ;;
+    windows-x86_64) OBJ_PATTERN="obj-x86_64-pc-windows-msvc" ;;
+    *)              OBJ_PATTERN="obj-*" ;;
 esac
 OBJ_DIR=$(find "$SOURCE_DIR" -maxdepth 1 -name "$OBJ_PATTERN" -type d | head -1)
 
@@ -61,6 +62,16 @@ case "$TARGET" in
     linux-x86_64|linux-aarch64)
         PACKAGE=$(find "$DIST_DIR" \( -name "*.tar.xz" -o -name "*.tar.bz2" \) | head -1)
         ;;
+    windows-x86_64)
+        # package_name.txt records the exact archive `mach package` produced.
+        PACKAGE=""
+        if [[ -f "$DIST_DIR/package_name.txt" ]]; then
+            PACKAGE="$DIST_DIR/$(cat "$DIST_DIR/package_name.txt")"
+        fi
+        if [[ ! -f "$PACKAGE" ]]; then
+            PACKAGE=$(find "$DIST_DIR" -maxdepth 1 -type f -name "*.zip" | head -1)
+        fi
+        ;;
     *)
         echo "Error: unknown target $TARGET"
         exit 1
@@ -96,6 +107,15 @@ case "$TARGET" in
                 ;;
         esac
         MAR_SOURCE_DIR="$WORK_DIR/firefox"
+        ;;
+    windows-x86_64)
+        unzip -q "$PACKAGE" -d "$WORK_DIR"
+        # The zip contains a single top-level application directory.
+        MAR_SOURCE_DIR=$(find "$WORK_DIR" -mindepth 1 -maxdepth 1 -type d | head -1)
+        if [[ -z "$MAR_SOURCE_DIR" ]]; then
+            echo "Error: no application directory found inside $PACKAGE"
+            exit 1
+        fi
         ;;
 esac
 

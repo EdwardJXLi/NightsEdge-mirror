@@ -1,0 +1,11 @@
+# NightsEdge — Windows x86_64 cross-compile from Linux via clang-cl
+. "$topsrcdir/../mozconfigs/common.mozconfig"
+
+ac_add_options --target=x86_64-pc-windows-msvc
+
+# Bootstrap provisions the full cross toolchain into ~/.mozbuild
+ac_add_options --enable-bootstrap
+
+export WINEDEBUG=-all
+
+mk_add_options MOZ_OBJDIR=@TOPSRCDIR@/obj-x86_64-pc-windows-msvc

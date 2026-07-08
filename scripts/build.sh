@@ -8,7 +8,26 @@ REPO_ROOT="$(dirname "$SCRIPT_DIR")"
 TARGET="${1:-}"
 if [[ -z "$TARGET" ]]; then
     echo "Usage: build.sh <target>"
-    echo "Targets: linux-x86_64, linux-aarch64"
+    echo "Targets: linux-x86_64, linux-aarch64, windows-x86_64"
+    exit 1
+fi
+
+# Extra Rust std target needed on top of the host toolchain, if any.
+RUST_TARGET=""
+case "$TARGET" in
+    linux-x86_64) ;;
+    linux-aarch64)  RUST_TARGET="aarch64-unknown-linux-gnu" ;;
+    windows-x86_64) RUST_TARGET="x86_64-pc-windows-msvc" ;;
+    *)
+        echo "Error: unsupported target '$TARGET'"
+        exit 1
+        ;;
+esac
+
+# get_vs.py extracts the Microsoft SDK/MSVC payloads with msiextract.
+if [[ "$TARGET" == "windows-x86_64" ]] && ! command -v msiextract >/dev/null 2>&1; then
+    echo "Error: msiextract not found; it is required to unpack the Windows SDK." >&2
+    echo "       Install the 'msitools' package." >&2
     exit 1
 fi
 
@@ -125,9 +144,9 @@ else
     echo "==> sccache not enabled (install sccache or unset SCCACHE_DISABLE=1)"
 fi
 
-if [[ "$TARGET" == "linux-aarch64" ]]; then
-    echo "==> Installing Rust target aarch64-unknown-linux-gnu for $RUST_VERSION..."
-    rustup target add --toolchain "$RUST_VERSION" aarch64-unknown-linux-gnu
+if [[ -n "$RUST_TARGET" ]]; then
+    echo "==> Installing Rust target $RUST_TARGET for $RUST_VERSION..."
+    rustup target add --toolchain "$RUST_VERSION" "$RUST_TARGET"
 fi
 
 # Ubuntu often ships only versioned llvm-objdump binaries

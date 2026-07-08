@@ -8,6 +8,7 @@ Custom Firefox build with nightly branding, all telemetry stripped, using a cust
 |--------|----------|--------|
 | `linux-x86_64` | Linux x64 native | `linux/amd64` |
 | `linux-aarch64` | Linux ARM cross-compile | `linux/amd64` |
+| `windows-x86_64` | Windows x64 cross-compile (clang-cl) | `linux/amd64` |
 
 macOS is not currently supported.
 
@@ -93,6 +94,9 @@ A Windmill cron can run `scripts/check-and-update-version.sh` to refresh `FIREFO
 # Cross-compile Linux aarch64 from a Linux x86_64 host
 ./scripts/build.sh linux-aarch64
 
+# Cross-compile Windows x86_64 from a Linux x86_64 host
+./scripts/build.sh windows-x86_64
+
 ```
 
 ### Prerequisites
@@ -106,6 +110,11 @@ A Windmill cron can run `scripts/check-and-update-version.sh` to refresh `FIREFO
 - A recent LLVM toolchain is required; current Firefox builds need `clang/llvm >= 17`
 - CI/local builds should run `./mach bootstrap` to provision Mozilla's expected toolchains instead of relying only on distro package versions
 - `linux-aarch64` is configured as a Linux x86_64-hosted cross-compile and relies on Mozilla's `--enable-bootstrap` flow to provision the AArch64 sysroot/toolchain
+- `windows-x86_64` needs `msitools` (for `msiextract`) and `libc6-i386` on the host; everything else is provisioned by `--enable-bootstrap`
+
+### Windows cross-build
+
+`windows-x86_64` is a Linux-hosted clang-cl cross-compile, the same approach Mozilla uses for official Windows binaries. `--enable-bootstrap` provisions the whole toolchain (clang-cl, MSVC/SDK sysroot, wine, NSIS) into `~/.mozbuild`. `mach package` produces both the `.zip` and the NSIS `*.installer.exe`. The first build downloads several GB of toolchains; later builds reuse `~/.mozbuild` where it persists.
 
 ### `sccache` with MinIO S3
 
@@ -136,6 +145,7 @@ Set these pipeline environment variables on manual/tag runs when you want to adj
 
 - `BUILD_X86_64=true|false` controls whether the `linux-x86_64` build and package steps run
 - `BUILD_AARCH64=true|false` controls whether the `linux-aarch64` build and package steps run
+- `BUILD_WINDOWS_X86_64=true|false` controls whether the `windows-x86_64` build and package steps run
 
 ## Update Server
 
