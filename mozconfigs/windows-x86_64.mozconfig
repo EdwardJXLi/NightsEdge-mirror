@@ -8,4 +8,7 @@ ac_add_options --enable-bootstrap
 
 export WINEDEBUG=-all
 
+# wine's widl instead of midl.exe; build.sh pre-fetches the wine toolchain
+export MIDL="$HOME/.mozbuild/wine/bin/widl"
+
 mk_add_options MOZ_OBJDIR=@TOPSRCDIR@/obj-x86_64-pc-windows-msvc
