@@ -130,7 +130,7 @@ steps:
     commands:
       - 'echo "==> Runner architecture: $(uname -m)"'
       # msitools: get_vs.py SDK extraction; libc6-i386: Mozilla's wine build
-      - apt-get update && apt-get install -y python3 git curl mercurial ca-certificates tar xz-utils bzip2 zip unzip msitools libc6-i386
+      - apt-get update && apt-get install -y python3 git curl mercurial ca-certificates tar xz-utils bzip2 zip unzip make msitools libc6-i386
       - |
         curl -fsSL -o /tmp/sccache.tar.gz "https://github.com/mozilla/sccache/releases/download/v$SCCACHE_VERSION/sccache-v$SCCACHE_VERSION-x86_64-unknown-linux-musl.tar.gz"
         tar -xzf /tmp/sccache.tar.gz -C /tmp
