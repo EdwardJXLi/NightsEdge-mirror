@@ -66,7 +66,10 @@ echo "==> Final package: $FINAL_PACKAGE"
 
 # Windows builds also produce an NSIS installer under dist/install/sea/.
 if [[ "$TARGET" == "windows-x86_64" ]]; then
-    INSTALLER="$(find "$OBJ_DIR/dist/install/sea" -maxdepth 1 -type f -name '*.installer.exe' 2>/dev/null | head -1)"
+    INSTALLER=""
+    if [[ -d "$OBJ_DIR/dist/install/sea" ]]; then
+        INSTALLER="$(find "$OBJ_DIR/dist/install/sea" -maxdepth 1 -type f -name '*.installer.exe' | head -1)"
+    fi
     if [[ -n "$INSTALLER" ]]; then
         FINAL_INSTALLER="$ARTIFACT_DIR/${ARTIFACT_PREFIX}.installer.exe"
         cp "$INSTALLER" "$FINAL_INSTALLER"
