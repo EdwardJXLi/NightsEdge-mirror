@@ -1,0 +1,11 @@
+--- a/browser/locales/en-US/browser/preferences/preferences.ftl
++++ b/browser/locales/en-US/browser/preferences/preferences.ftl
+@@ -931,7 +931,7 @@
+     .label = Default browser
+ 
+ is-default-browser-2 =
+-    .message = { -brand-short-name } is your default browser. Good choice.
++    .message = Firefox is your default browser. Good boy.
+ 
+ is-not-default-browser-2 =
+     .message = Psst, { -brand-short-name } isn’t your default.
