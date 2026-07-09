@@ -167,36 +167,6 @@ if [[ "$TARGET" == "windows-x86_64" ]]; then
         mkdir -p "$HOME/.mozbuild"
         (cd "$HOME/.mozbuild" && python3 "$SOURCE_DIR/mach" artifact toolchain --from-build linux64-wine)
     fi
-
-    echo "==> Running configure..."
-    ./mach configure
-
-    # TEMP diagnostics: probe the clang-cl IDL preprocessing path that broke
-    # the midl.exe route in CI, so the root cause is visible in build logs.
-    cat > /tmp/midl-probe.py <<'PYEOF'
-import subprocess
-
-import buildconfig
-
-for k in ("CXXCPP", "MIDL", "MIDL_FLAGS", "WINE"):
-    print(f"{k} = {buildconfig.substs.get(k)!r}")
-
-cxxcpp = list(buildconfig.substs.get("CXXCPP") or [])
-idl = "other-licenses/ia2/IA2CommonTypes.idl"
-probes = [("wrapped", cxxcpp)]
-if len(cxxcpp) > 1 and "sccache" in cxxcpp[0]:
-    probes.append(("bare", cxxcpp[1:]))
-for label, cmd in probes:
-    if not cmd:
-        continue
-    full = cmd + ["-D__midl=801", idl]
-    p = subprocess.run(full, capture_output=True, text=True)
-    print(f"IDL preprocess probe ({label}): rc={p.returncode}")
-    if p.returncode:
-        print("  cmd:", full)
-        print("  stderr:", p.stderr[:1500])
-PYEOF
-    ./mach python --virtualenv build /tmp/midl-probe.py || true
 fi
 
 echo "==> Starting build..."

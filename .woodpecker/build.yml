@@ -1,5 +1,10 @@
 depends_on: []
 
+# clang-cl parses the default /woodpecker workspace path as the MSVC /w option
+workspace:
+  base: /builds
+  path: nightsedge
+
 when:
   - event: push
     branch: main
