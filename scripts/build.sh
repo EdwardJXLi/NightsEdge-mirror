@@ -151,7 +151,31 @@ if [[ -n "$RUST_TARGET" ]]; then
     rustup target add --toolchain "$RUST_VERSION" "$RUST_TARGET"
 fi
 
-# Ubuntu often ships only versioned llvm-objdump binaries
+# Apple purged the CLT pkg this release pins, breaking configure's SDK
+# bootstrap. Fetch a live pkg ourselves and pass it in via MACOS_SDK_DIR.
+MACOS_SDK_VERSION="26.5"
+MACOS_SDK_URL="https://swcdn.apple.com/content/downloads/09/08/047-91568-A_Y1CFZWQCD4/4xekpyz43i26dbp4enxfro8eb1q7wiujh5/CLTools_macOSNMOS_SDK.pkg"
+MACOS_SDK_SHA512="5db8b5a06a489a7d3ec587ebb7e01be55163128029923fc24edcad47faecd67830193c0d91e2643ee0e92f2ccca37adf20e4c42cf8de5784666f8663638b5cc5"
+
+if [[ "$TARGET" == macos-* ]]; then
+    SDK_DIR="$HOME/.mozbuild/MacOSX${MACOS_SDK_VERSION}.sdk"
+    if [[ ! -d "$SDK_DIR" ]]; then
+        echo "==> Fetching macOS $MACOS_SDK_VERSION SDK from Apple CDN..."
+        rm -rf "$SDK_DIR.tmp"
+        PYTHONPATH="$SOURCE_DIR/python/mozbuild" python3 \
+            "$SOURCE_DIR/taskcluster/scripts/misc/unpack-sdk.py" \
+            "$MACOS_SDK_URL" \
+            "$MACOS_SDK_SHA512" \
+            "Library/Developer/CommandLineTools/SDKs/MacOSX${MACOS_SDK_VERSION}.sdk" \
+            "$SDK_DIR.tmp"
+        mv "$SDK_DIR.tmp" "$SDK_DIR"
+    fi
+    export MACOS_SDK_DIR="$SDK_DIR"
+    echo "==> Using macOS SDK: $MACOS_SDK_DIR"
+fi
+
+# Ubuntu commonly installs versioned llvm-objdump binaries without an
+# unversioned PATH entry. Point mach at one if needed.
 if ! command -v llvm-objdump >/dev/null 2>&1; then
     for candidate in /usr/bin/llvm-objdump-*; do
         if [[ -x "$candidate" ]]; then
