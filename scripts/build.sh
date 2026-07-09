@@ -45,27 +45,39 @@ else
     echo "==> Source already present at $SOURCE_DIR, skipping fetch."
 fi
 
-# --- Step 2: Copy mozconfig ---
+# --- Step 2: Apply source patches ---
+echo "==> Applying source patches..."
+for patch in "$REPO_ROOT"/patches/*.patch; do
+    [[ -e "$patch" ]] || continue
+    if git -C "$SOURCE_DIR" apply --reverse --check "$patch" 2>/dev/null; then
+        echo "    Skipping $(basename "$patch") (already applied)"
+    else
+        echo "    Applying $(basename "$patch")"
+        git -C "$SOURCE_DIR" apply "$patch"
+    fi
+done
+
+# --- Step 3: Copy mozconfig ---
 echo "==> Installing mozconfig for $TARGET..."
 cp "$MOZCONFIG" "$SOURCE_DIR/.mozconfig"
 
-# --- Step 3: Custom version string ---
+# --- Step 4: Custom version string ---
 echo "==> Setting version display to hydra-${VERSION}..."
 echo "hydra-${VERSION}" > "$SOURCE_DIR/browser/config/version_display.txt"
 
-# --- Step 4: Install custom prefs ---
+# --- Step 5: Install custom prefs ---
 echo "==> Installing custom preferences..."
 PREFS_DIR="$SOURCE_DIR/browser/defaults/preferences"
 mkdir -p "$PREFS_DIR"
 cp "$REPO_ROOT/prefs/nightsedge.js" "$PREFS_DIR/nightsedge.js"
 
-# --- Step 5: Install enterprise policies ---
+# --- Step 6: Install enterprise policies ---
 echo "==> Installing enterprise policies..."
 POLICIES_DIR="$SOURCE_DIR/browser/defaults/policies"
 mkdir -p "$POLICIES_DIR"
 cp "$REPO_ROOT/policies/policies.json" "$POLICIES_DIR/policies.json"
 
-# --- Step 6: Build ---
+# --- Step 7: Build ---
 echo "==> Bootstrapping Firefox toolchains..."
 cd "$SOURCE_DIR"
 export MOZCONFIG="$SOURCE_DIR/.mozconfig"
@@ -132,7 +144,7 @@ fi
 echo "==> Starting build..."
 ./mach build
 
-# --- Step 7: Package ---
+# --- Step 8: Package ---
 echo "==> Packaging..."
 ./mach package
 
