@@ -47,17 +47,31 @@ if [[ ! -x "$MAR_TOOL" ]]; then
 fi
 
 APPLICATION_INI="$BIN_DIR/application.ini"
-UPDATE_SETTINGS_INI="$BIN_DIR/update-settings.ini"
 
 if [[ ! -f "$APPLICATION_INI" ]]; then
     echo "Error: application.ini not found at $APPLICATION_INI"
     exit 1
 fi
 
-if [[ ! -f "$UPDATE_SETTINGS_INI" ]]; then
-    echo "Error: update-settings.ini not found at $UPDATE_SETTINGS_INI"
-    exit 1
-fi
+# macOS builds compile the channel into UpdateSettings.framework instead of
+# shipping update-settings.ini, so read the build config for it there.
+case "$TARGET" in
+    macos-*)
+        AUTOCONF_MK="$OBJ_DIR/config/autoconf.mk"
+        MAR_CHANNEL_ID=$(sed -n 's/^ACCEPTED_MAR_CHANNEL_IDS = //p' "$AUTOCONF_MK" | head -1)
+        if [[ -z "$MAR_CHANNEL_ID" ]]; then
+            MAR_CHANNEL_ID=$(sed -n 's/^MOZ_UPDATE_CHANNEL = //p' "$AUTOCONF_MK" | head -1)
+        fi
+        ;;
+    *)
+        UPDATE_SETTINGS_INI="$BIN_DIR/update-settings.ini"
+        if [[ ! -f "$UPDATE_SETTINGS_INI" ]]; then
+            echo "Error: update-settings.ini not found at $UPDATE_SETTINGS_INI"
+            exit 1
+        fi
+        MAR_CHANNEL_ID=$(grep '^ACCEPTED_MAR_CHANNEL_IDS=' "$UPDATE_SETTINGS_INI" | head -1 | cut -d= -f2-)
+        ;;
+esac
 
 # --- Determine package file ---
 case "$TARGET" in
@@ -139,7 +153,6 @@ case "$TARGET" in
 esac
 
 MOZ_PRODUCT_VERSION=$(grep '^Version=' "$APPLICATION_INI" | head -1 | cut -d= -f2-)
-MAR_CHANNEL_ID=$(grep '^ACCEPTED_MAR_CHANNEL_IDS=' "$UPDATE_SETTINGS_INI" | head -1 | cut -d= -f2-)
 
 if [[ -z "$MOZ_PRODUCT_VERSION" ]]; then
     echo "Error: failed to read Version from $APPLICATION_INI"
@@ -147,7 +160,7 @@ if [[ -z "$MOZ_PRODUCT_VERSION" ]]; then
 fi
 
 if [[ -z "$MAR_CHANNEL_ID" ]]; then
-    echo "Error: failed to read ACCEPTED_MAR_CHANNEL_IDS from $UPDATE_SETTINGS_INI"
+    echo "Error: failed to determine the MAR channel ID"
     exit 1
 fi
 
