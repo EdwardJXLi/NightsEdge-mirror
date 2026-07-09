@@ -1,0 +1,55 @@
+--- a/browser/locales/en-US/browser/aboutDialog.ftl
++++ b/browser/locales/en-US/browser/aboutDialog.ftl
+@@ -45,9 +45,9 @@
+ aboutdialog-update-checking-failed = Failed to check for updates.
+ settings-update-checking-failed =
+     .label = Failed to check for updates.
+-update-otherInstanceHandlingUpdates = { -brand-short-name } is being updated by another instance
++update-otherInstanceHandlingUpdates = NightsEdge is being updated by another instance
+ settings-update-other-instance-handling-updates =
+-    .label = { -brand-short-name } is being updated by another instance
++    .label = NightsEdge is being updated by another instance
+ 
+ ## Variables:
+ ##   $displayUrl (String): URL to page with download instructions. Example: www.mozilla.org/firefox/nightly/
+@@ -78,9 +78,9 @@
+ 
+ community-exp = <label data-l10n-name="community-exp-mozillaLink">{ -vendor-short-name }</label> is a <label data-l10n-name="community-exp-creditsLink">global community</label> working together to keep the Web open, public and accessible to all.
+ 
+-community-2 = { -brand-short-name } is designed by <label data-l10n-name="community-mozillaLink">{ -vendor-short-name }</label>, a <label data-l10n-name="community-creditsLink">global community</label> working together to keep the Web open, public and accessible to all.
++nightsedge-fork-desc = NightsEdge is a fork of Firefox maintained by <label data-l10n-name="nightsedge-github-link">RadioactiveHydra / EdwardJXLi</label>.
+ 
+-helpus = Want to help? <label data-l10n-name="helpus-donateLink">Make a donation</label> or <label data-l10n-name="helpus-getInvolvedLink">get involved!</label>
++community-2 = Firefox is designed by { -vendor-short-name }, a <label data-l10n-name="community-creditsLink">global community</label> working together to keep the Web open, public and accessible to all.
+ 
+ bottomLinks-license = Licensing Information
+ bottom-links-terms = Terms of Use
+--- a/browser/base/content/aboutDialog.xhtml
++++ b/browser/base/content/aboutDialog.xhtml
+@@ -14,7 +14,7 @@
+         data-l10n-id="aboutDialog-title"
+ #endif
+         role="dialog"
+-        aria-describedby="version distribution distributionId communityDesc contributeDesc trademark"
++        aria-describedby="version distribution distributionId nightsedgeForkDesc communityDesc trademark"
+         >
+ #ifdef XP_MACOSX
+ #include macWindow.inc.xhtml
+@@ -124,14 +124,12 @@
+               <label is="text-link" useoriginprincipal="true" href="about:credits" data-l10n-name="community-exp-creditsLink"/>
+             </description>
+           </vbox>
++          <description class="text-blurb" id="nightsedgeForkDesc" data-l10n-id="nightsedge-fork-desc">
++            <label is="text-link" href="https://github.com/EdwardJXLi" data-l10n-name="nightsedge-github-link"/>
++          </description>
+           <description class="text-blurb" id="communityDesc" data-l10n-id="community-2">
+-            <label is="text-link" href="https://www.mozilla.org/?utm_source=firefox-browser&#38;utm_medium=firefox-desktop&#38;utm_campaign=about-dialog" data-l10n-name="community-mozillaLink"/>
+             <label is="text-link" useoriginprincipal="true" href="about:credits" data-l10n-name="community-creditsLink"/>
+           </description>
+-          <description class="text-blurb" id="contributeDesc" data-l10n-id="helpus">
+-            <label is="text-link" href="https://foundation.mozilla.org/?form=firefox-about" data-l10n-name="helpus-donateLink"/>
+-            <label is="text-link" href="https://www.mozilla.org/contribute/?utm_source=firefox-browser&#38;utm_medium=firefox-desktop&#38;utm_campaign=about-dialog" data-l10n-name="helpus-getInvolvedLink"/>
+-          </description>
+         </vbox>
+       </vbox>
+     </hbox>
