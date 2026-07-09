@@ -129,4 +129,3 @@ steps:
         - artifacts/linux-aarch64/mar/*.xml
     when:
       - event: tag
-      - event: manual
