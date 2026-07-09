@@ -176,13 +176,6 @@ echo "==> Starting build..."
 echo "==> Packaging..."
 ./mach package
 
-# The NSIS installer is a separate target from `mach package`; bootstrap
-# already provisions NSIS/7zz/UPX into ~/.mozbuild for this to run on Linux.
-if [[ "$TARGET" == "windows-x86_64" ]]; then
-    echo "==> Building NSIS installer..."
-    ./mach build installer
-fi
-
 if [[ "$SCCACHE_ENABLED" == "1" ]]; then
     echo "==> sccache stats"
     "$SCCACHE_BIN" --show-stats || true

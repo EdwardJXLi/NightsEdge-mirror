@@ -64,18 +64,15 @@ FINAL_PACKAGE="$ARTIFACT_DIR/${ARTIFACT_PREFIX}.${PACKAGE_SUFFIX}"
 cp "$PACKAGE" "$FINAL_PACKAGE"
 echo "==> Final package: $FINAL_PACKAGE"
 
-# Windows builds also produce an NSIS installer under dist/install/sea/.
+# mach package emits the NSIS installer at dist/*.installer.exe
 if [[ "$TARGET" == "windows-x86_64" ]]; then
-    INSTALLER=""
-    if [[ -d "$OBJ_DIR/dist/install/sea" ]]; then
-        INSTALLER="$(find "$OBJ_DIR/dist/install/sea" -maxdepth 1 -type f -name '*.installer.exe' | head -1)"
-    fi
+    INSTALLER="$(find "$OBJ_DIR/dist" -maxdepth 1 -type f -name '*.installer.exe' | head -1)"
     if [[ -n "$INSTALLER" ]]; then
         FINAL_INSTALLER="$ARTIFACT_DIR/${ARTIFACT_PREFIX}.installer.exe"
         cp "$INSTALLER" "$FINAL_INSTALLER"
         echo "==> Staged installer: $FINAL_INSTALLER"
     else
-        echo "==> No installer .exe found in $OBJ_DIR/dist/install/sea (zip-only build)"
+        echo "==> No installer .exe found in $OBJ_DIR/dist (zip-only build)"
     fi
 fi
 
