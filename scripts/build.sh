@@ -151,23 +151,40 @@ if [[ -n "$RUST_TARGET" ]]; then
     rustup target add --toolchain "$RUST_VERSION" "$RUST_TARGET"
 fi
 
-# Apple purged the CLT pkg this release pins, breaking configure's SDK
-# bootstrap. Fetch a live pkg ourselves and pass it in via MACOS_SDK_DIR.
-MACOS_SDK_VERSION="26.5"
-MACOS_SDK_URL="https://swcdn.apple.com/content/downloads/09/08/047-91568-A_Y1CFZWQCD4/4xekpyz43i26dbp4enxfro8eb1q7wiujh5/CLTools_macOSNMOS_SDK.pkg"
-MACOS_SDK_SHA512="5db8b5a06a489a7d3ec587ebb7e01be55163128029923fc24edcad47faecd67830193c0d91e2643ee0e92f2ccca37adf20e4c42cf8de5784666f8663638b5cc5"
-
+# HACK: Apple purges old CLT pkgs and release tags keep pinning the dead url.
+# Scrape the pin from the tree and retry through wayback when Apple 403s.
 if [[ "$TARGET" == macos-* ]]; then
-    SDK_DIR="$HOME/.mozbuild/MacOSX${MACOS_SDK_VERSION}.sdk"
-    if [[ ! -d "$SDK_DIR" ]]; then
-        echo "==> Fetching macOS $MACOS_SDK_VERSION SDK from Apple CDN..."
+    read -r SDK_URL SDK_SHA512 SDK_PREFIX < <(
+        python3 - "$SOURCE_DIR/taskcluster/kinds/toolchain/macos-sdk.yml" <<'EOF'
+import re, sys
+
+sdks = []
+for m in re.finditer(r"^macosx64-sdk-([\d.]+):(?:\n[ \t].*)*", open(sys.argv[1]).read(), re.M):
+    args = re.search(r"arguments:\n((?:[ \t]+- .+\n)+)", m.group(0))
+    sdks.append(([int(x) for x in m.group(1).split(".")], re.findall(r"- (.+)", args.group(1))))
+print(*max(sdks)[1][:3])
+EOF
+    )
+
+    wayback_url() {
+        python3 -c 'import json, sys, urllib.parse, urllib.request
+url = sys.argv[1]
+api = "https://archive.org/wayback/available?url=" + urllib.parse.quote(url, safe="")
+snap = json.load(urllib.request.urlopen(api))["archived_snapshots"]["closest"]
+print("https://web.archive.org/web/" + snap["timestamp"] + "id_/" + url)' "$1"
+    }
+
+    fetch_sdk() {
         rm -rf "$SDK_DIR.tmp"
         PYTHONPATH="$SOURCE_DIR/python/mozbuild" python3 \
             "$SOURCE_DIR/taskcluster/scripts/misc/unpack-sdk.py" \
-            "$MACOS_SDK_URL" \
-            "$MACOS_SDK_SHA512" \
-            "Library/Developer/CommandLineTools/SDKs/MacOSX${MACOS_SDK_VERSION}.sdk" \
-            "$SDK_DIR.tmp"
+            "$1" "$SDK_SHA512" "$SDK_PREFIX" "$SDK_DIR.tmp"
+    }
+
+    SDK_DIR="$HOME/.mozbuild/$(basename "$SDK_PREFIX")"
+    if [[ ! -d "$SDK_DIR" ]]; then
+        echo "==> Fetching $(basename "$SDK_PREFIX")..."
+        fetch_sdk "$SDK_URL" || fetch_sdk "$(wayback_url "$SDK_URL")"
         mv "$SDK_DIR.tmp" "$SDK_DIR"
     fi
     export MACOS_SDK_DIR="$SDK_DIR"
