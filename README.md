@@ -12,13 +12,10 @@ Custom Firefox build with nightly branding, all telemetry stripped, using a cust
 | `macos-x86_64` | macOS Intel cross-compile | `linux/amd64` |
 | `macos-aarch64` | macOS Apple Silicon cross-compile | `linux/amd64` |
 
-macOS builds are cross-compiled from Linux the same way Mozilla and LibreWolf
-produce theirs: `--enable-bootstrap` provisions clang/ld64.lld and downloads
-the macOS SDK from Apple's public Command Line Tools package, and `mach
-package` assembles the DMG with libdmg-hfsplus. The resulting apps are not
+macOS builds are cross-compiled from Linux: `--enable-bootstrap` provisions
+the toolchain and SDK, and `mach package` assembles the DMG. The apps are not
 Apple-signed/notarized; first launch needs right-click Open (or
-`xattr -cr NightsEdge.app`). Windows support lives on the `windows-build`
-branch.
+`xattr -cr NightsEdge.app`).
 
 ## How It Works
 
