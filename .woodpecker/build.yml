@@ -129,3 +129,32 @@ steps:
         - artifacts/linux-aarch64/mar/*.xml
     when:
       - event: tag
+
+  # Manual-run convenience mirror for local testing
+  - name: upload-artifacts-s3
+    image: ubuntu:24.04
+    environment:
+      AWS_ACCESS_KEY_ID:
+        from_secret: AWS_ACCESS_KEY_ID
+      AWS_SECRET_ACCESS_KEY:
+        from_secret: AWS_SECRET_ACCESS_KEY
+      SCCACHE_BUCKET: nightsedge-cache
+      SCCACHE_ENDPOINT: s3.hydranet.dev
+    commands:
+      - 'echo "==> Runner architecture: $(uname -m)"'
+      - apt-get update && apt-get install -y curl zip
+      - curl -fsSL -o /usr/local/bin/mc https://dl.min.io/client/mc/release/linux-amd64/mc && chmod +x /usr/local/bin/mc
+      - mc alias set cache "https://$SCCACHE_ENDPOINT" "$AWS_ACCESS_KEY_ID" "$AWS_SECRET_ACCESS_KEY"
+      - |
+        if [ -z "$(find artifacts -type f 2>/dev/null)" ]; then
+          echo "==> No artifacts found to upload, skipping"
+          exit 0
+        fi
+        SHORT_SHA=$${CI_COMMIT_SHA:0:8}
+        RUN_ID=$(cat /proc/sys/kernel/random/uuid)
+        ZIP_NAME="nightsedge-artifacts-$CI_PIPELINE_NUMBER-$SHORT_SHA-$RUN_ID.zip"
+        zip -r "/tmp/$ZIP_NAME" artifacts
+        mc cp "/tmp/$ZIP_NAME" "cache/$SCCACHE_BUCKET/artifacts/$ZIP_NAME"
+        echo "==> Uploaded s3://$SCCACHE_BUCKET/artifacts/$ZIP_NAME"
+    when:
+      - event: manual
