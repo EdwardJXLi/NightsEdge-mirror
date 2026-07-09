@@ -7,7 +7,7 @@ REPO_ROOT="$(dirname "$SCRIPT_DIR")"
 TARGET="${1:-}"
 if [[ -z "$TARGET" ]]; then
     echo "Usage: stage-package.sh <target>"
-    echo "Targets: linux-x86_64, linux-aarch64, windows-x86_64"
+    echo "Targets: linux-x86_64, linux-aarch64, windows-x86_64, macos-x86_64, macos-aarch64"
     exit 1
 fi
 
@@ -28,6 +28,14 @@ case "$TARGET" in
         OBJ_PATTERN="obj-x86_64-pc-windows-msvc"
         ARTIFACT_DIR="$REPO_ROOT/artifacts/windows-x86_64"
         ;;
+    macos-x86_64)
+        OBJ_PATTERN="obj-x86_64-apple-darwin"
+        ARTIFACT_DIR="$REPO_ROOT/artifacts/macos-x86_64"
+        ;;
+    macos-aarch64)
+        OBJ_PATTERN="obj-aarch64-apple-darwin"
+        ARTIFACT_DIR="$REPO_ROOT/artifacts/macos-aarch64"
+        ;;
     *)
         echo "Error: unknown target $TARGET"
         exit 1
@@ -42,7 +50,7 @@ if [[ -z "$OBJ_DIR" ]]; then
     exit 1
 fi
 
-PACKAGE="$(find "$OBJ_DIR/dist" -maxdepth 1 -type f \( -name '*.tar.xz' -o -name '*.tar.bz2' -o -name '*.zip' \) | head -1)"
+PACKAGE="$(find "$OBJ_DIR/dist" -maxdepth 1 -type f \( -name '*.tar.xz' -o -name '*.tar.bz2' -o -name '*.zip' -o -name '*.dmg' \) | head -1)"
 if [[ -z "$PACKAGE" ]]; then
     echo "Error: no package archive found in $OBJ_DIR/dist"
     exit 1
@@ -52,6 +60,7 @@ case "$PACKAGE" in
     *.tar.xz) PACKAGE_SUFFIX="tar.xz" ;;
     *.tar.bz2) PACKAGE_SUFFIX="tar.bz2" ;;
     *.zip) PACKAGE_SUFFIX="zip" ;;
+    *.dmg) PACKAGE_SUFFIX="dmg" ;;
     *)
         echo "Error: unsupported package format: $PACKAGE"
         exit 1

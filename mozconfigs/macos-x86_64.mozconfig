@@ -1,0 +1,15 @@
+# NightsEdge — macOS x86_64 (Intel) cross-compile from Linux
+. "$topsrcdir/../mozconfigs/common.mozconfig"
+
+ac_add_options --target=x86_64-apple-darwin
+
+# Bootstrap provisions the full cross toolchain into ~/.mozbuild: clang (which
+# also provides the ld64.lld linker and dsymutil), cbindgen, node, and the
+# macOS SDK. The taskcluster SDK artifact is private, so configure falls back
+# to running taskcluster/scripts/misc/unpack-sdk.py locally, downloading
+# Apple's freely available Command Line Tools package from swcdn.apple.com.
+# `mach package` likewise bootstraps the libdmg-hfsplus/hfsplus tools it needs
+# to assemble the DMG on a Linux host (see make_dmg.py).
+ac_add_options --enable-bootstrap
+
+mk_add_options MOZ_OBJDIR=@TOPSRCDIR@/obj-x86_64-apple-darwin

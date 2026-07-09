@@ -10,7 +10,7 @@ UPDATE_URL_BASE="${2:-https://updates.example.com}"
 
 if [[ -z "$TARGET" ]]; then
     echo "Usage: generate-mar.sh <target> [update-url-base]"
-    echo "Targets: linux-x86_64, linux-aarch64, windows-x86_64"
+    echo "Targets: linux-x86_64, linux-aarch64, windows-x86_64, macos-x86_64, macos-aarch64"
     exit 1
 fi
 
@@ -23,6 +23,8 @@ case "$TARGET" in
     linux-x86_64)   OBJ_PATTERN="obj-x86_64-pc-linux-gnu" ;;
     linux-aarch64)  OBJ_PATTERN="obj-aarch64-unknown-linux-gnu" ;;
     windows-x86_64) OBJ_PATTERN="obj-x86_64-pc-windows-msvc" ;;
+    macos-x86_64)   OBJ_PATTERN="obj-x86_64-apple-darwin" ;;
+    macos-aarch64)  OBJ_PATTERN="obj-aarch64-apple-darwin" ;;
     *)              OBJ_PATTERN="obj-*" ;;
 esac
 OBJ_DIR=$(find "$SOURCE_DIR" -maxdepth 1 -name "$OBJ_PATTERN" -type d | head -1)
@@ -72,6 +74,9 @@ case "$TARGET" in
             PACKAGE=$(find "$DIST_DIR" -maxdepth 1 -type f -name "*.zip" | head -1)
         fi
         ;;
+    macos-x86_64|macos-aarch64)
+        PACKAGE=$(find "$DIST_DIR" -maxdepth 1 -type f -name "*.dmg" | head -1)
+        ;;
     *)
         echo "Error: unknown target $TARGET"
         exit 1
@@ -115,6 +120,20 @@ case "$TARGET" in
         if [[ -z "$MAR_SOURCE_DIR" ]]; then
             echo "Error: no application directory found inside $PACKAGE"
             exit 1
+        fi
+        ;;
+    macos-x86_64|macos-aarch64)
+        # Extracting the DMG on Linux would need HFS tooling; instead use the
+        # .app bundle `mach package` staged under dist/<pkgdir>/ (that copy —
+        # unlike dist/*.app — carries the generated precomplete file).
+        MAR_SOURCE_DIR=$(find "$DIST_DIR" -mindepth 2 -maxdepth 2 -type d -name '*.app' | head -1)
+        if [[ -z "$MAR_SOURCE_DIR" ]]; then
+            echo "Error: no staged .app bundle found under $DIST_DIR"
+            exit 1
+        fi
+        if [[ ! -f "$MAR_SOURCE_DIR/Contents/Resources/precomplete" ]]; then
+            echo "WARNING: $MAR_SOURCE_DIR has no Contents/Resources/precomplete;"
+            echo "         the updater will not be able to remove orphaned files."
         fi
         ;;
 esac

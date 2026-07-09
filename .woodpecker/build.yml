@@ -164,6 +164,102 @@ steps:
         bash scripts/generate-mar.sh windows-x86_64 "$UPDATE_URL_BASE"
       - bash scripts/stage-package.sh windows-x86_64
 
+  # --- macOS x86_64 cross build ---
+
+  - name: build-macos-x86_64
+    image: ubuntu:24.04
+    environment:
+      BUILD_MACOS_X86_64: "true"
+      SCCACHE_VERSION: "0.16.0"
+      SCCACHE_DISABLE: 0
+      AWS_ACCESS_KEY_ID:
+        from_secret: AWS_ACCESS_KEY_ID
+      AWS_SECRET_ACCESS_KEY:
+        from_secret: AWS_SECRET_ACCESS_KEY
+      SCCACHE_BUCKET: nightsedge-cache
+      SCCACHE_ENDPOINT: s3.hydranet.dev
+      SCCACHE_REGION: auto
+      SCCACHE_S3_USE_SSL: "true"
+    commands:
+      - 'echo "==> Runner architecture: $(uname -m)"'
+      # rsync: DMG staging in mozpack/dmg.py
+      - apt-get update && apt-get install -y python3 git curl mercurial ca-certificates tar xz-utils bzip2 rsync
+      - |
+        curl -fsSL -o /tmp/sccache.tar.gz "https://github.com/mozilla/sccache/releases/download/v$SCCACHE_VERSION/sccache-v$SCCACHE_VERSION-x86_64-unknown-linux-musl.tar.gz"
+        tar -xzf /tmp/sccache.tar.gz -C /tmp
+        install -m 0755 "/tmp/sccache-v$SCCACHE_VERSION-x86_64-unknown-linux-musl/sccache" /usr/local/bin/sccache
+        sccache --version
+      - |
+        if [ "$${BUILD_MACOS_X86_64:-true}" != "true" ]; then
+          echo "==> Skipping macos-x86_64 build (BUILD_MACOS_X86_64=$${BUILD_MACOS_X86_64:-unset})"
+          exit 0
+        fi
+        bash scripts/build.sh macos-x86_64
+
+  - name: package-macos-x86_64
+    image: ubuntu:24.04
+    environment:
+      UPDATE_URL_BASE: https://nightsedge.hydranet.dev
+    commands:
+      - 'echo "==> Runner architecture: $(uname -m)"'
+      - apt-get update && apt-get install -y xz-utils zip unzip
+      - |
+        OBJ_DIR="$(find mozilla-release -maxdepth 1 -name 'obj-x86_64-apple-darwin' -type d | head -1)"
+        if [ -z "$OBJ_DIR" ]; then
+          echo "==> Skipping macos-x86_64 package step because no build output was found"
+          exit 0
+        fi
+        bash scripts/generate-mar.sh macos-x86_64 "$UPDATE_URL_BASE"
+      - bash scripts/stage-package.sh macos-x86_64
+
+  # --- macOS aarch64 cross build ---
+
+  - name: build-macos-aarch64
+    image: ubuntu:24.04
+    environment:
+      BUILD_MACOS_AARCH64: "true"
+      SCCACHE_VERSION: "0.16.0"
+      SCCACHE_DISABLE: 0
+      AWS_ACCESS_KEY_ID:
+        from_secret: AWS_ACCESS_KEY_ID
+      AWS_SECRET_ACCESS_KEY:
+        from_secret: AWS_SECRET_ACCESS_KEY
+      SCCACHE_BUCKET: nightsedge-cache
+      SCCACHE_ENDPOINT: s3.hydranet.dev
+      SCCACHE_REGION: auto
+      SCCACHE_S3_USE_SSL: "true"
+    commands:
+      - 'echo "==> Runner architecture: $(uname -m)"'
+      # rsync: DMG staging in mozpack/dmg.py
+      - apt-get update && apt-get install -y python3 git curl mercurial ca-certificates tar xz-utils bzip2 rsync
+      - |
+        curl -fsSL -o /tmp/sccache.tar.gz "https://github.com/mozilla/sccache/releases/download/v$SCCACHE_VERSION/sccache-v$SCCACHE_VERSION-x86_64-unknown-linux-musl.tar.gz"
+        tar -xzf /tmp/sccache.tar.gz -C /tmp
+        install -m 0755 "/tmp/sccache-v$SCCACHE_VERSION-x86_64-unknown-linux-musl/sccache" /usr/local/bin/sccache
+        sccache --version
+      - |
+        if [ "$${BUILD_MACOS_AARCH64:-true}" != "true" ]; then
+          echo "==> Skipping macos-aarch64 build (BUILD_MACOS_AARCH64=$${BUILD_MACOS_AARCH64:-unset})"
+          exit 0
+        fi
+        bash scripts/build.sh macos-aarch64
+
+  - name: package-macos-aarch64
+    image: ubuntu:24.04
+    environment:
+      UPDATE_URL_BASE: https://nightsedge.hydranet.dev
+    commands:
+      - 'echo "==> Runner architecture: $(uname -m)"'
+      - apt-get update && apt-get install -y xz-utils zip unzip
+      - |
+        OBJ_DIR="$(find mozilla-release -maxdepth 1 -name 'obj-aarch64-apple-darwin' -type d | head -1)"
+        if [ -z "$OBJ_DIR" ]; then
+          echo "==> Skipping macos-aarch64 package step because no build output was found"
+          exit 0
+        fi
+        bash scripts/generate-mar.sh macos-aarch64 "$UPDATE_URL_BASE"
+      - bash scripts/stage-package.sh macos-aarch64
+
   # --- upload all architectures ---
 
   - name: upload-forgejo-release
@@ -186,6 +282,14 @@ steps:
         - artifacts/windows-x86_64/*.txt
         - artifacts/windows-x86_64/mar/*.mar
         - artifacts/windows-x86_64/mar/*.xml
+        - artifacts/macos-x86_64/*.dmg
+        - artifacts/macos-x86_64/*.txt
+        - artifacts/macos-x86_64/mar/*.mar
+        - artifacts/macos-x86_64/mar/*.xml
+        - artifacts/macos-aarch64/*.dmg
+        - artifacts/macos-aarch64/*.txt
+        - artifacts/macos-aarch64/mar/*.mar
+        - artifacts/macos-aarch64/mar/*.xml
     when:
       - event: tag
 

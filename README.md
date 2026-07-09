@@ -9,8 +9,16 @@ Custom Firefox build with nightly branding, all telemetry stripped, using a cust
 | `linux-x86_64` | Linux x64 native | `linux/amd64` |
 | `linux-aarch64` | Linux ARM cross-compile | `linux/amd64` |
 | `windows-x86_64` | Windows x64 cross-compile (clang-cl) | `linux/amd64` |
+| `macos-x86_64` | macOS Intel cross-compile | `linux/amd64` |
+| `macos-aarch64` | macOS Apple Silicon cross-compile | `linux/amd64` |
 
-macOS is not currently supported.
+macOS builds are cross-compiled from Linux the same way Mozilla and LibreWolf
+produce theirs: `--enable-bootstrap` provisions clang/ld64.lld and downloads
+the macOS SDK from Apple's public Command Line Tools package, and `mach
+package` assembles the DMG with libdmg-hfsplus. The resulting apps are not
+Apple-signed/notarized; first launch needs right-click Open (or
+`xattr -cr NightsEdge.app`). Windows support lives on the `windows-build`
+branch.
 
 ## How It Works
 
@@ -146,6 +154,8 @@ Set these pipeline environment variables on manual/tag runs when you want to adj
 - `BUILD_X86_64=true|false` controls whether the `linux-x86_64` build and package steps run
 - `BUILD_AARCH64=true|false` controls whether the `linux-aarch64` build and package steps run
 - `BUILD_WINDOWS_X86_64=true|false` controls whether the `windows-x86_64` build and package steps run
+- `BUILD_MACOS_X86_64=true|false` controls whether the `macos-x86_64` build and package steps run
+- `BUILD_MACOS_AARCH64=true|false` controls whether the `macos-aarch64` build and package steps run
 
 ## Update Server
 

@@ -8,7 +8,7 @@ REPO_ROOT="$(dirname "$SCRIPT_DIR")"
 TARGET="${1:-}"
 if [[ -z "$TARGET" ]]; then
     echo "Usage: build.sh <target>"
-    echo "Targets: linux-x86_64, linux-aarch64, windows-x86_64"
+    echo "Targets: linux-x86_64, linux-aarch64, windows-x86_64, macos-x86_64, macos-aarch64"
     exit 1
 fi
 
@@ -16,8 +16,10 @@ fi
 RUST_TARGET=""
 case "$TARGET" in
     linux-x86_64) ;;
-    linux-aarch64)  RUST_TARGET="aarch64-unknown-linux-gnu" ;;
+    linux-aarch64) RUST_TARGET="aarch64-unknown-linux-gnu" ;;
     windows-x86_64) RUST_TARGET="x86_64-pc-windows-msvc" ;;
+    macos-x86_64)  RUST_TARGET="x86_64-apple-darwin" ;;
+    macos-aarch64) RUST_TARGET="aarch64-apple-darwin" ;;
     *)
         echo "Error: unsupported target '$TARGET'"
         exit 1
