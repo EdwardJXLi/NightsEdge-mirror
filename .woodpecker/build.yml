@@ -152,7 +152,7 @@ steps:
         fi
         ZIP_NAME="nightsedge-artifacts-$CI_PIPELINE_NUMBER.zip"
         zip -r "/tmp/$ZIP_NAME" artifacts
-        mc cp "/tmp/$ZIP_NAME" "cache/$SCCACHE_BUCKET/artifacts/$ZIP_NAME"
-        echo "==> Uploaded s3://$SCCACHE_BUCKET/artifacts/$ZIP_NAME"
+        mc cp "/tmp/$ZIP_NAME" "cache/$SCCACHE_BUCKET/.artifacts/$ZIP_NAME"
+        echo "==> Uploaded s3://$SCCACHE_BUCKET/.artifacts/$ZIP_NAME"
     when:
       - event: manual
