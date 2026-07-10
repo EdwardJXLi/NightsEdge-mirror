@@ -166,12 +166,18 @@ print(*max(sdks)[1][:3])
 EOF
     )
 
+    # The availability API is flaky and can return an archived 403 page; query
+    # the CDX index for the newest status-200 capture and fail loud on a miss.
     wayback_url() {
         python3 -c 'import json, sys, urllib.parse, urllib.request
 url = sys.argv[1]
-api = "https://archive.org/wayback/available?url=" + urllib.parse.quote(url, safe="")
-snap = json.load(urllib.request.urlopen(api))["archived_snapshots"]["closest"]
-print("https://web.archive.org/web/" + snap["timestamp"] + "id_/" + url)' "$1"
+api = ("https://web.archive.org/cdx/search/cdx?url="
+       + urllib.parse.quote(url, safe="")
+       + "&output=json&filter=statuscode:200&limit=-1")
+rows = json.load(urllib.request.urlopen(api, timeout=60))
+if len(rows) < 2:
+    sys.exit("no archived status-200 snapshot for " + url)
+print("https://web.archive.org/web/" + rows[1][1] + "id_/" + url)' "$1"
     }
 
     fetch_sdk() {
@@ -184,7 +190,12 @@ print("https://web.archive.org/web/" + snap["timestamp"] + "id_/" + url)' "$1"
     SDK_DIR="$HOME/.mozbuild/$(basename "$SDK_PREFIX")"
     if [[ ! -d "$SDK_DIR" ]]; then
         echo "==> Fetching $(basename "$SDK_PREFIX")..."
-        fetch_sdk "$SDK_URL" || fetch_sdk "$(wayback_url "$SDK_URL")"
+        if ! fetch_sdk "$SDK_URL"; then
+            echo "    Apple returned an error; retrying via Wayback Machine..."
+            WB_URL="$(wayback_url "$SDK_URL")"
+            echo "    Wayback: $WB_URL"
+            fetch_sdk "$WB_URL"
+        fi
         mv "$SDK_DIR.tmp" "$SDK_DIR"
     fi
     export MACOS_SDK_DIR="$SDK_DIR"
