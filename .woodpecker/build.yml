@@ -150,9 +150,7 @@ steps:
           echo "==> No artifacts found to upload, skipping"
           exit 0
         fi
-        SHORT_SHA=$(echo "$CI_COMMIT_SHA" | cut -c1-8)
-        RUN_ID=$(cat /proc/sys/kernel/random/uuid)
-        ZIP_NAME="nightsedge-artifacts-$CI_PIPELINE_NUMBER-$SHORT_SHA-$RUN_ID.zip"
+        ZIP_NAME="nightsedge-artifacts-$CI_PIPELINE_NUMBER.zip"
         zip -r "/tmp/$ZIP_NAME" artifacts
         mc cp "/tmp/$ZIP_NAME" "cache/$SCCACHE_BUCKET/artifacts/$ZIP_NAME"
         echo "==> Uploaded s3://$SCCACHE_BUCKET/artifacts/$ZIP_NAME"
