@@ -1,0 +1,36 @@
+diff --git a/browser/branding/nightly/configure.sh b/browser/branding/nightly/configure.sh
+index 7c7f2cf..c2a5f6e 100644
+--- a/browser/branding/nightly/configure.sh
++++ b/browser/branding/nightly/configure.sh
+@@ -2,5 +2,5 @@
+ # License, v. 2.0. If a copy of the MPL was not distributed with this
+ # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ 
+-MOZ_APP_DISPLAYNAME="Firefox Nightly"
++MOZ_APP_DISPLAYNAME="Firefox Nightly (NightsEdge)"
+ MOZ_MACBUNDLE_ID=nightly
+diff --git a/browser/branding/nightly/locales/en-US/brand.ftl b/browser/branding/nightly/locales/en-US/brand.ftl
+index 86770b0..004f63d 100644
+--- a/browser/branding/nightly/locales/en-US/brand.ftl
++++ b/browser/branding/nightly/locales/en-US/brand.ftl
+@@ -18,8 +18,8 @@
+ 
+ -brand-shorter-name = Nightly
+ -brand-short-name = Nightly
+--brand-shortcut-name = Firefox Nightly
+--brand-full-name = Firefox Nightly
++-brand-shortcut-name = Firefox Nightly (NightsEdge)
++-brand-full-name = Firefox Nightly (NightsEdge)
+ # This brand name can be used in messages where the product name needs to
+ # remain unchanged across different versions (Nightly, Beta, etc.).
+ -brand-product-name = Firefox
+diff --git a/browser/branding/nightly/locales/en-US/brand.properties b/browser/branding/nightly/locales/en-US/brand.properties
+index e84fdd0..dbcb524 100644
+--- a/browser/branding/nightly/locales/en-US/brand.properties
++++ b/browser/branding/nightly/locales/en-US/brand.properties
+@@ -4,4 +4,4 @@
+ 
+ brandShorterName=Nightly
+ brandShortName=Nightly
+-brandFullName=Firefox Nightly
++brandFullName=Firefox Nightly (NightsEdge)

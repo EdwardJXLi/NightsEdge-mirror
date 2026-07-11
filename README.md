@@ -19,6 +19,10 @@ kills binaries whose build-time signatures went stale during packaging. The
 apps are not Apple-signed/notarized; first launch needs right-click Open (or
 `xattr -cr NightsEdge.app`).
 
+Desktop builds display as "Firefox Nightly (NightsEdge)" in the OS via
+`patches/branding-displayname.patch`; in-app strings keep the short
+"Nightly" brand.
+
 ## How It Works
 
 1. `FIREFOX_VERSION` pins a specific Firefox hg revision, version, and upstream track
