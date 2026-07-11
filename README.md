@@ -13,8 +13,10 @@ Custom Firefox build with nightly branding, all telemetry stripped, using a cust
 | `macos-aarch64` | macOS Apple Silicon cross-compile | `linux/amd64` |
 
 macOS builds are cross-compiled from Linux: `--enable-bootstrap` provisions
-the toolchain and SDK, and `mach package` assembles the DMG. The apps are not
-Apple-signed/notarized; first launch needs right-click Open (or
+the toolchain and SDK, and `mach package` assembles the DMG. The staged .app
+is then ad-hoc re-signed with `rcodesign` and the DMG rebuilt — Apple Silicon
+kills binaries whose build-time signatures went stale during packaging. The
+apps are not Apple-signed/notarized; first launch needs right-click Open (or
 `xattr -cr NightsEdge.app`).
 
 ## How It Works

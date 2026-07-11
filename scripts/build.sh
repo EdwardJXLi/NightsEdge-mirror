@@ -230,6 +230,38 @@ echo "==> Starting build..."
 echo "==> Packaging..."
 ./mach package
 
+# Apple Silicon kills Mach-Os whose linker ad-hoc signatures went stale during
+# packaging; re-sign the staged .app and rebuild the DMG from it.
+if [[ "$TARGET" == macos-* ]]; then
+    RCODESIGN_VERSION="0.29.0"
+    RCODESIGN="$HOME/.mozbuild/rcodesign-$RCODESIGN_VERSION/rcodesign"
+    if [[ ! -x "$RCODESIGN" ]]; then
+        echo "==> Fetching rcodesign $RCODESIGN_VERSION..."
+        mkdir -p "$(dirname "$RCODESIGN")"
+        curl -fsSL "https://github.com/indygreg/apple-platform-rs/releases/download/apple-codesign%2F${RCODESIGN_VERSION}/apple-codesign-${RCODESIGN_VERSION}-x86_64-unknown-linux-musl.tar.gz" \
+            | tar -xz --strip-components=1 -C "$(dirname "$RCODESIGN")"
+    fi
+
+    case "$TARGET" in
+        macos-x86_64)  OBJ_DIR="$SOURCE_DIR/obj-x86_64-apple-darwin" ;;
+        macos-aarch64) OBJ_DIR="$SOURCE_DIR/obj-aarch64-apple-darwin" ;;
+    esac
+    STAGED_APP="$(find "$OBJ_DIR/dist" -mindepth 2 -maxdepth 2 -type d -name '*.app' | head -1)"
+    if [[ -z "$STAGED_APP" ]]; then
+        echo "Error: no staged .app found under $OBJ_DIR/dist" >&2
+        exit 1
+    fi
+
+    echo "==> Ad-hoc signing $(basename "$STAGED_APP")..."
+    "$RCODESIGN" sign "$STAGED_APP"
+
+    echo "==> Rebuilding DMG from signed app..."
+    APP_TAR="$OBJ_DIR/signed-app.tar.gz"
+    tar -czf "$APP_TAR" -C "$(dirname "$STAGED_APP")" "$(basename "$STAGED_APP")"
+    ./mach repackage dmg -i "$APP_TAR" -o "$OBJ_DIR/dist/$(cat "$OBJ_DIR/dist/package_name.txt")"
+    rm -f "$APP_TAR"
+fi
+
 if [[ "$SCCACHE_ENABLED" == "1" ]]; then
     echo "==> sccache stats"
     "$SCCACHE_BIN" --show-stats || true
