@@ -1,0 +1,14 @@
+diff --git a/toolkit/mozapps/installer/upload-files.mk b/toolkit/mozapps/installer/upload-files.mk
+index 4103e5c..b858540 100644
+--- a/toolkit/mozapps/installer/upload-files.mk
++++ b/toolkit/mozapps/installer/upload-files.mk
+@@ -135,7 +135,8 @@ ifeq ($(MOZ_PKG_FORMAT),DMG)
+   MOZ_PKG_MAC_BACKGROUND=$(topsrcdir)/$(MOZ_BRANDING_DIRECTORY)/background.png
+   MOZ_PKG_MAC_ICON=$(topsrcdir)/$(MOZ_BRANDING_DIRECTORY)/disk.icns
++  # Hide the display name from shell status.
+   INNER_MAKE_PACKAGE = \
+-    $(call py_action,make_dmg, \
++    $(call py_action,make_dmg $(PACKAGE), \
+         $(if $(MOZ_PKG_MAC_DSSTORE),--dsstore '$(MOZ_PKG_MAC_DSSTORE)') \
+         $(if $(MOZ_PKG_MAC_BACKGROUND),--background '$(MOZ_PKG_MAC_BACKGROUND)') \
+         $(if $(MOZ_PKG_MAC_ICON),--icon '$(MOZ_PKG_MAC_ICON)') \
