@@ -14,4 +14,7 @@ ac_add_options --target=aarch64-apple-darwin
 # Apple-notarized, so first launch needs right-click Open (or xattr -cr).
 ac_add_options --enable-bootstrap
 
+# Own bundle id so LaunchServices doesn't collide with real Firefox Nightly
+ac_add_options --with-distribution-id=dev.hydranet
+
 mk_add_options MOZ_OBJDIR=@TOPSRCDIR@/obj-aarch64-apple-darwin

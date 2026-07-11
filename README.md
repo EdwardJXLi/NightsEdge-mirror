@@ -21,7 +21,8 @@ apps are not Apple-signed/notarized; first launch needs right-click Open (or
 
 Desktop builds display as "Firefox Nightly (NightsEdge)" in the OS via
 `patches/branding-displayname.patch`; in-app strings keep the short
-"Nightly" brand.
+"Nightly" brand. The macOS bundle id is `dev.hydranet.nightsedge`,
+distinct from real Firefox Nightly.
 
 ## How It Works
 

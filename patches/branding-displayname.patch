@@ -1,5 +1,5 @@
 diff --git a/browser/branding/nightly/configure.sh b/browser/branding/nightly/configure.sh
-index 7c7f2cf..c2a5f6e 100644
+index 7c7f2cf..df61118 100644
 --- a/browser/branding/nightly/configure.sh
 +++ b/browser/branding/nightly/configure.sh
 @@ -2,5 +2,5 @@
@@ -7,8 +7,9 @@ index 7c7f2cf..c2a5f6e 100644
  # file, You can obtain one at http://mozilla.org/MPL/2.0/.
  
 -MOZ_APP_DISPLAYNAME="Firefox Nightly"
+-MOZ_MACBUNDLE_ID=nightly
 +MOZ_APP_DISPLAYNAME="Firefox Nightly (NightsEdge)"
- MOZ_MACBUNDLE_ID=nightly
++MOZ_MACBUNDLE_ID=nightsedge
 diff --git a/browser/branding/nightly/locales/en-US/brand.ftl b/browser/branding/nightly/locales/en-US/brand.ftl
 index 86770b0..004f63d 100644
 --- a/browser/branding/nightly/locales/en-US/brand.ftl

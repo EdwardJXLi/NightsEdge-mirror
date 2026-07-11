@@ -12,4 +12,7 @@ ac_add_options --target=x86_64-apple-darwin
 # to assemble the DMG on a Linux host (see make_dmg.py).
 ac_add_options --enable-bootstrap
 
+# Own bundle id so LaunchServices doesn't collide with real Firefox Nightly
+ac_add_options --with-distribution-id=dev.hydranet
+
 mk_add_options MOZ_OBJDIR=@TOPSRCDIR@/obj-x86_64-apple-darwin
