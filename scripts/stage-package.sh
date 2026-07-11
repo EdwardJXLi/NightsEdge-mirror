@@ -50,11 +50,17 @@ if [[ -z "$OBJ_DIR" ]]; then
     exit 1
 fi
 
-PACKAGE="$(find "$OBJ_DIR/dist" -maxdepth 1 -type f \( -name '*.tar.xz' -o -name '*.tar.bz2' -o -name '*.zip' -o -name '*.dmg' \) | head -1)"
-if [[ -z "$PACKAGE" ]]; then
+# package_name.txt names the real package; dist also holds helper zips
+# (*.xpt_artifacts.zip, *.update_framework_artifacts.zip) a blind glob can grab.
+PACKAGE="$OBJ_DIR/dist/$(cat "$OBJ_DIR/dist/package_name.txt" 2>/dev/null || true)"
+if [[ ! -f "$PACKAGE" ]]; then
+    PACKAGE="$(find "$OBJ_DIR/dist" -maxdepth 1 -type f \( -name '*.tar.xz' -o -name '*.tar.bz2' -o -name '*.zip' -o -name '*.dmg' \) ! -name '*_artifacts.zip' | head -1)"
+fi
+if [[ -z "$PACKAGE" || ! -f "$PACKAGE" ]]; then
     echo "Error: no package archive found in $OBJ_DIR/dist"
     exit 1
 fi
+echo "==> Selected package: $PACKAGE"
 
 case "$PACKAGE" in
     *.tar.xz) PACKAGE_SUFFIX="tar.xz" ;;
