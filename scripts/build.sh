@@ -88,8 +88,11 @@ echo "hydra-${VERSION}" > "$SOURCE_DIR/browser/config/version_display.txt"
 
 # --- Step 5: Install custom prefs ---
 echo "==> Installing custom preferences..."
-PREFS_DIR="$SOURCE_DIR/browser/defaults/preferences"
+PREFS_DIR="$SOURCE_DIR/browser/app/profile"
 mkdir -p "$PREFS_DIR"
+# package-default-preferences.patch includes this source file at the end of
+# firefox.js. Preferences owned by Nightly branding are patched separately.
+rm -f "$PREFS_DIR/00-nightsedge.js"
 cp "$REPO_ROOT/prefs/nightsedge.js" "$PREFS_DIR/nightsedge.js"
 
 # --- Step 6: Install enterprise policies ---

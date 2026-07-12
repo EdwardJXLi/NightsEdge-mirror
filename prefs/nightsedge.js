@@ -1,5 +1,7 @@
 // NightsEdge — default preference overrides
-// Baked into the build via browser/defaults/preferences/
+// Included at the end of packaged firefox.js so these defaults load after
+// Firefox's application defaults. Nightly's update destinations are patched
+// directly in its branding preference file.
 
 // --- Telemetry & Data Collection ---
 pref("toolkit.telemetry.enabled", false);
@@ -50,8 +52,33 @@ pref("browser.discovery.enabled", false);
 pref("browser.newtabpage.activity-stream.asrouter.userprefs.cfr.addons", false);
 pref("browser.newtabpage.activity-stream.asrouter.userprefs.cfr.features", false);
 pref("browser.newtabpage.activity-stream.feeds.discoverystreamfeed", false);
+
+// --- Sponsored Content / Advertising ---
+// Disable the Recommended Stories / Popular Today surface as well as every
+// advertising path. The endpoint and placement overrides also prevent ad
+// requests if a feature rollout changes a higher-level UI default.
+pref("browser.newtabpage.activity-stream.feeds.section.topstories", false);
+pref("browser.newtabpage.activity-stream.feeds.system.topstories", false);
+pref("browser.newtabpage.activity-stream.discoverystream.enabled", false);
+pref("browser.newtabpage.activity-stream.discoverystream.sections.enabled", false);
+pref("browser.newtabpage.activity-stream.discoverystream.sections.cards.enabled", false);
 pref("browser.newtabpage.activity-stream.showSponsored", false);
 pref("browser.newtabpage.activity-stream.showSponsoredTopSites", false);
+pref("browser.newtabpage.activity-stream.system.showSponsored", false);
+pref("browser.newtabpage.activity-stream.discoverystream.sections.contextualAds.enabled", false);
+pref("browser.newtabpage.activity-stream.discoverystream.region-spocs-config", "");
+pref("browser.newtabpage.activity-stream.discoverystream.spocs-endpoint", "");
+pref("browser.newtabpage.activity-stream.discoverystream.placements.spocs", "");
+pref("browser.newtabpage.activity-stream.discoverystream.placements.contextualSpocs", "");
+pref("browser.newtabpage.activity-stream.unifiedAds.tiles.enabled", false);
+pref("browser.newtabpage.activity-stream.unifiedAds.spocs.enabled", false);
+pref("browser.newtabpage.activity-stream.unifiedAds.adsFeed.enabled", false);
+pref("browser.newtabpage.activity-stream.unifiedAds.adsFeed.tiles.enabled", false);
+pref("browser.newtabpage.activity-stream.unifiedAds.endpoint", "");
+pref("browser.topsites.contile.enabled", false);
+pref("browser.urlbar.sponsoredTopSites", false);
+pref("browser.urlbar.suggest.quicksuggest.sponsored", false);
+pref("browser.partnerlink.attributionURL", "");
 
 // --- Glean ---
 pref("toolkit.telemetry.glean.upload.enabled", false);
@@ -61,5 +88,3 @@ pref("extensions.pocket.enabled", false);
 
 // --- Update channel ---
 pref("app.update.url", "https://updates.example.com/update/6/%PRODUCT%/%VERSION%/%BUILD_ID%/%BUILD_TARGET%/%LOCALE%/%CHANNEL%/%OS_VERSION%/%SYSTEM_CAPABILITIES%/%DISTRIBUTION%/%DISTRIBUTION_VERSION%/update.xml");
-pref("app.update.url.manual", "https://updates.example.com");
-pref("app.update.url.details", "https://updates.example.com");

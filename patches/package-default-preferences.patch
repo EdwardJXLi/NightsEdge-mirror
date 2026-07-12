@@ -1,0 +1,25 @@
+diff --git a/browser/app/profile/firefox.js b/browser/app/profile/firefox.js
+--- a/browser/app/profile/firefox.js
++++ b/browser/app/profile/firefox.js
+@@ -3624,2 +3624,5 @@
+ // When enabled, Firefox ignores the distribution.ini file if global.id is MozillaOnline.
+ pref("distribution.mozillaonline.ignore", true);
++
++// Load NightsEdge defaults last.
++#include nightsedge.js
+diff --git a/browser/branding/nightly/pref/firefox-branding.js b/browser/branding/nightly/pref/firefox-branding.js
+--- a/browser/branding/nightly/pref/firefox-branding.js
++++ b/browser/branding/nightly/pref/firefox-branding.js
+@@ -13,9 +13,9 @@
+ pref("app.update.promptWaitTime", 43200);
+ // URL user can browse to manually if for some reason all update installation
+ // attempts fail.
+-pref("app.update.url.manual", "https://www.mozilla.org/%LOCALE%/firefox/nightly/?reason=manual-update");
++pref("app.update.url.manual", "https://updates.example.com");
+ // A default value for the "More information about this update" link
+ // supplied in the "An update is available" page of the update wizard.
+-pref("app.update.url.details", "https://www.mozilla.org/%LOCALE%/firefox/nightly/notes/");
++pref("app.update.url.details", "https://updates.example.com");
+-
++
+ pref("app.releaseNotesURL", "https://www.firefox.com/%LOCALE%/firefox/%VERSION%/releasenotes/?utm_source=firefox-browser&utm_medium=firefox-desktop&utm_campaign=whatsnew");
