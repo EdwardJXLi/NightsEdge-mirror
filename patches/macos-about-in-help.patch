@@ -1,0 +1,16 @@
+--- a/widget/cocoa/nsMenuBarX.mm
++++ b/widget/cocoa/nsMenuBarX.mm
+@@ -658,9 +658,10 @@
+ void nsMenuBarX::AquifyMenuBar() {
+   RefPtr<mozilla::dom::Document> domDoc = mContent->GetComposedDoc();
+   if (domDoc) {
+-    // remove the "About..." item and its separator
+-    HideItem(domDoc, u"aboutSeparator"_ns);
+-    mAboutItemContent = HideItem(domDoc, u"aboutName"_ns);
++    // Keep About in the Help menu as well as the native Application menu.
++    // The saved node is still needed to dispatch commands from the native
++    // Application menu item.
++    mAboutItemContent = domDoc->GetElementById(u"aboutName"_ns);
+     if (!sAboutItemContent) {
+       sAboutItemContent = mAboutItemContent;
+     }
