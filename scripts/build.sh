@@ -97,7 +97,7 @@ cp "$REPO_ROOT/prefs/nightsedge.js" "$PREFS_DIR/nightsedge.js"
 
 # --- Step 6: Install enterprise policies ---
 echo "==> Installing enterprise policies..."
-POLICIES_DIR="$SOURCE_DIR/browser/defaults/policies"
+POLICIES_DIR="$SOURCE_DIR/browser/app/distribution"
 mkdir -p "$POLICIES_DIR"
 cp "$REPO_ROOT/policies/policies.json" "$POLICIES_DIR/policies.json"
 

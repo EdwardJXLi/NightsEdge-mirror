@@ -11,8 +11,12 @@ pref("toolkit.telemetry.bhrPing.enabled", false);
 pref("toolkit.telemetry.firstShutdownPing.enabled", false);
 pref("toolkit.telemetry.newProfilePing.enabled", false);
 pref("toolkit.telemetry.shutdownPingSender.enabled", false);
+pref("toolkit.telemetry.shutdownPingSender.backgroundtask.enabled", false, locked);
 pref("toolkit.telemetry.updatePing.enabled", false);
 pref("toolkit.telemetry.server", "data:,");
+pref("toolkit.telemetry.dap_enabled", false, locked);
+pref("dom.security.unexpected_system_load_telemetry_enabled", false, locked);
+pref("browser.search.serpEventTelemetryCategorization.enabled", false, locked);
 pref("toolkit.telemetry.pioneer-new-studies-available", false);
 pref("toolkit.telemetry.coverage.opt-out", true);
 pref("toolkit.coverage.opt-out", true);
@@ -21,6 +25,7 @@ pref("toolkit.coverage.endpoint.base", "");
 // --- Health Report ---
 pref("datareporting.healthreport.uploadEnabled", false);
 pref("datareporting.policy.dataSubmissionEnabled", false);
+pref("datareporting.usage.uploadEnabled", false, locked);
 
 // --- Crash Reporter ---
 pref("breakpad.reportURL", "");
@@ -47,11 +52,17 @@ pref("network.captive-portal-service.enabled", false);
 // --- Attribution ---
 pref("browser.attribution.enabled", false);
 
+// --- Website-to-browser integration ---
+pref("browser.uitour.enabled", false, locked);
+pref("browser.uitour.url", "", locked);
+
 // --- Discovery / Recommendations ---
 pref("browser.discovery.enabled", false);
 pref("browser.newtabpage.activity-stream.asrouter.userprefs.cfr.addons", false);
 pref("browser.newtabpage.activity-stream.asrouter.userprefs.cfr.features", false);
 pref("browser.newtabpage.activity-stream.feeds.discoverystreamfeed", false);
+pref("extensions.htmlaboutaddons.recommendations.enabled", false, locked);
+pref("browser.preferences.moreFromMozilla", false, locked);
 
 // --- Sponsored Content / Advertising ---
 // Disable the Recommended Stories / Popular Today surface as well as every
@@ -65,6 +76,7 @@ pref("browser.newtabpage.activity-stream.discoverystream.sections.cards.enabled"
 pref("browser.newtabpage.activity-stream.showSponsored", false);
 pref("browser.newtabpage.activity-stream.showSponsoredTopSites", false);
 pref("browser.newtabpage.activity-stream.system.showSponsored", false);
+pref("browser.newtabpage.activity-stream.showSponsoredCheckboxes", false, locked);
 pref("browser.newtabpage.activity-stream.discoverystream.sections.contextualAds.enabled", false);
 pref("browser.newtabpage.activity-stream.discoverystream.region-spocs-config", "");
 pref("browser.newtabpage.activity-stream.discoverystream.spocs-endpoint", "");
@@ -76,9 +88,19 @@ pref("browser.newtabpage.activity-stream.unifiedAds.adsFeed.enabled", false);
 pref("browser.newtabpage.activity-stream.unifiedAds.adsFeed.tiles.enabled", false);
 pref("browser.newtabpage.activity-stream.unifiedAds.endpoint", "");
 pref("browser.topsites.contile.enabled", false);
+pref("browser.topsites.contile.endpoint", "", locked);
+pref("browser.topsites.useRemoteSetting", false, locked);
 pref("browser.urlbar.sponsoredTopSites", false);
 pref("browser.urlbar.suggest.quicksuggest.sponsored", false);
 pref("browser.partnerlink.attributionURL", "");
+pref("browser.partnerlink.campaign.topsites", "", locked);
+
+// --- General privacy hardening ---
+pref("privacy.globalprivacycontrol.enabled", true);
+pref("privacy.globalprivacycontrol.functionality.enabled", true);
+pref("browser.privatebrowsing.forceMediaMemoryCache", true);
+pref("dom.battery.enabled", false);
+pref("security.tls.enable_0rtt_data", false);
 
 // --- Glean ---
 pref("toolkit.telemetry.glean.upload.enabled", false);

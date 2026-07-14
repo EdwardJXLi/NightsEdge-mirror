@@ -1,0 +1,18 @@
+--- a/toolkit/components/telemetry/moz.build
++++ b/toolkit/components/telemetry/moz.build
+@@ -8,5 +8,3 @@
+-DIRS = [
+-    "pingsender",
+-]
+-
++# Omit the telemetry pingsender.
++
+ DEFINES["MOZ_APP_VERSION"] = '"%s"' % CONFIG["MOZ_APP_VERSION"]
+--- a/browser/installer/package-manifest.in
++++ b/browser/installer/package-manifest.in
+@@ -408,5 +408,1 @@
+-; [ Ping Sender ]
+-;
+-@BINPATH@/pingsender@BIN_SUFFIX@
+-
+ ; [ Native Messaging Host Proxy ]

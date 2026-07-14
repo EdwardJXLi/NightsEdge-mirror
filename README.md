@@ -93,8 +93,8 @@ A Windmill cron can run `scripts/check-and-update-version.sh` to refresh `FIREFO
 
 ## Telemetry Lockdown (3 Layers)
 
-1. **Build flags** — mozconfig disables crashreporter, telemetry reporting, data reporting, health report, Normandy, and signing requirements
-2. **Default prefs** — `prefs/nightsedge.js` disables all telemetry pings, studies, experiments, Glean, Pocket, crash reporting, and network services
+1. **Build flags and source patching** — mozconfig disables crashreporter, telemetry reporting, data reporting, health report, Normandy, and signing requirements; the standalone telemetry `pingsender` is not built or packaged
+2. **Default prefs** — `prefs/nightsedge.js` disables telemetry pings, studies, experiments, Glean uploads, Pocket, crash reporting, and network services
 3. **Enterprise policies** — `policies/policies.json` enforces DisableTelemetry, DisableFirefoxStudies, DisablePocket, and overrides first-run pages
 
 ## Local Build

@@ -1,0 +1,20 @@
+--- a/browser/app/distribution/moz.build
++++ b/browser/app/distribution/moz.build
+@@ -5,3 +5,7 @@
+ DIST_SUBDIR = ""
+-
++
++FINAL_TARGET_FILES.distribution += [
++    "policies.json",
++]
++
+ if CONFIG["BUILT_BY_MOZILLA"]:
+--- a/browser/installer/package-manifest.in
++++ b/browser/installer/package-manifest.in
+@@ -456,3 +456,6 @@
+ #if defined(BUILT_BY_MOZILLA)
+ @RESPATH@/distribution/*
++#else
++; Include policies in non-Mozilla builds.
++@RESPATH@/distribution/policies.json
+ #endif
