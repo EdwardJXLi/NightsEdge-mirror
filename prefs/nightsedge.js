@@ -34,12 +34,12 @@ pref("browser.crashReports.unsubmittedCheck.autoSubmit2", false);
 pref("browser.crashReports.unsubmittedCheck.enabled", false);
 
 // --- Studies / Normandy / Shield ---
-pref("app.normandy.enabled", false);
-pref("app.normandy.api_url", "");
-pref("app.shield.optoutstudies.enabled", false);
+pref("app.normandy.enabled", false, locked);
+pref("app.normandy.api_url", "", locked);
+pref("app.shield.optoutstudies.enabled", false, locked);
 
 // --- Experiments ---
-pref("messaging-system.rsexperimentloader.enabled", false);
+pref("messaging-system.rsexperimentloader.enabled", false, locked);
 pref("browser.ping-centre.telemetry", false);
 pref("browser.newtabpage.activity-stream.feeds.telemetry", false);
 pref("browser.newtabpage.activity-stream.telemetry", false);
@@ -60,7 +60,7 @@ pref("browser.uitour.url", "", locked);
 pref("browser.discovery.enabled", false);
 pref("browser.newtabpage.activity-stream.asrouter.userprefs.cfr.addons", false);
 pref("browser.newtabpage.activity-stream.asrouter.userprefs.cfr.features", false);
-pref("browser.newtabpage.activity-stream.feeds.discoverystreamfeed", false);
+pref("browser.newtabpage.activity-stream.feeds.discoverystreamfeed", false, locked);
 pref("extensions.htmlaboutaddons.recommendations.enabled", false, locked);
 pref("browser.preferences.moreFromMozilla", false, locked);
 
@@ -68,31 +68,37 @@ pref("browser.preferences.moreFromMozilla", false, locked);
 // Disable the Recommended Stories / Popular Today surface as well as every
 // advertising path. The endpoint and placement overrides also prevent ad
 // requests if a feature rollout changes a higher-level UI default.
-pref("browser.newtabpage.activity-stream.feeds.section.topstories", false);
-pref("browser.newtabpage.activity-stream.feeds.system.topstories", false);
-pref("browser.newtabpage.activity-stream.discoverystream.enabled", false);
-pref("browser.newtabpage.activity-stream.discoverystream.sections.enabled", false);
-pref("browser.newtabpage.activity-stream.discoverystream.sections.cards.enabled", false);
-pref("browser.newtabpage.activity-stream.showSponsored", false);
-pref("browser.newtabpage.activity-stream.showSponsoredTopSites", false);
-pref("browser.newtabpage.activity-stream.system.showSponsored", false);
+pref("browser.newtabpage.activity-stream.feeds.section.topstories", false, locked);
+pref("browser.newtabpage.activity-stream.feeds.system.topstories", false, locked);
+pref("browser.newtabpage.activity-stream.discoverystream.enabled", false, locked);
+pref("browser.newtabpage.activity-stream.discoverystream.sections.enabled", false, locked);
+pref("browser.newtabpage.activity-stream.discoverystream.sections.cards.enabled", false, locked);
+pref("browser.newtabpage.activity-stream.showSponsored", false, locked);
+pref("browser.newtabpage.activity-stream.showSponsoredTopSites", false, locked);
+pref("browser.newtabpage.activity-stream.system.showSponsored", false, locked);
 pref("browser.newtabpage.activity-stream.showSponsoredCheckboxes", false, locked);
-pref("browser.newtabpage.activity-stream.discoverystream.sections.contextualAds.enabled", false);
-pref("browser.newtabpage.activity-stream.discoverystream.region-spocs-config", "");
-pref("browser.newtabpage.activity-stream.discoverystream.spocs-endpoint", "");
-pref("browser.newtabpage.activity-stream.discoverystream.placements.spocs", "");
-pref("browser.newtabpage.activity-stream.discoverystream.placements.contextualSpocs", "");
-pref("browser.newtabpage.activity-stream.unifiedAds.tiles.enabled", false);
-pref("browser.newtabpage.activity-stream.unifiedAds.spocs.enabled", false);
-pref("browser.newtabpage.activity-stream.unifiedAds.adsFeed.enabled", false);
-pref("browser.newtabpage.activity-stream.unifiedAds.adsFeed.tiles.enabled", false);
-pref("browser.newtabpage.activity-stream.unifiedAds.endpoint", "");
-pref("browser.topsites.contile.enabled", false);
+pref("browser.newtabpage.activity-stream.discoverystream.sections.contextualAds.enabled", false, locked);
+pref("browser.newtabpage.activity-stream.discoverystream.region-spocs-config", "", locked);
+pref("browser.newtabpage.activity-stream.discoverystream.spocs-endpoint", "", locked);
+pref("browser.newtabpage.activity-stream.discoverystream.endpoints", "", locked);
+pref("browser.newtabpage.activity-stream.discoverystream.endpointSpocsClear", "", locked);
+pref("browser.newtabpage.activity-stream.discoverystream.placements.spocs", "", locked);
+pref("browser.newtabpage.activity-stream.discoverystream.placements.spocs.counts", "", locked);
+pref("browser.newtabpage.activity-stream.discoverystream.placements.tiles", "", locked);
+pref("browser.newtabpage.activity-stream.discoverystream.placements.tiles.counts", "", locked);
+pref("browser.newtabpage.activity-stream.discoverystream.placements.contextualSpocs", "", locked);
+pref("browser.newtabpage.activity-stream.unifiedAds.tiles.enabled", false, locked);
+pref("browser.newtabpage.activity-stream.unifiedAds.spocs.enabled", false, locked);
+pref("browser.newtabpage.activity-stream.unifiedAds.adsFeed.enabled", false, locked);
+pref("browser.newtabpage.activity-stream.unifiedAds.adsFeed.tiles.enabled", false, locked);
+pref("browser.newtabpage.activity-stream.unifiedAds.ohttp.enabled", false, locked);
+pref("browser.newtabpage.activity-stream.unifiedAds.endpoint", "", locked);
+pref("browser.topsites.contile.enabled", false, locked);
 pref("browser.topsites.contile.endpoint", "", locked);
 pref("browser.topsites.useRemoteSetting", false, locked);
-pref("browser.urlbar.sponsoredTopSites", false);
-pref("browser.urlbar.suggest.quicksuggest.sponsored", false);
-pref("browser.partnerlink.attributionURL", "");
+pref("browser.urlbar.sponsoredTopSites", false, locked);
+pref("browser.urlbar.suggest.quicksuggest.sponsored", false, locked);
+pref("browser.partnerlink.attributionURL", "", locked);
 pref("browser.partnerlink.campaign.topsites", "", locked);
 
 // --- General privacy hardening ---

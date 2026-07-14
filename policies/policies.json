@@ -10,6 +10,20 @@
     "DNSOverHTTPS": {
       "Enabled": false
     },
+    "FirefoxHome": {
+      "Pocket": false,
+      "Stories": false,
+      "SponsoredPocket": false,
+      "SponsoredStories": false,
+      "SponsoredTopSites": false,
+      "Snippets": false,
+      "Locked": true
+    },
+    "FirefoxSuggest": {
+      "SponsoredSuggestions": false,
+      "OnlineEnabled": false,
+      "Locked": true
+    },
     "DisableFirefoxAccounts": false,
     "DontCheckDefaultBrowser": true,
     "NoDefaultBookmarks": true,
