@@ -41,18 +41,21 @@ fi
 
 echo "    Git hash: $GIT_COMMIT_HASH"
 
-if [[ -d "$SOURCE_DIR" ]]; then
+if [[ -d "$SOURCE_DIR/.git" ]]; then
     echo "==> Source directory exists, updating..."
     cd "$SOURCE_DIR"
     git fetch --depth 1 origin "$GIT_COMMIT_HASH"
-    git checkout "$GIT_COMMIT_HASH"
+    git checkout --detach --force "$GIT_COMMIT_HASH"
+elif [[ -e "$SOURCE_DIR" ]]; then
+    echo "ERROR: Source path exists but is not a Git checkout: $SOURCE_DIR" >&2
+    exit 1
 else
     echo "==> Shallow cloning at $GIT_COMMIT_HASH..."
     git init "$SOURCE_DIR"
     cd "$SOURCE_DIR"
     git remote add origin "$GITHUB_REPO"
     git fetch --depth 1 origin "$GIT_COMMIT_HASH"
-    git checkout "$GIT_COMMIT_HASH"
+    git checkout --detach "$GIT_COMMIT_HASH"
 fi
 
 echo "==> Source ready at $SOURCE_DIR"

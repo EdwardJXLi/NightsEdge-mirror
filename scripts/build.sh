@@ -58,13 +58,8 @@ echo "    Track:   $FIREFOX_TRACK"
 echo "    Repo:    $UPSTREAM_REPO"
 echo "    Rust:    $RUST_VERSION"
 
-# --- Step 1: Fetch source (skip if already present) ---
-if [[ ! -d "$SOURCE_DIR/.git" ]]; then
-    echo "==> Fetching source..."
-    "$SCRIPT_DIR/fetch-source.sh"
-else
-    echo "==> Source already present at $SOURCE_DIR, skipping fetch."
-fi
+# --- Step 1: Restore pinned source ---
+"$SCRIPT_DIR/fetch-source.sh"
 
 # --- Step 2: Apply source patches ---
 echo "==> Applying source patches..."
