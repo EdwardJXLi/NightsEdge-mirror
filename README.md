@@ -24,6 +24,12 @@ Desktop builds display as "Firefox Nightly (NightsEdge)" in the OS via
 "Nightly" brand. The macOS bundle id is `dev.hydranet.nightsedge`,
 distinct from real Firefox Nightly.
 
+NightsEdge restores Firefox 149's theme-background behavior by default, so a
+theme's background image stays in the top toolbox instead of continuing down
+the vertical-tabs sidebar. Set
+`browser.theme.background-image-on-sidebar.enabled` to `true` in
+`about:config` to use Firefox 150+'s continuous toolbox/sidebar background.
+
 ## How It Works
 
 1. `FIREFOX_VERSION` pins a specific Firefox hg revision, version, and upstream track

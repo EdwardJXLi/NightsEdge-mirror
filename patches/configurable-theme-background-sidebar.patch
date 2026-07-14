@@ -1,0 +1,129 @@
+diff --git a/browser/themes/shared/browser-shared.css b/browser/themes/shared/browser-shared.css
+--- a/browser/themes/shared/browser-shared.css
++++ b/browser/themes/shared/browser-shared.css
+@@ -298,14 +298,28 @@ body {
+   }
+ }
+ 
+-/* Images go on the body by default, unless they are aligned in the y axis in
+- * which case they go on the toolbox for backwards compatibility */
+-:root:not([lwtheme-image-y-align]) body,
+-:root[lwtheme-image-y-align] #navigator-toolbox {
+-  background-image: var(--toolbox-background-image);
+-  background-repeat: var(--toolbox-background-repeat);
+-  background-position: var(--toolbox-background-position);
+-  background-size: var(--toolbox-background-size);
++/* Use Firefox 150's sidebar background behavior when enabled; otherwise keep
++ * the pre-150 toolbox background. */
++/* stylelint-disable-next-line media-query-no-invalid */
++@media -moz-pref("browser.theme.background-image-on-sidebar.enabled") {
++  /* Preserve upstream's vertical-alignment behavior. */
++  :root:not([lwtheme-image-y-align]) body,
++  :root[lwtheme-image-y-align] #navigator-toolbox {
++    background-image: var(--toolbox-background-image);
++    background-repeat: var(--toolbox-background-repeat);
++    background-position: var(--toolbox-background-position);
++    background-size: var(--toolbox-background-size);
++  }
++}
++
++/* stylelint-disable-next-line media-query-no-invalid */
++@media not -moz-pref("browser.theme.background-image-on-sidebar.enabled") {
++  #navigator-toolbox {
++    background-image: var(--toolbox-background-image);
++    background-repeat: var(--toolbox-background-repeat);
++    background-position: var(--toolbox-background-position);
++    background-size: var(--toolbox-background-size);
++  }
+ }
+ 
+ .browser-toolbar {
+diff --git a/browser/themes/shared/tabbrowser/tabs.css b/browser/themes/shared/tabbrowser/tabs.css
+--- a/browser/themes/shared/tabbrowser/tabs.css
++++ b/browser/themes/shared/tabbrowser/tabs.css
+@@ -2695,5 +2695,10 @@
+   &[expanded] {
+     --tab-icon-end-margin: 7.5px;
+-
++    /* stylelint-disable-next-line media-query-no-invalid */
++    @media not -moz-pref("browser.theme.background-image-on-sidebar.enabled") {
++      padding-block-start: var(--space-small);
++      grid-gap: 0;
++    }
++
+     .tabbrowser-tab {
+       max-width: none;
+diff --git a/toolkit/components/extensions/test/browser/browser.toml b/toolkit/components/extensions/test/browser/browser.toml
+--- a/toolkit/components/extensions/test/browser/browser.toml
++++ b/toolkit/components/extensions/test/browser/browser.toml
+@@ -29,6 +29,7 @@ run-if = [
+ ["browser_ext_test_mock.js"]
+ 
+ ["browser_ext_themes_additional_backgrounds_alignment.js"]
++prefs = ["browser.theme.background-image-on-sidebar.enabled=true"]
+ 
+ ["browser_ext_themes_alpha_accentcolor.js"]
+ 
+@@ -37,12 +38,14 @@ run-if = [
+ ["browser_ext_themes_autocomplete_popup.js"]
+ 
+ ["browser_ext_themes_chromeparity.js"]
++prefs = ["browser.theme.background-image-on-sidebar.enabled=true"]
+ 
+ ["browser_ext_themes_dynamic_getCurrent.js"]
+ 
+ ["browser_ext_themes_dynamic_onUpdated.js"]
+ 
+ ["browser_ext_themes_dynamic_updates.js"]
++prefs = ["browser.theme.background-image-on-sidebar.enabled=true"]
+ 
+ ["browser_ext_themes_experiment.js"]
+ 
+@@ -57,12 +60,14 @@ run-if = [
+ ["browser_ext_themes_lwtsupport.js"]
+ 
+ ["browser_ext_themes_multiple_backgrounds.js"]
++prefs = ["browser.theme.background-image-on-sidebar.enabled=true"]
+ 
+ ["browser_ext_themes_ntp_colors.js"]
+ 
+ ["browser_ext_themes_ntp_colors_perwindow.js"]
+ 
+ ["browser_ext_themes_pbm.js"]
+ 
+ ["browser_ext_themes_persistence.js"]
++prefs = ["browser.theme.background-image-on-sidebar.enabled=true"]
+ 
+ ["browser_ext_themes_reset.js"]
+ 
+diff --git a/toolkit/components/extensions/test/browser/browser_ext_themes_chromeparity.js b/toolkit/components/extensions/test/browser/browser_ext_themes_chromeparity.js
+--- a/toolkit/components/extensions/test/browser/browser_ext_themes_chromeparity.js
++++ b/toolkit/components/extensions/test/browser/browser_ext_themes_chromeparity.js
+@@ -38,10 +38,27 @@ add_task(async function test_support_theme_frame() {
+   let body = document.body;
+   let bodyCS = window.getComputedStyle(body);
+ 
+   Assert.ok(
+     bodyCS.backgroundImage.includes("face.png"),
+     `The backgroundImage should use face.png. Actual value is: ${bodyCS.backgroundImage}`
+   );
++
++  // Check the pre-150 toolbox target.
++  await SpecialPowers.pushPrefEnv({
++    set: [["browser.theme.background-image-on-sidebar.enabled", false]],
++  });
++  let toolboxCS = window.getComputedStyle(gNavToolbox);
++  Assert.ok(
++    toolboxCS.backgroundImage.includes("face.png"),
++    `The toolbox backgroundImage should use face.png. Actual value is: ${toolboxCS.backgroundImage}`
++  );
++  Assert.equal(
++    bodyCS.backgroundImage,
++    "none",
++    `The body should not paint the theme image. Actual value is: ${bodyCS.backgroundImage}`
++  );
++  await SpecialPowers.popPrefEnv();
++
+   Assert.equal(
+     getToolboxBackgroundColor(),
+     "rgb(" + FRAME_COLOR.join(", ") + ")",
