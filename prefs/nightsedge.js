@@ -64,6 +64,10 @@ pref("browser.newtabpage.activity-stream.feeds.discoverystreamfeed", false, lock
 pref("extensions.htmlaboutaddons.recommendations.enabled", false, locked);
 pref("browser.preferences.moreFromMozilla", false, locked);
 
+// --- Firefox Home ---
+pref("browser.newtabpage.activity-stream.feeds.topsites", false);
+pref("browser.newtabpage.activity-stream.showWeather", false);
+
 // --- Sponsored Content / Advertising ---
 // Disable the Recommended Stories / Popular Today surface as well as every
 // advertising path. The endpoint and placement overrides also prevent ad
