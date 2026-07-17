@@ -293,7 +293,7 @@ steps:
     when:
       - event: tag
 
-  # Manual-run convenience mirror for local testing
+  # Mirror artifacts from every pipeline run
   - name: upload-artifacts-s3
     image: ubuntu:24.04
     environment:
@@ -317,5 +317,3 @@ steps:
         zip -r "/tmp/$ZIP_NAME" artifacts
         mc cp "/tmp/$ZIP_NAME" "cache/$SCCACHE_BUCKET/.artifacts/$ZIP_NAME"
         echo "==> Uploaded s3://$SCCACHE_BUCKET/.artifacts/$ZIP_NAME"
-    when:
-      - event: manual
