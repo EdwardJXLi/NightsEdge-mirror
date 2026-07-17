@@ -262,6 +262,31 @@ steps:
 
   # --- upload all architectures ---
 
+  # Mirror artifacts from every pipeline run
+  - name: upload-artifacts-s3
+    image: ubuntu:24.04
+    environment:
+      AWS_ACCESS_KEY_ID:
+        from_secret: AWS_ACCESS_KEY_ID
+      AWS_SECRET_ACCESS_KEY:
+        from_secret: AWS_SECRET_ACCESS_KEY
+      SCCACHE_BUCKET: nightsedge-cache
+      SCCACHE_ENDPOINT: s3.hydranet.dev
+    commands:
+      - 'echo "==> Runner architecture: $(uname -m)"'
+      - apt-get update && apt-get install -y curl zip
+      - curl -fsSL -o /usr/local/bin/mc https://dl.min.io/client/mc/release/linux-amd64/mc && chmod +x /usr/local/bin/mc
+      - mc alias set cache "https://$SCCACHE_ENDPOINT" "$AWS_ACCESS_KEY_ID" "$AWS_SECRET_ACCESS_KEY"
+      - |
+        if [ -z "$(find artifacts -type f 2>/dev/null)" ]; then
+          echo "==> No artifacts found to upload, skipping"
+          exit 0
+        fi
+        ZIP_NAME="nightsedge-artifacts-$CI_PIPELINE_NUMBER.zip"
+        zip -r "/tmp/$ZIP_NAME" artifacts
+        mc cp "/tmp/$ZIP_NAME" "cache/$SCCACHE_BUCKET/.artifacts/$ZIP_NAME"
+        echo "==> Uploaded s3://$SCCACHE_BUCKET/.artifacts/$ZIP_NAME"
+
   - name: upload-forgejo-release
     image: woodpeckerci/plugin-release:latest
     settings:
@@ -292,28 +317,3 @@ steps:
         - artifacts/macos-aarch64/mar/*.xml
     when:
       - event: tag
-
-  # Mirror artifacts from every pipeline run
-  - name: upload-artifacts-s3
-    image: ubuntu:24.04
-    environment:
-      AWS_ACCESS_KEY_ID:
-        from_secret: AWS_ACCESS_KEY_ID
-      AWS_SECRET_ACCESS_KEY:
-        from_secret: AWS_SECRET_ACCESS_KEY
-      SCCACHE_BUCKET: nightsedge-cache
-      SCCACHE_ENDPOINT: s3.hydranet.dev
-    commands:
-      - 'echo "==> Runner architecture: $(uname -m)"'
-      - apt-get update && apt-get install -y curl zip
-      - curl -fsSL -o /usr/local/bin/mc https://dl.min.io/client/mc/release/linux-amd64/mc && chmod +x /usr/local/bin/mc
-      - mc alias set cache "https://$SCCACHE_ENDPOINT" "$AWS_ACCESS_KEY_ID" "$AWS_SECRET_ACCESS_KEY"
-      - |
-        if [ -z "$(find artifacts -type f 2>/dev/null)" ]; then
-          echo "==> No artifacts found to upload, skipping"
-          exit 0
-        fi
-        ZIP_NAME="nightsedge-artifacts-$CI_PIPELINE_NUMBER.zip"
-        zip -r "/tmp/$ZIP_NAME" artifacts
-        mc cp "/tmp/$ZIP_NAME" "cache/$SCCACHE_BUCKET/.artifacts/$ZIP_NAME"
-        echo "==> Uploaded s3://$SCCACHE_BUCKET/.artifacts/$ZIP_NAME"
