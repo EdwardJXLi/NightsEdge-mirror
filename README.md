@@ -1,218 +1,113 @@
 # NightsEdge
 
-Custom Firefox build with nightly branding, all telemetry stripped, using a custom `nightsedge` update channel with self-hosted MAR updates. Version string displays as `hydra-<version>` in about:firefox.
+NightsEdge is a privacy-focused desktop Firefox build based on a pinned upstream Firefox revision. It keeps Firefox Nightly branding, uses the display name **Firefox Nightly (NightsEdge)** and version string `hydra-<version>`, and is configured for a custom `nightsedge` update channel with self-hosted MAR updates.
 
-## Targets
+Telemetry, data reporting, crash reporting, studies, Pocket, sponsored content, and recommendation services are disabled through build flags, default preferences, and enterprise policies. The telemetry `pingsender` is not built or packaged.
 
-| Target | Platform | Runner |
-|--------|----------|--------|
-| `linux-x86_64` | Linux x64 native | `linux/amd64` |
-| `linux-aarch64` | Linux ARM cross-compile | `linux/amd64` |
-| `windows-x86_64` | Windows x64 cross-compile (clang-cl) | `linux/amd64` |
-| `macos-x86_64` | macOS Intel cross-compile | `linux/amd64` |
-| `macos-aarch64` | macOS Apple Silicon cross-compile | `linux/amd64` |
+## Patches
 
-macOS builds are cross-compiled from Linux: `--enable-bootstrap` provisions
-the toolchain and SDK, and `mach package` assembles the DMG. The staged .app
-is then ad-hoc re-signed with `rcodesign` and the DMG rebuilt — Apple Silicon
-kills binaries whose build-time signatures went stale during packaging. The
-apps are not Apple-signed/notarized; first launch needs right-click Open (or
-`xattr -cr NightsEdge.app`).
+Every patch in `patches/` is applied automatically during a build.
 
-Desktop builds display as "Firefox Nightly (NightsEdge)" in the OS via
-`patches/branding-displayname.patch`; in-app strings keep the short
-"Nightly" brand. The macOS bundle id is `dev.hydranet.nightsedge`,
-distinct from real Firefox Nightly.
+| Patch | Change |
+| --- | --- |
+| `about-dialog-branding.patch` | Identifies the browser as NightsEdge and links to the maintainer in the About dialog. |
+| `branding-displayname.patch` | Sets the desktop display name and a distinct macOS bundle name. |
+| `configurable-theme-background-sidebar.patch` | Keeps theme backgrounds in the top toolbox by default; set `browser.theme.background-image-on-sidebar.enabled` to `true` for a continuous vertical-tabs sidebar background. |
+| `default-browser-message.patch` | Replaces the default-browser confirmation text. |
+| `macos-about-in-help.patch` | Keeps About available in the macOS Help menu. |
+| `macos-displayname-packaging.patch` | Allows the parenthesized NightsEdge display name to package correctly in a DMG. |
+| `package-default-preferences.patch` | Loads `prefs/nightsedge.js` after Firefox's defaults. |
+| `package-enterprise-policies.patch` | Includes `policies/policies.json` in non-Mozilla builds. |
+| `remove-pingsender.patch` | Removes the standalone telemetry pingsender. |
 
-NightsEdge restores Firefox 149's theme-background behavior by default, so a
-theme's background image stays in the top toolbox instead of continuing down
-the vertical-tabs sidebar. Set
-`browser.theme.background-image-on-sidebar.enabled` to `true` in
-`about:config` to use Firefox 150+'s continuous toolbox/sidebar background.
+## Configuration
 
-## How It Works
+| Path | Purpose |
+| --- | --- |
+| `FIREFOX_VERSION` | Pins the upstream revision, Firefox version and track, release tag, and compatible Rust version. |
+| `mozconfigs/common.mozconfig` | Shared branding, update-channel, privacy, optimization, and cache settings. |
+| `mozconfigs/<target>.mozconfig` | Target triple and platform-specific cross-compilation settings. |
+| `prefs/nightsedge.js` | Default privacy, UI, theme, and update preferences. |
+| `policies/policies.json` | Locked enterprise policies applied to new and existing profiles. |
+| `.woodpecker/build.yml` | CI targets, cache backend, update URL, artifact uploads, and releases. |
 
-1. `FIREFOX_VERSION` pins a specific Firefox hg revision, version, and upstream track
-2. On push to `main`, Woodpecker CI builds the configured Linux targets
-3. Each build: fetches source at pinned hash, applies mozconfig + prefs + policies, builds, packages, generates MAR
-4. Artifacts and MARs are uploaded to the update server
+`FIREFOX_TRACK` supports `release` from `mozilla-release`, `beta` from `mozilla-beta`, or `nightly` from `mozilla-central`. Run `./scripts/check-and-update-version.sh` to check the configured track; add `--write`, `--commit`, or `--push` to apply and publish an update. The script also refreshes the Rust pin.
 
-### Version Updates
-
-`scripts/check-and-update-version.sh` supports three upstream tracking modes:
-
-| Track | Upstream Repo | Version Examples | Detection Method |
-|-------|----------------|------------------|------------------|
-| `release` | `mozilla-release` | `149.0`, `149.0.1` | Latest Firefox release tag |
-| `beta` | `mozilla-beta` | `150.0b1`, `150.0b3` | `browser/config/version_display.txt` at tip |
-| `nightly` | `mozilla-central` | `151.0a1` | `browser/config/version_display.txt` at tip |
-
-`FIREFOX_VERSION` should contain:
+Stable release example:
 
 ```bash
-HG_COMMIT_HASH=<mozilla hg revision>
-VERSION=<firefox version string>
-UPSTREAM_REPO=<mozilla-release|mozilla-beta|mozilla-central>
-FIREFOX_TRACK=<release|beta|nightly>
-RUST_VERSION=<stable rustc pin>
-```
-
-`RUST_VERSION` pins the rustc release Firefox was tested against — rustup's rolling `stable` can break the build. `check-and-update-version.sh` derives it automatically.
-
-For stable release tracking, also include:
-
-```bash
-RELEASE_TAG=FIREFOX_149_0_RELEASE
-```
-
-Examples:
-
-```bash
-# Stable release
-HG_COMMIT_HASH=b20f603334b8
-VERSION=149.0
+HG_COMMIT_HASH=931e624c6f53269d41e57ecefca418ef7fdb0f75
+VERSION=152.0
 UPSTREAM_REPO=mozilla-release
 FIREFOX_TRACK=release
-RELEASE_TAG=FIREFOX_149_0_RELEASE
+RELEASE_TAG=FIREFOX_152_0_RELEASE
 RUST_VERSION=1.90.0
 ```
 
+Beta example:
+
 ```bash
-# Beta
-HG_COMMIT_HASH=<beta hg hash>
-VERSION=150.0b3
+HG_COMMIT_HASH=<beta hg revision>
+VERSION=153.0b3
 UPSTREAM_REPO=mozilla-beta
 FIREFOX_TRACK=beta
-RUST_VERSION=1.90.0
+RUST_VERSION=<tested rust version>
 ```
 
+Nightly example:
+
 ```bash
-# Nightly
-HG_COMMIT_HASH=<central hg hash>
-VERSION=151.0a1
+HG_COMMIT_HASH=<central hg revision>
+VERSION=154.0a1
 UPSTREAM_REPO=mozilla-central
 FIREFOX_TRACK=nightly
-RUST_VERSION=1.91.0
+RUST_VERSION=<tested rust version>
 ```
 
-A Windmill cron can run `scripts/check-and-update-version.sh` to refresh `FIREFOX_VERSION` automatically for the configured track, then push the change to Forgejo to trigger CI builds.
+## Building
 
-## Telemetry Lockdown (3 Layers)
+Builds run on Linux x86_64. All targets except Linux x86_64 are cross-compiled.
 
-1. **Build flags and source patching** — mozconfig disables crashreporter, telemetry reporting, data reporting, health report, Normandy, and signing requirements; the standalone telemetry `pingsender` is not built or packaged
-2. **Locked prefs** — `prefs/nightsedge.js` disables telemetry pings, studies, experiments, advertising endpoints, sponsored content, Pocket, crash reporting, and network services
-3. **Enterprise policies** — `policies/policies.json` enforces the telemetry/study lockdown and locks sponsored Firefox Home and Firefox Suggest features off, including for existing profiles
+| Target | Platform | CI gate |
+| --- | --- | --- |
+| `linux-x86_64` | Linux x64, native | `BUILD_X86_64` |
+| `linux-aarch64` | Linux ARM64, cross-compiled | `BUILD_AARCH64` |
+| `windows-x86_64` | Windows x64, clang-cl cross-compile | `BUILD_WINDOWS_X86_64` |
+| `macos-x86_64` | macOS Intel, cross-compiled | `BUILD_MACOS_X86_64` |
+| `macos-aarch64` | macOS Apple Silicon, cross-compiled | `BUILD_MACOS_AARCH64` |
 
-## Local Build
+Install the [Firefox build prerequisites](https://firefox-source-docs.mozilla.org/setup/linux_build.html), `git`, `curl`, Python 3, `rustup`, a GCC/libstdc++ development toolchain, and recent LLVM tools (`clang`/`llvm` 17 or newer, including `llvm-objdump`). Windows cross-builds also require `msitools` and `libc6-i386`. `sccache` is optional.
+
+Run:
 
 ```bash
-# Build for Linux x86_64
-./scripts/build.sh linux-x86_64
-
-# Cross-compile Linux aarch64 from a Linux x86_64 host
-./scripts/build.sh linux-aarch64
-
-# Cross-compile Windows x86_64 from a Linux x86_64 host
-./scripts/build.sh windows-x86_64
-
+./scripts/build.sh <target>
 ```
 
-### Prerequisites
+The script fetches the Firefox revision pinned in `FIREFOX_VERSION`, applies the patches and configuration, runs Mozilla's toolchain bootstrap, then builds and packages the browser. Artifacts are written under `mozilla-release/obj-*/dist/`.
 
-- Mercurial (`hg`)
-- Firefox build dependencies (see [Mozilla build docs](https://firefox-source-docs.mozilla.org/setup/linux_build.html))
-- Linux builds require a host GCC/libstdc++ development toolchain in addition to Mozilla's downloaded clang toolchain
-- Rust toolchain (`rustc`, `cargo`)
-- `sccache` if you want compiler caching enabled during builds
-- LLVM tools (`llvm-objdump` must be present; on Ubuntu install the `llvm` package)
-- A recent LLVM toolchain is required; current Firefox builds need `clang/llvm >= 17`
-- CI/local builds should run `./mach bootstrap` to provision Mozilla's expected toolchains instead of relying only on distro package versions
-- `linux-aarch64` is configured as a Linux x86_64-hosted cross-compile and relies on Mozilla's `--enable-bootstrap` flow to provision the AArch64 sysroot/toolchain
-- `windows-x86_64` needs `msitools` (for `msiextract`) and `libc6-i386` on the host; everything else is provisioned by `--enable-bootstrap`
+If `sccache` is installed, it is enabled automatically for C/C++ and Rust. Set `SCCACHE_DISABLE=1` to disable it. An S3-compatible cache can be configured with `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `SCCACHE_BUCKET`, `SCCACHE_ENDPOINT`, `SCCACHE_REGION`, and `SCCACHE_S3_USE_SSL`.
 
-### Windows cross-build
+Important build notes:
 
-`windows-x86_64` is a Linux-hosted clang-cl cross-compile, the same approach Mozilla uses for official Windows binaries. `--enable-bootstrap` provisions the whole toolchain (clang-cl, MSVC/SDK sysroot, wine, NSIS) into `~/.mozbuild`. `mach package` produces both the `.zip` and the NSIS `*.installer.exe`. The first build downloads several GB of toolchains; later builds reuse `~/.mozbuild` where it persists.
+- The checkout at `mozilla-release/` is forcibly restored to the pinned revision on each build; do not keep source changes there.
+- Replace the `updates.example.com` URLs in `prefs/nightsedge.js` and `patches/package-default-preferences.patch` before distributing builds with self-hosted updates.
+- macOS builds are ad-hoc signed but not Apple-signed or notarized. First launch may require right-clicking **Open** or running `xattr -cr NightsEdge.app`.
 
-### `sccache` with MinIO S3
+## Self-hosted updates
 
-If `sccache` is installed, `scripts/build.sh` enables it automatically for both compiler cache integration and Rust builds. To back the cache with a MinIO bucket, export:
+After building a target, generate its complete MAR and AUS-compatible `update.xml` with:
 
 ```bash
-export AWS_ACCESS_KEY_ID=<minio-access-key>
-export AWS_SECRET_ACCESS_KEY=<minio-secret-key>
-export SCCACHE_BUCKET=<bucket-name>
-export SCCACHE_ENDPOINT=<minio-host:9000>
-export SCCACHE_REGION=<region-name>
-export SCCACHE_S3_USE_SSL=false
-# Optional:
-export SCCACHE_S3_KEY_PREFIX=nightsedge/
+./scripts/generate-mar.sh <target> https://updates.example.com
 ```
 
-Then run the build normally:
+The files are written to `output/mar/<target>/`. Host the MAR at `<base-url>/mar/<target>/` and serve the generated XML from the AUS route configured in `prefs/nightsedge.js`. The generator reads the `nightsedge` channel from the build.
 
-```bash
-./scripts/build.sh linux-x86_64
-```
+## CI
 
-Set `SCCACHE_DISABLE=1` to force a build without `sccache`.
+Woodpecker runs on pushes to `main`, manual runs, and tags using a Linux x86_64 runner. It fetches the pinned source, runs separate build and package steps for each enabled target, generates complete MAR files and update XML, then stages the results under `artifacts/`. All five target gates are enabled by default in `.woodpecker/build.yml`.
 
-### Woodpecker pipeline switches
+Builds use `sccache` with the configured MinIO S3 backend. Every pipeline uploads a zipped artifact mirror to MinIO; tag pipelines also publish the platform packages and update files to a Forgejo release. CI requires `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`, plus `FORGEJO_RELEASE_TOKEN` for tagged releases.
 
-Set these pipeline environment variables on manual/tag runs when you want to adjust which targets build:
-
-- `BUILD_X86_64=true|false` controls whether the `linux-x86_64` build and package steps run
-- `BUILD_AARCH64=true|false` controls whether the `linux-aarch64` build and package steps run
-- `BUILD_WINDOWS_X86_64=true|false` controls whether the `windows-x86_64` build and package steps run
-- `BUILD_MACOS_X86_64=true|false` controls whether the `macos-x86_64` build and package steps run
-- `BUILD_MACOS_AARCH64=true|false` controls whether the `macos-aarch64` build and package steps run
-
-## Update Server
-
-Configure your update server using `update-server/nginx.conf.example` as a starting point. After building:
-
-```bash
-# Generate MAR files
-./scripts/generate-mar.sh linux-x86_64 https://updates.yourdomain.com
-
-# Generate AUS-compatible update.xml files for all targets
-./update-server/generate-update-xml.sh https://updates.yourdomain.com
-```
-
-Deploy the `output/update-server/` directory to your web server root.
-
-## Woodpecker CI Secrets
-
-| Secret | Description |
-|--------|-------------|
-| `FORGEJO_RELEASE_TOKEN` | Forgejo API token used by Woodpecker to upload release artifacts |
-| `deploy_key` | SSH private key for artifact upload |
-| `deploy_host` | Hostname of the artifact/update server |
-| `deploy_user` | SSH user for upload |
-| `deploy_path` | Remote path for artifacts |
-| `AWS_ACCESS_KEY_ID` | MinIO access key for the `sccache` S3 backend |
-| `AWS_SECRET_ACCESS_KEY` | MinIO secret key for the `sccache` S3 backend |
-| `SCCACHE_BUCKET` | Bucket used by `sccache` |
-| `SCCACHE_ENDPOINT` | MinIO S3 endpoint, for example `minio.internal:9000` |
-| `SCCACHE_REGION` | Region value expected by your MinIO deployment |
-| `SCCACHE_S3_USE_SSL` | `true` or `false` depending on your MinIO endpoint |
-| `SCCACHE_S3_KEY_PREFIX` | Optional object prefix for isolating this cache namespace |
-
-## Repo Structure
-
-```
-NightsEdge/
-├── FIREFOX_VERSION                # Pinned hg revision + version/track metadata
-├── mozconfigs/                    # Build configurations per target
-├── policies/policies.json         # Enterprise policies (telemetry lockdown)
-├── prefs/nightsedge.js            # Default pref overrides
-├── scripts/
-│   ├── fetch-source.sh            # Clone the configured upstream repo at pinned hash
-│   ├── build.sh                   # Main build orchestrator
-│   ├── generate-mar.sh            # Create MAR update files
-│   └── check-and-update-version.sh # Windmill cron: detect new release/beta/nightly versions
-├── update-server/
-│   ├── generate-update-xml.sh     # Generate AUS update XML
-│   └── nginx.conf.example         # Example nginx config
-└── .woodpecker/                   # CI pipelines
-```
+The optional Windmill job in `.windmill/auto_update.py` checks for upstream updates, commits and pushes new pins, waits for the push build, and creates a release tag only after that build succeeds. The tag starts the release pipeline.
