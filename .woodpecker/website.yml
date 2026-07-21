@@ -1,0 +1,33 @@
+depends_on: []
+
+when:
+  - event: push
+    branch: main
+    path:
+      include:
+        - website/**
+        - .woodpecker/website.yml
+  # Allow rebuilding or testing the image without changing the website.
+  - event: manual
+
+labels:
+  platform: linux/amd64
+
+steps:
+  - name: publish-website-image
+    image: woodpeckerci/plugin-docker-buildx:6.1.1
+    privileged: true
+    settings:
+      registry: registry.hydranet.dev
+      repo:
+        from_secret: WEBSITE_CONTAINER_IMAGE
+      username:
+        from_secret: CONTAINER_REGISTRY_USERNAME
+      password:
+        from_secret: CONTAINER_REGISTRY_PASSWORD
+      context: website
+      dockerfile: website/Dockerfile
+      platforms: linux/amd64
+      tags:
+        - latest
+        - ${CI_COMMIT_SHA}

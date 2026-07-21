@@ -1,0 +1,6 @@
+*
+!.dockerignore
+!Dockerfile
+!nginx.conf
+!index.html
+!style.css

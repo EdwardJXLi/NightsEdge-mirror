@@ -29,6 +29,8 @@ Every patch in `patches/` is applied automatically during a build.
 | `prefs/nightsedge.js` | Default privacy, UI, theme, and update preferences. |
 | `policies/policies.json` | Locked enterprise policies applied to new and existing profiles. |
 | `.woodpecker/build.yml` | CI targets, cache backend, update URL, artifact uploads, and releases. |
+| `.woodpecker/website.yml` | Builds and publishes the homepage/update-server container. |
+| `website/` | Static homepage, nginx routing, and container definition. |
 
 `FIREFOX_TRACK` supports `release` from `mozilla-release`, `beta` from `mozilla-beta`, or `nightly` from `mozilla-central`. Run `./scripts/check-and-update-version.sh` to check the configured track; add `--write`, `--commit`, or `--push` to apply and publish an update. The script also refreshes the Rust pin.
 
@@ -107,5 +109,13 @@ The files are written to `output/mar/<target>/`. Host the MAR at `https://nights
 Woodpecker runs on pushes to `main`, manual runs, and tags using a Linux x86_64 runner. It fetches the pinned source, runs separate build and package steps for each enabled target, generates complete MAR files and update XML, then stages the results under `artifacts/`. All five target gates are enabled by default in `.woodpecker/build.yml`.
 
 Builds use `sccache` with the configured MinIO S3 backend. Every pipeline uploads a zipped artifact mirror to MinIO; tag pipelines also publish the platform packages and update files to a Forgejo release. CI reads the cache credentials from the `CACHE_S3_ACCESS_KEY` and `CACHE_S3_SECRET_KEY` Woodpecker secrets. Tagged Forgejo releases also require `FORGEJO_RELEASE_TOKEN`.
+
+The website workflow publishes a static nginx image to `registry.hydranet.dev` after website changes and on manual runs. Configure these Woodpecker repository secrets:
+
+- `WEBSITE_CONTAINER_IMAGE`: full repository name, for example `registry.hydranet.dev/nightsedge/website`
+- `CONTAINER_REGISTRY_USERNAME`
+- `CONTAINER_REGISTRY_PASSWORD`
+
+The Woodpecker agent must allow `woodpeckerci/plugin-docker-buildx:6.1.1` as a privileged plugin. The container listens on port `8080`; nginx serves the homepage and proxies `/releases/`, `/mar/`, and `/updates/` to the public-read `nightsedge-releases` MinIO bucket.
 
 The optional Windmill job in `.windmill/auto_update.py` checks for upstream updates, commits and pushes new pins, waits for the push build, and creates a release tag only after that build succeeds. The tag starts the release pipeline.
