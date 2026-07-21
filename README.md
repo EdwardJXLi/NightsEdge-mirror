@@ -102,13 +102,13 @@ After building a target, generate its complete MAR and AUS-compatible `update.xm
 ./scripts/generate-mar.sh <target> https://nightsedge.hydranet.dev
 ```
 
-The files are written to `output/mar/<target>/`. Host the MAR at `https://nightsedge.hydranet.dev/mar/<target>/` and publish each generated XML file at the matching `https://nightsedge.hydranet.dev/updates/%BUILD_TARGET%.xml` path.
+The files are written to `output/mar/<target>/`. The release upload publishes each MAR at `https://nightsedge.hydranet.dev/mar/<target>/` and the latest XML at the matching `https://nightsedge.hydranet.dev/updates/%BUILD_TARGET%.xml` path. Versioned packages remain under `/releases/<version>/`.
 
 ## CI
 
 Woodpecker runs on pushes to `main`, manual runs, and tags using a Linux x86_64 runner. It fetches the pinned source, runs separate build and package steps for each enabled target, generates complete MAR files and update XML, then stages the results under `artifacts/`. All five target gates are enabled by default in `.woodpecker/build.yml`.
 
-Builds use `sccache` with the configured MinIO S3 backend. Every pipeline uploads a zipped artifact mirror to MinIO; tag pipelines also publish the platform packages and update files to a Forgejo release. CI reads the cache credentials from the `CACHE_S3_ACCESS_KEY` and `CACHE_S3_SECRET_KEY` Woodpecker secrets. Tagged Forgejo releases also require `FORGEJO_RELEASE_TOKEN`.
+Builds use `sccache` with the configured MinIO S3 backend. Every pipeline uploads a zipped artifact mirror to MinIO; tag pipelines also publish the platform packages and update files to a Forgejo release. CI reads the cache credentials from the `CACHE_S3_ACCESS_KEY` and `CACHE_S3_SECRET_KEY` Woodpecker secrets. S3 release publishing uses `RELEASE_S3_ACCESS_KEY` and `RELEASE_S3_SECRET_KEY`; tagged Forgejo releases also require `FORGEJO_RELEASE_TOKEN`.
 
 The website workflow publishes a static nginx image to `registry.hydranet.dev` after website changes and on manual runs. Configure these Woodpecker repository secrets:
 
