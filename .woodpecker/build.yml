@@ -317,3 +317,32 @@ steps:
         - artifacts/macos-aarch64/mar/*.xml
     when:
       - event: tag
+
+  - name: upload-release-artifacts-s3
+    image: ubuntu:24.04
+    environment:
+      RELEASE_S3_ACCESS_KEY:
+        from_secret: RELEASE_S3_ACCESS_KEY
+      RELEASE_S3_SECRET_KEY:
+        from_secret: RELEASE_S3_SECRET_KEY
+      RELEASE_S3_ENDPOINT: https://s3.hydranet.dev
+      RELEASE_S3_BUCKET: nightsedge-releases
+    commands:
+      - 'echo "==> Runner architecture: $(uname -m)"'
+      - apt-get update && apt-get install -y ca-certificates curl
+      - curl -fsSL -o /usr/local/bin/mc https://dl.min.io/client/mc/release/linux-amd64/mc && chmod +x /usr/local/bin/mc
+      - |
+        if [ -z "$(find artifacts -type f 2>/dev/null)" ]; then
+          echo "==> No release artifacts found to upload, skipping"
+          exit 0
+        fi
+
+        . ./FIREFOX_VERSION
+        mc alias set releases "$RELEASE_S3_ENDPOINT" "$RELEASE_S3_ACCESS_KEY" "$RELEASE_S3_SECRET_KEY"
+        mc mirror --overwrite artifacts "releases/$RELEASE_S3_BUCKET/releases/$VERSION"
+        echo "==> Uploaded release artifacts to s3://$RELEASE_S3_BUCKET/releases/$VERSION/"
+    when:
+      # Production: publish release artifacts from release tags only.
+      # - event: tag
+      # Testing: also publish artifacts from manually-triggered builds for now.
+      - event: [tag, manual]
