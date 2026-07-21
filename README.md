@@ -112,10 +112,10 @@ Builds use `sccache` with the configured MinIO S3 backend. Every pipeline upload
 
 The website workflow publishes a static nginx image to `registry.hydranet.dev` after website changes and on manual runs. Configure these Woodpecker repository secrets:
 
-- `WEBSITE_CONTAINER_IMAGE`: full repository name, for example `registry.hydranet.dev/nightsedge/website`
+- `WEBSITE_CONTAINER_REPOSITORY`: repository path without the registry hostname, for example `nightsedge/website`
 - `CONTAINER_REGISTRY_USERNAME`
 - `CONTAINER_REGISTRY_PASSWORD`
 
-The Woodpecker agent must allow `woodpeckerci/plugin-docker-buildx:6.1.1` as a privileged plugin. The container listens on port `8080`; nginx serves the homepage and proxies `/releases/`, `/mar/`, and `/updates/` to the public-read `nightsedge-releases` MinIO bucket.
+Kaniko assembles separate amd64 and arm64 images without privileged execution, then Crane combines them under the commit SHA and `latest` tags. This works because the website Dockerfile has no `RUN` instructions; adding one would require native ARM execution or emulation. The container listens on port `8080`; nginx serves the homepage and proxies `/releases/`, `/mar/`, and `/updates/` to the public-read `nightsedge-releases` MinIO bucket.
 
 The optional Windmill job in `.windmill/auto_update.py` checks for upstream updates, commits and pushes new pins, waits for the push build, and creates a release tag only after that build succeeds. The tag starts the release pipeline.
