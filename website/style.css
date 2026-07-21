@@ -1,0 +1,105 @@
+html {
+  min-height: 100%;
+  background: #2b2a33;
+}
+
+body {
+  margin: 0;
+  color: #fbfbfe;
+  background: #2b2a33;
+  font: 14px/1.5 Arial, Helvetica, sans-serif;
+}
+
+#page {
+  width: 650px;
+  margin: 70px auto 50px;
+}
+
+#title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#title img {
+  display: block;
+}
+
+h1 {
+  margin: 0;
+  font-family: "Source Sans 3", Helvetica, Arial, sans-serif;
+  font-size: 32px;
+  font-style: italic;
+  font-weight: 700;
+}
+
+h2 {
+  margin: 30px 0 12px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #5b5b66;
+  font-size: 18px;
+}
+
+p {
+  margin: 13px 0;
+}
+
+hr {
+  height: 0;
+  margin: 15px 0;
+  border: 0;
+  border-top: 1px solid #5b5b66;
+}
+
+a {
+  color: #80c8ff;
+  text-decoration: none;
+}
+
+a:visited {
+  color: #c6a7ff;
+}
+
+dl {
+  margin: 0;
+}
+
+dt {
+  margin-top: 13px;
+  font-weight: bold;
+}
+
+dd {
+  margin: 3px 0 0 24px;
+}
+
+small {
+  color: #b1b1bb;
+}
+
+.download-disclaimer {
+  margin-top: 18px;
+  color: #b1b1bb;
+  font-size: 11px;
+}
+
+ul {
+  margin: 8px 0;
+  padding-left: 24px;
+}
+
+li {
+  margin: 4px 0;
+}
+
+#footer {
+  color: #b1b1bb;
+  font-size: 11px;
+}
+
+@media (max-width: 700px) {
+  #page {
+    width: auto;
+    margin: 24px 18px;
+  }
+}

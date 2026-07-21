@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NightsEdge</title>
+  <link rel="icon" type="image/svg+xml" href="https://raw.githubusercontent.com/mozilla-firefox/firefox/main/browser/branding/nightly/content/about-logo.svg">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@1,700&display=swap">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="page">
+    <div id="title">
+      <img
+        src="https://raw.githubusercontent.com/mozilla-firefox/firefox/main/browser/branding/nightly/content/about-logo.svg"
+        width="48"
+        height="48"
+        alt="Firefox Nightly logo">
+      <h1>NightsEdge</h1>
+    </div>
+
+    <h2>About</h2>
+
+    <p>
+      NightsEdge is a fork of <a href="https://www.mozilla.org/firefox/">Firefox</a> maintained by
+      <a href="https://github.com/EdwardJXLi">RadioactiveHydra / EdwardJXLi</a>.
+      It tracks the latest stable Firefox releases while providing an
+      independently maintained alternative to Mozilla’s official binaries for
+      Linux, Windows, and macOS.
+    </p>
+
+    <p>
+      The best way to describe NightsEdge is that it is “un-Mozilla’d Firefox”
+      with Firefox Nightly branding (hence the name). Telemetry, crash reporting,
+      studies, Pocket, sponsored content, and recommendation services are all
+      disabled by default, while staying close to upstream Firefox.
+    </p>
+
+    <p>The current version is: <b>hydra-152.0</b></p>
+
+    <h2>Differences</h2>
+
+    <ul>
+      <li>Uses Firefox Nightly branding (hence the name).</li>
+      <li>Keeps theme backgrounds in the top toolbar by default, with an option to extend them across the vertical-tabs sidebar.</li>
+      <li>Slightly modifies in-browser text.</li>
+      <li>Keeps the About dialog available from the Help menu on macOS.</li>
+      <li>Packages the parenthesized NightsEdge display name correctly in macOS disk images.</li>
+      <li>Loads NightsEdge's default preferences after Firefox's defaults.</li>
+      <li>Includes NightsEdge's enterprise policies in non-Mozilla builds.</li>
+      <li>Removes the standalone telemetry ping sender from the build.</li>
+    </ul>
+
+    <h2 id="downloads">Downloads</h2>
+
+    <p class="download-disclaimer">
+      These binaries are provided as-is, without warranty or guarantees. Back
+      up important data before installing or updating.
+    </p>
+
+    <dl>
+      <dt>Linux</dt>
+      <dd>
+        <a href="#downloads">x86_64 tar.xz</a><br>
+        <a href="#downloads">ARM64 tar.xz</a>
+      </dd>
+
+      <dt>Windows</dt>
+      <dd>
+        <a href="#downloads">x86_64 installer</a><br>
+        <a href="#downloads">x86_64 portable zip</a>
+      </dd>
+
+      <dt>macOS</dt>
+      <dd>
+        <a href="#downloads">Apple Silicon dmg</a><br>
+        <a href="#downloads">Intel dmg</a>
+      </dd>
+    </dl>
+
+    <h2>Resources</h2>
+
+    <ul>
+      <li><a href="https://github.com/EdwardJXLi/NightsEdge-mirror">Source code mirror</a></li>
+      <li><a href="https://firefox-source-docs.mozilla.org/">Firefox source documentation</a></li>
+    </ul>
+
+    <hr>
+
+    <div id="footer">
+      NightsEdge is independent from Mozilla. Firefox and the Firefox logos are
+      trademarks of the Mozilla Foundation.
+    </div>
+  </div>
+</body>
+</html>
