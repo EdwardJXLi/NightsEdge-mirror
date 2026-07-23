@@ -343,6 +343,16 @@ steps:
     when:
       - event: tag
 
+  - name: render-site
+    image: alpine:3.22
+    environment:
+      RELEASE_ARTIFACTS_DIR: artifacts
+    commands:
+      - apk add --no-cache bash
+      - bash scripts/render-website.sh
+    when:
+      - event: [tag, manual]
+
   - name: upload-release-artifacts-s3
     image: ubuntu:24.04
     environment:
@@ -361,17 +371,6 @@ steps:
       # Production: publish release artifacts from release tags only.
       # - event: tag
       # Testing: also publish artifacts from manually-triggered builds for now.
-      - event: [tag, manual]
-
-  - name: render-site
-    image: alpine:3.22
-    environment:
-      RELEASE_ARTIFACT_BASE_URL: https://s3.hydranet.dev/nightsedge-releases/releases
-      REQUIRE_RELEASE_HASHES: "true"
-    commands:
-      - apk add --no-cache bash curl
-      - bash scripts/render-website.sh
-    when:
       - event: [tag, manual]
 
   # This Dockerfile has no RUN instructions, so Kaniko can assemble the ARM64

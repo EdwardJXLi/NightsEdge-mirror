@@ -7,9 +7,7 @@ VERSION_FILE="${VERSION_FILE:-$REPO_ROOT/FIREFOX_VERSION}"
 WEBSITE_TEMPLATE="${WEBSITE_TEMPLATE:-$REPO_ROOT/website/index.html.in}"
 WEBSITE_OUTPUT="${WEBSITE_OUTPUT:-$REPO_ROOT/website/index.html}"
 PUBLIC_MAR_CERT="${PUBLIC_MAR_CERT:-$REPO_ROOT/certs/nightsedge-mar-primary.der}"
-RELEASE_ARTIFACT_BASE_URL="${RELEASE_ARTIFACT_BASE_URL:-}"
-REQUIRE_RELEASE_HASHES="${REQUIRE_RELEASE_HASHES:-false}"
-CURL="${CURL:-curl}"
+RELEASE_ARTIFACTS_DIR="${RELEASE_ARTIFACTS_DIR:-}"
 
 source "$VERSION_FILE"
 : "${VERSION:?VERSION must be set in FIREFOX_VERSION}"
@@ -28,32 +26,19 @@ resolve_release_hash() {
     local output_variable="$1"
     local target="$2"
     local filename="$3"
-    local checksum_url
+    local checksum_file
     local checksum_contents
     local checksum
     local recorded_filename
 
-    if [[ -n "$RELEASE_ARTIFACT_BASE_URL" ]]; then
-        if ! command -v "$CURL" >/dev/null 2>&1; then
-            echo "Error: curl is required to fetch release hashes" >&2
+    if [[ -n "$RELEASE_ARTIFACTS_DIR" ]]; then
+        checksum_file="${RELEASE_ARTIFACTS_DIR%/}/$target/$filename.sha256"
+        if [[ ! -f "$checksum_file" ]]; then
+            echo "Error: release checksum not found: $checksum_file" >&2
             exit 1
         fi
-
-        checksum_url="${RELEASE_ARTIFACT_BASE_URL%/}/$VERSION/$target/$filename.sha256"
-        echo "==> Fetching $checksum_url"
-        checksum_contents="$(
-            "$CURL" \
-                --fail \
-                --silent \
-                --show-error \
-                --location \
-                --retry 5 \
-                --retry-all-errors \
-                "$checksum_url"
-        )"
-    elif [[ "$REQUIRE_RELEASE_HASHES" == "true" ]]; then
-        echo "Error: RELEASE_ARTIFACT_BASE_URL is required for release rendering" >&2
-        exit 1
+        echo "==> Reading $checksum_file"
+        checksum_contents="$(<"$checksum_file")"
     else
         echo "==> Using a preview hash for $filename"
         checksum_contents="$(printf 'preview:%s' "$filename" | sha256sum)"
@@ -65,7 +50,7 @@ resolve_release_hash() {
         echo "Error: invalid SHA-256 checksum for $filename" >&2
         exit 1
     fi
-    if [[ -n "$RELEASE_ARTIFACT_BASE_URL" ]]; then
+    if [[ -n "$RELEASE_ARTIFACTS_DIR" ]]; then
         recorded_filename="${recorded_filename#\*}"
         if [[ "$recorded_filename" != "$filename" ]]; then
             echo "Error: checksum sidecar does not name $filename" >&2
