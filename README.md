@@ -103,19 +103,3 @@ After building a target, generate its complete MAR and AUS-compatible `update.xm
 ```
 
 The files are written to `output/mar/<target>/`. The release upload publishes each MAR at `https://nightsedge.hydranet.dev/mar/<target>/` and the latest XML at the matching `https://nightsedge.hydranet.dev/updates/%BUILD_TARGET%.xml` path. Versioned packages remain under `/releases/<version>/`.
-
-## CI
-
-Woodpecker runs on pushes to `main`, manual runs, and tags using a Linux x86_64 runner. It fetches the pinned source, runs separate build and package steps for each enabled target, generates complete MAR files and update XML, then stages the results under `artifacts/`. All five target gates are enabled by default in `.woodpecker/build.yml`.
-
-Builds use `sccache` with the configured MinIO S3 backend. Every pipeline uploads a zipped artifact mirror to MinIO; tag pipelines also publish the platform packages and update files to a Forgejo release. CI reads the cache credentials from the `CACHE_S3_ACCESS_KEY` and `CACHE_S3_SECRET_KEY` Woodpecker secrets. S3 release publishing uses `RELEASE_S3_ACCESS_KEY` and `RELEASE_S3_SECRET_KEY`; tagged Forgejo releases also require `FORGEJO_RELEASE_TOKEN`.
-
-The website workflow publishes a static nginx image to `registry.hydranet.dev` after website changes and on manual runs. Configure these Woodpecker repository secrets:
-
-- `WEBSITE_CONTAINER_REPOSITORY`: repository path without the registry hostname, for example `nightsedge/website`
-- `CONTAINER_REGISTRY_USERNAME`
-- `CONTAINER_REGISTRY_PASSWORD`
-
-Kaniko assembles separate amd64 and arm64 images without privileged execution, then Crane combines them under the commit SHA and `latest` tags. This works because the website Dockerfile has no `RUN` instructions; adding one would require native ARM execution or emulation. The container listens on port `8080`; nginx serves the homepage and proxies `/releases/`, `/mar/`, and `/updates/` to the public-read `nightsedge-releases` MinIO bucket.
-
-The optional Windmill job in `.windmill/auto_update.py` checks for upstream updates, commits and pushes new pins, waits for the push build, and creates a release tag only after that build succeeds. The tag starts the release pipeline.
