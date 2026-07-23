@@ -29,7 +29,7 @@ Every patch in `patches/` is applied automatically during a build.
 | `prefs/nightsedge.js` | Default privacy, UI, theme, and update preferences. |
 | `policies/policies.json` | Locked enterprise policies applied to new and existing profiles. |
 | `.woodpecker/build.yml` | CI targets, cache backend, update URL, artifact uploads, and releases. |
-| `.woodpecker/website.yml` | Builds and publishes the homepage/update-server container. |
+| `.woodpecker/publish-site.yml` | Builds and publishes the homepage/update-server container. |
 | `website/` | Static homepage, nginx routing, and container definition. |
 
 `FIREFOX_TRACK` supports `release` from `mozilla-release`, `beta` from `mozilla-beta`, or `nightly` from `mozilla-central`. Run `./scripts/check-and-update-version.sh` to check the configured track; add `--write`, `--commit`, or `--push` to apply and publish an update. The script also refreshes the Rust pin.
