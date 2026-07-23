@@ -262,6 +262,22 @@ steps:
         bash scripts/generate-mar.sh macos-aarch64 "$UPDATE_URL_BASE"
       - bash scripts/stage-package.sh macos-aarch64
 
+  # Sign only artifacts that can be published as releases. Push builds keep
+  # their unsigned MARs in the private cache artifact mirror.
+  - name: sign-release-mars
+    image: ubuntu:24.04
+    environment:
+      MAR_SIGNING_NSS_DB_B64:
+        from_secret: MAR_SIGNING_NSS_DB_B64
+      MAR_SIGNING_CERT_NICKNAME: NightsEdge MAR Primary
+      UPDATE_URL_BASE: https://nightsedge.hydranet.dev
+    commands:
+      - 'echo "==> Runner architecture: $(uname -m)"'
+      - apt-get update && apt-get install -y libnss3-tools python3
+      - bash scripts/sign-release-mars.sh
+    when:
+      - event: [tag, manual]
+
   # --- upload all architectures ---
 
   # Mirror artifacts from every pipeline run
