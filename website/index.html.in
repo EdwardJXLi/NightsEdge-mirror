@@ -59,23 +59,49 @@
 
     <dl>
       <dt>Linux</dt>
-      <dd>
-        <a href="/releases/@VERSION@/linux-x86_64/nightsedge-@VERSION@-linux-x86_64.tar.xz" download>x86_64 tar.xz</a><br>
-        <a href="/releases/@VERSION@/linux-aarch64/nightsedge-@VERSION@-linux-aarch64.tar.xz" download>ARM64 tar.xz</a>
+      <dd class="download-list">
+        <div class="download-row">
+          <a href="/releases/@VERSION@/linux-x86_64/nightsedge-@VERSION@-linux-x86_64.tar.xz" download>x86_64 tar.xz</a>
+          <code class="file-hash">SHA-256: @LINUX_X86_64_SHA256@</code>
+        </div>
+        <div class="download-row">
+          <a href="/releases/@VERSION@/linux-aarch64/nightsedge-@VERSION@-linux-aarch64.tar.xz" download>ARM64 tar.xz</a>
+          <code class="file-hash">SHA-256: @LINUX_AARCH64_SHA256@</code>
+        </div>
       </dd>
 
       <dt>Windows</dt>
-      <dd>
-        <a href="/releases/@VERSION@/windows-x86_64/nightsedge-@VERSION@-windows-x86_64.installer.exe" download>x86_64 installer</a><br>
-        <a href="/releases/@VERSION@/windows-x86_64/nightsedge-@VERSION@-windows-x86_64.zip" download>x86_64 portable zip</a>
+      <dd class="download-list">
+        <div class="download-row">
+          <a href="/releases/@VERSION@/windows-x86_64/nightsedge-@VERSION@-windows-x86_64.installer.exe" download>x86_64 installer</a>
+          <code class="file-hash">SHA-256: @WINDOWS_X86_64_INSTALLER_SHA256@</code>
+        </div>
+        <div class="download-row">
+          <a href="/releases/@VERSION@/windows-x86_64/nightsedge-@VERSION@-windows-x86_64.zip" download>x86_64 portable zip</a>
+          <code class="file-hash">SHA-256: @WINDOWS_X86_64_ZIP_SHA256@</code>
+        </div>
       </dd>
 
       <dt>macOS</dt>
-      <dd>
-        <a href="/releases/@VERSION@/macos-aarch64/nightsedge-@VERSION@-macos-aarch64.dmg" download>Apple Silicon dmg</a><br>
-        <a href="/releases/@VERSION@/macos-x86_64/nightsedge-@VERSION@-macos-x86_64.dmg" download>Intel dmg</a>
+      <dd class="download-list">
+        <div class="download-row">
+          <a href="/releases/@VERSION@/macos-aarch64/nightsedge-@VERSION@-macos-aarch64.dmg" download>Apple Silicon dmg</a>
+          <code class="file-hash">SHA-256: @MACOS_AARCH64_SHA256@</code>
+        </div>
+        <div class="download-row">
+          <a href="/releases/@VERSION@/macos-x86_64/nightsedge-@VERSION@-macos-x86_64.dmg" download>Intel dmg</a>
+          <code class="file-hash">SHA-256: @MACOS_X86_64_SHA256@</code>
+        </div>
       </dd>
     </dl>
+
+    <h2>Update signing</h2>
+
+    <p class="signing-fingerprint">
+      The browser verifies automatic-update MAR files against the signing
+      certificate with this SHA-256 fingerprint:
+      <code>@MAR_CERT_SHA256@</code>
+    </p>
 
     <h2>Resources</h2>
 

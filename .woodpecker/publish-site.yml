@@ -13,8 +13,11 @@ labels:
 steps:
   - name: render-homepage
     image: alpine:3.22
+    environment:
+      RELEASE_ARTIFACT_BASE_URL: https://s3.hydranet.dev/nightsedge-releases/releases
+      REQUIRE_RELEASE_HASHES: "true"
     commands:
-      - apk add --no-cache bash
+      - apk add --no-cache bash curl
       - bash scripts/render-website.sh
 
   # This Dockerfile has no RUN instructions, so Kaniko can assemble the ARM64

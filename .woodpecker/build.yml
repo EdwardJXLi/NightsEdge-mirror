@@ -312,25 +312,32 @@ steps:
       api_key:
         from_secret: FORGEJO_RELEASE_TOKEN
       files:
-        - artifacts/linux-x86_64/*.tar.*
+        - artifacts/linux-x86_64/*.tar.xz
+        - artifacts/linux-x86_64/*.tar.bz2
         - artifacts/linux-x86_64/*.txt
+        - artifacts/linux-x86_64/*.sha256
         - artifacts/linux-x86_64/mar/*.mar
         - artifacts/linux-x86_64/mar/*.xml
-        - artifacts/linux-aarch64/*.tar.*
+        - artifacts/linux-aarch64/*.tar.xz
+        - artifacts/linux-aarch64/*.tar.bz2
         - artifacts/linux-aarch64/*.txt
+        - artifacts/linux-aarch64/*.sha256
         - artifacts/linux-aarch64/mar/*.mar
         - artifacts/linux-aarch64/mar/*.xml
         - artifacts/windows-x86_64/*.zip
         - artifacts/windows-x86_64/*.exe
         - artifacts/windows-x86_64/*.txt
+        - artifacts/windows-x86_64/*.sha256
         - artifacts/windows-x86_64/mar/*.mar
         - artifacts/windows-x86_64/mar/*.xml
         - artifacts/macos-x86_64/*.dmg
         - artifacts/macos-x86_64/*.txt
+        - artifacts/macos-x86_64/*.sha256
         - artifacts/macos-x86_64/mar/*.mar
         - artifacts/macos-x86_64/mar/*.xml
         - artifacts/macos-aarch64/*.dmg
         - artifacts/macos-aarch64/*.txt
+        - artifacts/macos-aarch64/*.sha256
         - artifacts/macos-aarch64/mar/*.mar
         - artifacts/macos-aarch64/mar/*.xml
     when:

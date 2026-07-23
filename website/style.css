@@ -73,6 +73,30 @@ dd {
   margin: 3px 0 0 24px;
 }
 
+.download-list {
+  margin-left: 24px;
+}
+
+.download-row {
+  display: grid;
+  grid-template-columns: 145px minmax(0, 1fr);
+  gap: 12px;
+  align-items: baseline;
+  margin: 3px 0;
+}
+
+.file-hash,
+.signing-fingerprint code {
+  color: #b1b1bb;
+  font: 10px/1.4 Consolas, "Liberation Mono", monospace;
+  overflow-wrap: anywhere;
+}
+
+.signing-fingerprint code {
+  display: block;
+  margin-top: 5px;
+}
+
 small {
   color: #b1b1bb;
 }
@@ -101,5 +125,10 @@ li {
   #page {
     width: auto;
     margin: 24px 18px;
+  }
+
+  .download-row {
+    grid-template-columns: 1fr;
+    gap: 0;
   }
 }

@@ -75,9 +75,24 @@ esac
 
 mkdir -p "$ARTIFACT_DIR"
 
+write_sha256() {
+    local artifact="$1"
+    local artifact_dir
+    local artifact_name
+
+    artifact_dir="$(dirname "$artifact")"
+    artifact_name="$(basename "$artifact")"
+    (
+        cd "$artifact_dir"
+        sha256sum "$artifact_name" > "$artifact_name.sha256"
+    )
+    echo "==> SHA-256: $artifact.sha256"
+}
+
 FINAL_PACKAGE="$ARTIFACT_DIR/${ARTIFACT_PREFIX}.${PACKAGE_SUFFIX}"
 cp "$PACKAGE" "$FINAL_PACKAGE"
 echo "==> Final package: $FINAL_PACKAGE"
+write_sha256 "$FINAL_PACKAGE"
 
 # mach package emits the NSIS installer at dist/*.installer.exe
 if [[ "$TARGET" == "windows-x86_64" ]]; then
@@ -86,6 +101,7 @@ if [[ "$TARGET" == "windows-x86_64" ]]; then
         FINAL_INSTALLER="$ARTIFACT_DIR/${ARTIFACT_PREFIX}.installer.exe"
         cp "$INSTALLER" "$FINAL_INSTALLER"
         echo "==> Staged installer: $FINAL_INSTALLER"
+        write_sha256 "$FINAL_INSTALLER"
     else
         echo "==> No installer .exe found in $OBJ_DIR/dist (zip-only build)"
     fi
