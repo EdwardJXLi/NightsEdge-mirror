@@ -238,19 +238,37 @@ esac
 echo "==> New version: $NEW_VERSION"
 echo "==> New commit:  $NEW_HASH"
 
-# --- Derive Rust toolchain version from Firefox source at the new commit ---
-# Mozilla pins MINIMUM_RUST_VERSION in python/mozboot/mozboot/util.py and uses
-# the matching stable Rust in taskcluster. Building with any other Rust risks
-# drift against nightly-but-whitelisted-via-RUSTC_BOOTSTRAP crates like
-# encoding_rs (portable_simd), whose unstable API moves between releases.
-RUST_UTIL_URL="$REPO_URL/raw-file/$NEW_HASH/python/mozboot/mozboot/util.py"
+# --- Derive the production Rust toolchain from Firefox's Taskcluster config ---
+# MINIMUM_RUST_VERSION is only Firefox's MSRV. Cross-language LTO requires the
+# production Rust compiler/linker selected by the default TL(rust) toolchain.
+RUST_TOOLCHAIN_URL="$REPO_URL/raw-file/$NEW_HASH/taskcluster/kinds/toolchain/rust.yml"
 NEW_RUST_VERSION=$(
-    curl -fsSL "$RUST_UTIL_URL" 2>/dev/null \
-        | awk -F '"' '/^MINIMUM_RUST_VERSION[[:space:]]*=/ { print $2; exit }'
+    curl -fsSL "$RUST_TOOLCHAIN_URL" 2>/dev/null \
+        | awk '
+            /^linux64-rust-[^:]+:$/ {
+                in_linux_rust = 1
+                is_default = 0
+                next
+            }
+            /^[^[:space:]][^:]*:$/ {
+                in_linux_rust = 0
+                is_default = 0
+            }
+            in_linux_rust && /symbol:[[:space:]]*TL\(rust\)[[:space:]]*$/ {
+                is_default = 1
+                next
+            }
+            !found && in_linux_rust && is_default && /--channel/ {
+                if (match($0, /[0-9]+\.[0-9]+\.[0-9]+/)) {
+                    print substr($0, RSTART, RLENGTH)
+                    found = 1
+                }
+            }
+        '
 )
 
 if [[ -z "$NEW_RUST_VERSION" ]]; then
-    echo "Error: could not derive MINIMUM_RUST_VERSION from $RUST_UTIL_URL"
+    echo "Error: could not derive the default Linux Rust toolchain from $RUST_TOOLCHAIN_URL"
     exit 1
 fi
 
