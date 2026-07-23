@@ -1,51 +1,44 @@
 diff --git a/browser/themes/shared/browser-shared.css b/browser/themes/shared/browser-shared.css
 --- a/browser/themes/shared/browser-shared.css
 +++ b/browser/themes/shared/browser-shared.css
-@@ -298,14 +298,28 @@ body {
-   }
- }
- 
--/* Images go on the body by default, unless they are aligned in the y axis in
-- * which case they go on the toolbox for backwards compatibility */
--:root:not([lwtheme-image-y-align]) body,
--:root[lwtheme-image-y-align] #navigator-toolbox {
+@@ -285,8 +285,23 @@
+-:root:not([theme-image-in-toolbox]) body,
+-:root[theme-image-in-toolbox] #navigator-toolbox {
 -  background-image: var(--toolbox-background-image);
 -  background-repeat: var(--toolbox-background-repeat);
 -  background-position: var(--toolbox-background-position);
+-  /* stylelint-disable-next-line stylelint-plugin-mozilla/use-design-tokens */
 -  background-size: var(--toolbox-background-size);
 +/* Use Firefox 150's sidebar background behavior when enabled; otherwise keep
 + * the pre-150 toolbox background. */
-+/* stylelint-disable-next-line media-query-no-invalid */
 +@media -moz-pref("browser.theme.background-image-on-sidebar.enabled") {
 +  /* Preserve upstream's vertical-alignment behavior. */
-+  :root:not([lwtheme-image-y-align]) body,
-+  :root[lwtheme-image-y-align] #navigator-toolbox {
++  :root:not([theme-image-in-toolbox]) body,
++  :root[theme-image-in-toolbox] #navigator-toolbox {
 +    background-image: var(--toolbox-background-image);
 +    background-repeat: var(--toolbox-background-repeat);
 +    background-position: var(--toolbox-background-position);
++    /* stylelint-disable-next-line stylelint-plugin-mozilla/use-design-tokens */
 +    background-size: var(--toolbox-background-size);
 +  }
 +}
 +
-+/* stylelint-disable-next-line media-query-no-invalid */
 +@media not -moz-pref("browser.theme.background-image-on-sidebar.enabled") {
 +  #navigator-toolbox {
 +    background-image: var(--toolbox-background-image);
 +    background-repeat: var(--toolbox-background-repeat);
 +    background-position: var(--toolbox-background-position);
++    /* stylelint-disable-next-line stylelint-plugin-mozilla/use-design-tokens */
 +    background-size: var(--toolbox-background-size);
 +  }
  }
- 
- .browser-toolbar {
 diff --git a/browser/themes/shared/tabbrowser/tabs.css b/browser/themes/shared/tabbrowser/tabs.css
 --- a/browser/themes/shared/tabbrowser/tabs.css
 +++ b/browser/themes/shared/tabbrowser/tabs.css
-@@ -2695,5 +2695,10 @@
+@@ -2641,5 +2641,9 @@
    &[expanded] {
      --tab-icon-end-margin: 7.5px;
 -
-+    /* stylelint-disable-next-line media-query-no-invalid */
 +    @media not -moz-pref("browser.theme.background-image-on-sidebar.enabled") {
 +      padding-block-start: var(--space-small);
 +      grid-gap: 0;
@@ -99,7 +92,7 @@ diff --git a/toolkit/components/extensions/test/browser/browser.toml b/toolkit/c
 diff --git a/toolkit/components/extensions/test/browser/browser_ext_themes_chromeparity.js b/toolkit/components/extensions/test/browser/browser_ext_themes_chromeparity.js
 --- a/toolkit/components/extensions/test/browser/browser_ext_themes_chromeparity.js
 +++ b/toolkit/components/extensions/test/browser/browser_ext_themes_chromeparity.js
-@@ -38,10 +38,27 @@ add_task(async function test_support_theme_frame() {
+@@ -38,10 +38,28 @@ add_task(async function test_support_theme_frame() {
    let body = document.body;
    let bodyCS = window.getComputedStyle(body);
  
@@ -112,6 +105,7 @@ diff --git a/toolkit/components/extensions/test/browser/browser_ext_themes_chrom
 +  await SpecialPowers.pushPrefEnv({
 +    set: [["browser.theme.background-image-on-sidebar.enabled", false]],
 +  });
++  bodyCS = window.getComputedStyle(body);
 +  let toolboxCS = window.getComputedStyle(gNavToolbox);
 +  Assert.ok(
 +    toolboxCS.backgroundImage.includes("face.png"),

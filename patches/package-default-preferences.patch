@@ -1,9 +1,10 @@
 diff --git a/browser/app/profile/firefox.js b/browser/app/profile/firefox.js
 --- a/browser/app/profile/firefox.js
 +++ b/browser/app/profile/firefox.js
-@@ -3624,2 +3624,5 @@
- // When enabled, Firefox ignores the distribution.ini file if global.id is MozillaOnline.
- pref("distribution.mozillaonline.ignore", true);
+@@ -3626,3 +3626,6 @@
+ #ifdef XP_MACOSX
+   pref("browser.macAppMenu.setAsDefaultShown", false);
+ #endif
 +
 +// Load NightsEdge defaults last.
 +#include nightsedge.js

@@ -15,7 +15,6 @@ Every patch in `patches/` is applied automatically during a build.
 | `configurable-theme-background-sidebar.patch` | Keeps theme backgrounds in the top toolbox by default; set `browser.theme.background-image-on-sidebar.enabled` to `true` for a continuous vertical-tabs sidebar background. |
 | `default-browser-message.patch` | Replaces the default-browser confirmation text. |
 | `macos-about-in-help.patch` | Keeps About available in the macOS Help menu. |
-| `macos-displayname-packaging.patch` | Allows the parenthesized NightsEdge display name to package correctly in a DMG. |
 | `package-default-preferences.patch` | Loads `prefs/nightsedge.js` after Firefox's defaults. |
 | `package-enterprise-policies.patch` | Includes `policies/policies.json` in non-Mozilla builds. |
 | `remove-pingsender.patch` | Removes the standalone telemetry pingsender. |
