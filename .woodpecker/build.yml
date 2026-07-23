@@ -363,7 +363,7 @@ steps:
       # Testing: also publish artifacts from manually-triggered builds for now.
       - event: [tag, manual]
 
-  - name: render-homepage
+  - name: render-site
     image: alpine:3.22
     environment:
       RELEASE_ARTIFACT_BASE_URL: https://s3.hydranet.dev/nightsedge-releases/releases
