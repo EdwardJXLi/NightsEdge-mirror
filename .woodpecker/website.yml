@@ -1,19 +1,22 @@
-depends_on: []
+depends_on:
+  - build
 
 when:
-  - event: push
-    branch: main
-    path:
-      include:
-        - website/**
-        - .woodpecker/website.yml
-  # Allow rebuilding or testing the image without changing the website.
+  # Publish the homepage only after the matching release/MAR workflow succeeds.
+  - event: tag
+  # Testing: manual runs also build the release artifacts before the homepage.
   - event: manual
 
 labels:
   platform: linux/amd64
 
 steps:
+  - name: render-homepage
+    image: alpine:3.22
+    commands:
+      - apk add --no-cache bash
+      - bash scripts/render-website.sh
+
   # This Dockerfile has no RUN instructions, so Kaniko can assemble the ARM64
   # filesystem on the x86_64 runner without QEMU or privileged execution.
   - name: publish-website-amd64

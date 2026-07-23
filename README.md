@@ -102,4 +102,4 @@ After building a target, generate its complete MAR and AUS-compatible `update.xm
 ./scripts/generate-mar.sh <target> https://nightsedge.hydranet.dev
 ```
 
-The files are written to `output/mar/<target>/`. The release upload publishes each MAR at `https://nightsedge.hydranet.dev/mar/<target>/` and the latest XML at the matching `https://nightsedge.hydranet.dev/updates/%BUILD_TARGET%.xml` path. Versioned packages remain under `/releases/<version>/`.
+The files are written to `output/mar/<target>/`. The release upload publishes each MAR at `https://nightsedge.hydranet.dev/mar/<target>/` and the latest XML at the matching `https://nightsedge.hydranet.dev/updates/%BUILD_TARGET%.xml` path. Versioned packages and the homepage download links use `/releases/<version>/`.

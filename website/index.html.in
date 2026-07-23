@@ -36,7 +36,7 @@
       disabled by default, while staying close to upstream Firefox.
     </p>
 
-    <p>The current version is: <b>hydra-152.0</b></p>
+    <p>The current version is: <b>hydra-@VERSION@</b></p>
 
     <h2>Differences</h2>
 
@@ -45,7 +45,6 @@
       <li>Keeps theme backgrounds in the top toolbar by default, with an option to extend them across the vertical-tabs sidebar.</li>
       <li>Slightly modifies in-browser text.</li>
       <li>Keeps the About dialog available from the Help menu on macOS.</li>
-      <li>Packages the parenthesized NightsEdge display name correctly in macOS disk images.</li>
       <li>Loads NightsEdge's default preferences after Firefox's defaults.</li>
       <li>Includes NightsEdge's enterprise policies in non-Mozilla builds.</li>
       <li>Removes the standalone telemetry ping sender from the build.</li>
@@ -61,20 +60,20 @@
     <dl>
       <dt>Linux</dt>
       <dd>
-        <a href="#downloads">x86_64 tar.xz</a><br>
-        <a href="#downloads">ARM64 tar.xz</a>
+        <a href="/releases/@VERSION@/linux-x86_64/nightsedge-@VERSION@-linux-x86_64.tar.xz" download>x86_64 tar.xz</a><br>
+        <a href="/releases/@VERSION@/linux-aarch64/nightsedge-@VERSION@-linux-aarch64.tar.xz" download>ARM64 tar.xz</a>
       </dd>
 
       <dt>Windows</dt>
       <dd>
-        <a href="#downloads">x86_64 installer</a><br>
-        <a href="#downloads">x86_64 portable zip</a>
+        <a href="/releases/@VERSION@/windows-x86_64/nightsedge-@VERSION@-windows-x86_64.installer.exe" download>x86_64 installer</a><br>
+        <a href="/releases/@VERSION@/windows-x86_64/nightsedge-@VERSION@-windows-x86_64.zip" download>x86_64 portable zip</a>
       </dd>
 
       <dt>macOS</dt>
       <dd>
-        <a href="#downloads">Apple Silicon dmg</a><br>
-        <a href="#downloads">Intel dmg</a>
+        <a href="/releases/@VERSION@/macos-aarch64/nightsedge-@VERSION@-macos-aarch64.dmg" download>Apple Silicon dmg</a><br>
+        <a href="/releases/@VERSION@/macos-x86_64/nightsedge-@VERSION@-macos-x86_64.dmg" download>Intel dmg</a>
       </dd>
     </dl>
 
