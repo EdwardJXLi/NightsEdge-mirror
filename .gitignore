@@ -1,0 +1,9 @@
+# Never commit MAR private-key material or encoded signing databases.
+certs/*.b64
+certs/*.db
+certs/*.key
+certs/*.p12
+certs/*.pfx
+certs/*.tar
+certs/*.tar.gz
+certs/pkcs11.txt

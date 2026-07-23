@@ -73,15 +73,35 @@ for patch in "$REPO_ROOT"/patches/*.patch; do
     fi
 done
 
-# --- Step 3: Copy mozconfig ---
+# --- Step 3: Install MAR verification certificates ---
+echo "==> Installing NightsEdge MAR verification certificates..."
+UPDATER_DIR="$SOURCE_DIR/toolkit/mozapps/update/updater"
+PRIMARY_MAR_CERT="$REPO_ROOT/certs/nightsedge-mar-primary.der"
+SECONDARY_MAR_CERT="$REPO_ROOT/certs/nightsedge-mar-secondary.der"
+
+if [[ ! -f "$PRIMARY_MAR_CERT" ]]; then
+    echo "Error: MAR verification certificate not found: $PRIMARY_MAR_CERT" >&2
+    exit 1
+fi
+
+install -m 0644 "$PRIMARY_MAR_CERT" "$UPDATER_DIR/nightsedge_primary.der"
+if [[ -f "$SECONDARY_MAR_CERT" ]]; then
+    install -m 0644 "$SECONDARY_MAR_CERT" "$UPDATER_DIR/nightsedge_secondary.der"
+else
+    # Firefox has primary and secondary trust slots. Until a separate rotation
+    # certificate is provisioned, trust the primary certificate in both slots.
+    install -m 0644 "$PRIMARY_MAR_CERT" "$UPDATER_DIR/nightsedge_secondary.der"
+fi
+
+# --- Step 4: Copy mozconfig ---
 echo "==> Installing mozconfig for $TARGET..."
 cp "$MOZCONFIG" "$SOURCE_DIR/.mozconfig"
 
-# --- Step 4: Custom version string ---
+# --- Step 5: Custom version string ---
 echo "==> Setting version display to hydra-${VERSION}..."
 echo "hydra-${VERSION}" > "$SOURCE_DIR/browser/config/version_display.txt"
 
-# --- Step 5: Install custom prefs ---
+# --- Step 6: Install custom prefs ---
 echo "==> Installing custom preferences..."
 PREFS_DIR="$SOURCE_DIR/browser/app/profile"
 mkdir -p "$PREFS_DIR"
@@ -90,13 +110,13 @@ mkdir -p "$PREFS_DIR"
 rm -f "$PREFS_DIR/00-nightsedge.js"
 cp "$REPO_ROOT/prefs/nightsedge.js" "$PREFS_DIR/nightsedge.js"
 
-# --- Step 6: Install enterprise policies ---
+# --- Step 7: Install enterprise policies ---
 echo "==> Installing enterprise policies..."
 POLICIES_DIR="$SOURCE_DIR/browser/app/distribution"
 mkdir -p "$POLICIES_DIR"
 cp "$REPO_ROOT/policies/policies.json" "$POLICIES_DIR/policies.json"
 
-# --- Step 7: Build ---
+# --- Step 8: Build ---
 echo "==> Bootstrapping Firefox toolchains..."
 cd "$SOURCE_DIR"
 export MOZCONFIG="$SOURCE_DIR/.mozconfig"
@@ -224,7 +244,7 @@ fi
 echo "==> Starting build..."
 ./mach build
 
-# --- Step 8: Package ---
+# --- Step 9: Package ---
 echo "==> Packaging..."
 ./mach package
 
