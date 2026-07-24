@@ -6,7 +6,7 @@ REPO_ROOT="$(dirname "$SCRIPT_DIR")"
 
 # --- Parse arguments ---
 TARGET="${1:-}"
-UPDATE_URL_BASE="${2:-https://updates.example.com}"
+UPDATE_URL_BASE="${2:-https://nightsedge.hydranet.dev}"
 
 if [[ -z "$TARGET" ]]; then
     echo "Usage: generate-mar.sh <target> [update-url-base]"

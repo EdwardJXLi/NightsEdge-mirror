@@ -90,7 +90,6 @@ If `sccache` is installed, it is enabled automatically for C/C++ and Rust. Set `
 Important build notes:
 
 - The checkout at `mozilla-release/` is forcibly restored to the pinned revision on each build; do not keep source changes there.
-- Replace the `updates.example.com` URLs in `prefs/nightsedge.js` and `patches/package-default-preferences.patch` before distributing builds with self-hosted updates.
 - macOS builds are ad-hoc signed but not Apple-signed or notarized. First launch may require right-clicking **Open** or running `xattr -cr NightsEdge.app`.
 
 ## Self-hosted updates
@@ -98,15 +97,15 @@ Important build notes:
 After building a target, generate its complete MAR and AUS-compatible `update.xml` with:
 
 ```bash
-./scripts/generate-mar.sh <target> https://updates.example.com
+./scripts/generate-mar.sh <target> https://nightsedge.hydranet.dev
 ```
 
-The files are written to `output/mar/<target>/`. Host the MAR at `<base-url>/mar/<target>/` and serve the generated XML from the AUS route configured in `prefs/nightsedge.js`. The generator reads the `nightsedge` channel from the build.
+The files are written to `output/mar/<target>/`. Host the MAR at `https://nightsedge.hydranet.dev/mar/<target>/` and publish each generated XML file at the matching `https://nightsedge.hydranet.dev/updates/%BUILD_TARGET%.xml` path.
 
 ## CI
 
 Woodpecker runs on pushes to `main`, manual runs, and tags using a Linux x86_64 runner. It fetches the pinned source, runs separate build and package steps for each enabled target, generates complete MAR files and update XML, then stages the results under `artifacts/`. All five target gates are enabled by default in `.woodpecker/build.yml`.
 
-Builds use `sccache` with the configured MinIO S3 backend. Every pipeline uploads a zipped artifact mirror to MinIO; tag pipelines also publish the platform packages and update files to a Forgejo release. CI requires `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`, plus `FORGEJO_RELEASE_TOKEN` for tagged releases.
+Builds use `sccache` with the configured MinIO S3 backend. Every pipeline uploads a zipped artifact mirror to MinIO; tag pipelines also publish the platform packages and update files to a Forgejo release. CI reads the cache credentials from the `CACHE_S3_ACCESS_KEY` and `CACHE_S3_SECRET_KEY` Woodpecker secrets. Tagged Forgejo releases also require `FORGEJO_RELEASE_TOKEN`.
 
 The optional Windmill job in `.windmill/auto_update.py` checks for upstream updates, commits and pushes new pins, waits for the push build, and creates a release tag only after that build succeeds. The tag starts the release pipeline.

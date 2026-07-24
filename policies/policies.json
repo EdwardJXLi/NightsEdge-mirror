@@ -3,6 +3,7 @@
     "DisableTelemetry": true,
     "DisableFirefoxStudies": true,
     "DisablePocket": true,
+    "AppUpdateURL": "https://nightsedge.hydranet.dev/updates/%BUILD_TARGET%.xml",
     "OverrideFirstRunPage": "",
     "OverridePostUpdatePage": "",
     "CaptivePortal": false,

@@ -118,9 +118,6 @@ pref("toolkit.telemetry.glean.upload.enabled", false);
 // --- Pocket ---
 pref("extensions.pocket.enabled", false);
 
-// --- Update channel ---
-pref("app.update.url", "https://updates.example.com/update/6/%PRODUCT%/%VERSION%/%BUILD_ID%/%BUILD_TARGET%/%LOCALE%/%CHANNEL%/%OS_VERSION%/%SYSTEM_CAPABILITIES%/%DISTRIBUTION%/%DISTRIBUTION_VERSION%/update.xml");
-
 // --- Theme appearance ---
 // false: paint theme background images only behind the top toolbox (Firefox 149 behavior).
 // true: paint them behind both the toolbox and vertical-tabs sidebar (Firefox 150+ behavior).

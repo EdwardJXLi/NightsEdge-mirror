@@ -6,6 +6,8 @@ ac_add_options --enable-application=browser
 
 # Update channel
 ac_add_options --enable-update-channel=nightsedge
+export MAR_CHANNEL_ID=nightsedge
+export ACCEPTED_MAR_CHANNEL_IDS=nightsedge
 
 # Disable telemetry at build level
 ac_add_options --disable-crashreporter
