@@ -368,10 +368,7 @@ steps:
       - curl -fsSL -o /usr/local/bin/mc https://dl.min.io/client/mc/release/linux-amd64/mc && chmod +x /usr/local/bin/mc
       - bash scripts/upload-release-s3.sh
     when:
-      # Production: publish release artifacts from release tags only.
-      # - event: tag
-      # Testing: also publish artifacts from manually-triggered builds for now.
-      - event: [tag, manual]
+      - event: tag
 
   # This Dockerfile has no RUN instructions, so Kaniko can assemble the ARM64
   # filesystem on the x86_64 runner without QEMU or privileged execution.
@@ -391,9 +388,7 @@ steps:
         - ${CI_COMMIT_SHA}-amd64
       extra_opts: --custom-platform=linux/amd64
     when:
-      # Production: publish the site image from release tags only.
-      # Testing: also publish it from manually-triggered builds for now.
-      - event: [tag, manual]
+      - event: tag
 
   - name: publish-website-arm64
     image: woodpeckerci/plugin-kaniko:2.3.2
@@ -411,7 +406,7 @@ steps:
         - ${CI_COMMIT_SHA}-arm64
       extra_opts: --custom-platform=linux/arm64
     when:
-      - event: [tag, manual]
+      - event: tag
 
   - name: publish-website-manifest
     image: gcr.io/go-containerregistry/crane:debug
@@ -443,4 +438,4 @@ steps:
         crane tag "$IMAGE:$CI_COMMIT_SHA" "$VERSION"
         crane tag "$IMAGE:$CI_COMMIT_SHA" latest
     when:
-      - event: [tag, manual]
+      - event: tag
