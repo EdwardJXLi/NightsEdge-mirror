@@ -428,6 +428,7 @@ steps:
         from_secret: CONTAINER_REGISTRY_PASSWORD
     commands:
       - |
+        . ./FIREFOX_VERSION
         IMAGE="registry.hydranet.dev/$WEBSITE_CONTAINER_REPOSITORY"
         printf '%s' "$CONTAINER_REGISTRY_PASSWORD" |
           crane auth login registry.hydranet.dev \
@@ -437,6 +438,7 @@ steps:
           --manifest "$IMAGE:$CI_COMMIT_SHA-amd64" \
           --manifest "$IMAGE:$CI_COMMIT_SHA-arm64" \
           --tag "$IMAGE:$CI_COMMIT_SHA"
+        crane tag "$IMAGE:$CI_COMMIT_SHA" "$VERSION"
         crane tag "$IMAGE:$CI_COMMIT_SHA" latest
     when:
       - event: [tag, manual]
