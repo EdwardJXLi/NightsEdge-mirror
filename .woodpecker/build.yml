@@ -30,10 +30,12 @@ steps:
       BUILD_X86_64: "true"
       SCCACHE_VERSION: "0.16.0"
       SCCACHE_DISABLE: 0
+      # sccache requires AWS_* environment variables, but their values come
+      # from cache-specific Woodpecker secrets.
       AWS_ACCESS_KEY_ID:
-        from_secret: AWS_ACCESS_KEY_ID
+        from_secret: CACHE_S3_ACCESS_KEY
       AWS_SECRET_ACCESS_KEY:
-        from_secret: AWS_SECRET_ACCESS_KEY
+        from_secret: CACHE_S3_SECRET_KEY
       SCCACHE_BUCKET: nightsedge-cache
       SCCACHE_ENDPOINT: s3.hydranet.dev
       SCCACHE_REGION: auto
@@ -78,9 +80,9 @@ steps:
       SCCACHE_VERSION: "0.16.0"
       SCCACHE_DISABLE: 0
       AWS_ACCESS_KEY_ID:
-        from_secret: AWS_ACCESS_KEY_ID
+        from_secret: CACHE_S3_ACCESS_KEY
       AWS_SECRET_ACCESS_KEY:
-        from_secret: AWS_SECRET_ACCESS_KEY
+        from_secret: CACHE_S3_SECRET_KEY
       SCCACHE_BUCKET: nightsedge-cache
       SCCACHE_ENDPOINT: s3.hydranet.dev
       SCCACHE_REGION: auto
@@ -125,9 +127,9 @@ steps:
       SCCACHE_VERSION: "0.16.0"
       SCCACHE_DISABLE: 0
       AWS_ACCESS_KEY_ID:
-        from_secret: AWS_ACCESS_KEY_ID
+        from_secret: CACHE_S3_ACCESS_KEY
       AWS_SECRET_ACCESS_KEY:
-        from_secret: AWS_SECRET_ACCESS_KEY
+        from_secret: CACHE_S3_SECRET_KEY
       SCCACHE_BUCKET: nightsedge-cache
       SCCACHE_ENDPOINT: s3.hydranet.dev
       SCCACHE_REGION: auto
@@ -173,9 +175,9 @@ steps:
       SCCACHE_VERSION: "0.16.0"
       SCCACHE_DISABLE: 0
       AWS_ACCESS_KEY_ID:
-        from_secret: AWS_ACCESS_KEY_ID
+        from_secret: CACHE_S3_ACCESS_KEY
       AWS_SECRET_ACCESS_KEY:
-        from_secret: AWS_SECRET_ACCESS_KEY
+        from_secret: CACHE_S3_SECRET_KEY
       SCCACHE_BUCKET: nightsedge-cache
       SCCACHE_ENDPOINT: s3.hydranet.dev
       SCCACHE_REGION: auto
@@ -221,9 +223,9 @@ steps:
       SCCACHE_VERSION: "0.16.0"
       SCCACHE_DISABLE: 0
       AWS_ACCESS_KEY_ID:
-        from_secret: AWS_ACCESS_KEY_ID
+        from_secret: CACHE_S3_ACCESS_KEY
       AWS_SECRET_ACCESS_KEY:
-        from_secret: AWS_SECRET_ACCESS_KEY
+        from_secret: CACHE_S3_SECRET_KEY
       SCCACHE_BUCKET: nightsedge-cache
       SCCACHE_ENDPOINT: s3.hydranet.dev
       SCCACHE_REGION: auto
@@ -266,17 +268,17 @@ steps:
   - name: upload-artifacts-s3
     image: ubuntu:24.04
     environment:
-      AWS_ACCESS_KEY_ID:
-        from_secret: AWS_ACCESS_KEY_ID
-      AWS_SECRET_ACCESS_KEY:
-        from_secret: AWS_SECRET_ACCESS_KEY
+      CACHE_S3_ACCESS_KEY:
+        from_secret: CACHE_S3_ACCESS_KEY
+      CACHE_S3_SECRET_KEY:
+        from_secret: CACHE_S3_SECRET_KEY
       SCCACHE_BUCKET: nightsedge-cache
       SCCACHE_ENDPOINT: s3.hydranet.dev
     commands:
       - 'echo "==> Runner architecture: $(uname -m)"'
       - apt-get update && apt-get install -y curl zip
       - curl -fsSL -o /usr/local/bin/mc https://dl.min.io/client/mc/release/linux-amd64/mc && chmod +x /usr/local/bin/mc
-      - mc alias set cache "https://$SCCACHE_ENDPOINT" "$AWS_ACCESS_KEY_ID" "$AWS_SECRET_ACCESS_KEY"
+      - mc alias set cache "https://$SCCACHE_ENDPOINT" "$CACHE_S3_ACCESS_KEY" "$CACHE_S3_SECRET_KEY"
       - |
         if [ -z "$(find artifacts -type f 2>/dev/null)" ]; then
           echo "==> No artifacts found to upload, skipping"
