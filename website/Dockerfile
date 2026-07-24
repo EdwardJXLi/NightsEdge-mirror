@@ -1,5 +1,7 @@
 FROM nginxinc/nginx-unprivileged:alpine
 
+LABEL org.opencontainers.image.description="Website for the NightsEdge browser."
+
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY index.html style.css /usr/share/nginx/html/
 
