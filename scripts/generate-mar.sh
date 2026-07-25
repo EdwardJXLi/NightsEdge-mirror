@@ -177,8 +177,12 @@ echo "==> MAR created: $MAR_FILE"
 MAR_HASH=$(sha512sum "$MAR_FILE" | cut -d' ' -f1)
 MAR_SIZE=$(stat -c%s "$MAR_FILE")
 BUILD_ID=$(grep '^BuildID=' "$APPLICATION_INI" | head -1 | cut -d= -f2-)
+if [[ ! "$BUILD_ID" =~ ^[0-9]{14}$ ]]; then
+    echo "Error: invalid BuildID in $APPLICATION_INI: $BUILD_ID" >&2
+    exit 1
+fi
 MAR_FILENAME=$(basename "$MAR_FILE")
-MAR_URL="${UPDATE_URL_BASE}/mar/${TARGET}/${MAR_FILENAME}"
+MAR_URL="${UPDATE_URL_BASE}/mar/${BUILD_ID}/${TARGET}/${MAR_FILENAME}"
 
 UPDATE_XML="$MAR_OUTPUT_DIR/update.xml"
 cat > "$UPDATE_XML" <<EOF

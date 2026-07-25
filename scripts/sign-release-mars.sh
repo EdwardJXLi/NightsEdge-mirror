@@ -119,9 +119,18 @@ for target in "${TARGETS[@]}"; do
 
     mv -f "$signed_mar" "$mar_file"
 
+    build_id="$(
+        sed -n 's/.*buildID="\([0-9][0-9]*\)".*/\1/p' "$update_xml" |
+            head -1
+    )"
+    if [[ ! "$build_id" =~ ^[0-9]{14}$ ]]; then
+        echo "Error: invalid or missing buildID in $update_xml" >&2
+        exit 1
+    fi
+
     mar_hash="$(sha512sum "$mar_file" | cut -d' ' -f1)"
     mar_size="$(stat -c%s "$mar_file")"
-    mar_url="$UPDATE_URL_BASE/mar/$target/$(basename "$mar_file")"
+    mar_url="$UPDATE_URL_BASE/mar/$build_id/$target/$(basename "$mar_file")"
 
     python3 - "$update_xml" "$mar_url" "$mar_hash" "$mar_size" <<'PY'
 import re

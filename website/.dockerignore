@@ -4,3 +4,5 @@
 !nginx.conf
 !index.html
 !style.css
+!updates/
+!updates/**

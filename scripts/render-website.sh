@@ -6,6 +6,7 @@ REPO_ROOT="$(dirname "$SCRIPT_DIR")"
 VERSION_FILE="${VERSION_FILE:-$REPO_ROOT/FIREFOX_VERSION}"
 WEBSITE_TEMPLATE="${WEBSITE_TEMPLATE:-$REPO_ROOT/website/index.html.in}"
 WEBSITE_OUTPUT="${WEBSITE_OUTPUT:-$REPO_ROOT/website/index.html}"
+WEBSITE_UPDATES_DIR="${WEBSITE_UPDATES_DIR:-$REPO_ROOT/website/updates}"
 PUBLIC_MAR_CERT="${PUBLIC_MAR_CERT:-$REPO_ROOT/certs/nightsedge-mar-primary.der}"
 RELEASE_ARTIFACTS_DIR="${RELEASE_ARTIFACTS_DIR:-}"
 
@@ -96,6 +97,17 @@ MAR_CERT_SHA256="$(
 OUTPUT_DIR="$(dirname "$WEBSITE_OUTPUT")"
 mkdir -p "$OUTPUT_DIR"
 TEMP_OUTPUT="$(mktemp "$OUTPUT_DIR/.index.html.XXXXXX")"
+TEMP_UPDATES_DIR=""
+
+cleanup() {
+    if [[ -n "$TEMP_OUTPUT" && -f "$TEMP_OUTPUT" ]]; then
+        rm -f -- "$TEMP_OUTPUT"
+    fi
+    if [[ -n "$TEMP_UPDATES_DIR" && -d "$TEMP_UPDATES_DIR" ]]; then
+        rm -rf -- "$TEMP_UPDATES_DIR"
+    fi
+}
+trap cleanup EXIT
 
 TEMPLATE_CONTENTS="$(<"$WEBSITE_TEMPLATE")"
 TEMPLATE_CONTENTS="${TEMPLATE_CONTENTS//@VERSION@/$VERSION}"
@@ -113,5 +125,52 @@ if grep -Eq '@[A-Z0-9_]+@' "$TEMP_OUTPUT"; then
     exit 1
 fi
 
+chmod 0644 "$TEMP_OUTPUT"
 mv "$TEMP_OUTPUT" "$WEBSITE_OUTPUT"
+TEMP_OUTPUT=""
+
+TEMP_UPDATES_DIR="$(mktemp -d "$OUTPUT_DIR/.updates.XXXXXX")"
+chmod 0755 "$TEMP_UPDATES_DIR"
+if [[ -n "$RELEASE_ARTIFACTS_DIR" ]]; then
+    TARGETS=(
+        "linux-x86_64:Linux_x86_64-gcc3"
+        "linux-aarch64:Linux_aarch64-gcc3"
+        "windows-x86_64:WINNT_x86_64-msvc-x64"
+        "macos-x86_64:Darwin_x86_64-gcc3"
+        "macos-aarch64:Darwin_aarch64-gcc3"
+    )
+
+    for target_mapping in "${TARGETS[@]}"; do
+        target="${target_mapping%%:*}"
+        build_target="${target_mapping#*:}"
+        update_xml="${RELEASE_ARTIFACTS_DIR%/}/$target/mar/nightsedge-${VERSION}-${target}.update.xml"
+
+        if [[ ! -f "$update_xml" ]]; then
+            echo "Error: update manifest not found: $update_xml" >&2
+            exit 1
+        fi
+        if ! grep -Eq \
+            "URL=\"[^\"]*/mar/[0-9]{14}/$target/nightsedge-${VERSION}-${target}[.]complete[.]mar\"" \
+            "$update_xml"; then
+            echo "Error: update manifest does not reference an immutable MAR: $update_xml" >&2
+            exit 1
+        fi
+
+        cp "$update_xml" "$TEMP_UPDATES_DIR/$build_target.xml"
+        chmod 0644 "$TEMP_UPDATES_DIR/$build_target.xml"
+        echo "==> Staged update manifest for $build_target"
+    done
+else
+    echo "==> No release artifacts supplied; rendered image will not contain update manifests"
+fi
+
+if [[ -z "$WEBSITE_UPDATES_DIR" || "$WEBSITE_UPDATES_DIR" == "/" ]]; then
+    echo "Error: refusing unsafe website updates directory: $WEBSITE_UPDATES_DIR" >&2
+    exit 1
+fi
+rm -rf -- "$WEBSITE_UPDATES_DIR"
+mv "$TEMP_UPDATES_DIR" "$WEBSITE_UPDATES_DIR"
+TEMP_UPDATES_DIR=""
+trap - EXIT
+
 echo "==> Rendered homepage for NightsEdge $VERSION"

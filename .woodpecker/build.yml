@@ -350,6 +350,8 @@ steps:
     commands:
       - apk add --no-cache bash
       - bash scripts/render-website.sh
+    when:
+      - event: [tag, manual]
 
   - name: upload-release-artifacts-s3
     image: ubuntu:24.04

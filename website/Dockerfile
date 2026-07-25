@@ -4,6 +4,7 @@ LABEL org.opencontainers.image.description="Website for the NightsEdge browser."
 
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY index.html style.css /usr/share/nginx/html/
+COPY updates/ /usr/share/nginx/html/updates/
 
 EXPOSE 8080
 

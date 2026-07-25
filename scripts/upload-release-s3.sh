@@ -24,31 +24,48 @@ mc alias set releases "$RELEASE_S3_ENDPOINT" "$RELEASE_S3_ACCESS_KEY" "$RELEASE_
 mc mirror --overwrite "$ARTIFACTS_DIR" "releases/$RELEASE_S3_BUCKET/releases/$VERSION"
 echo "==> Uploaded release artifacts to s3://$RELEASE_S3_BUCKET/releases/$VERSION/"
 
-# Publish the latest complete MARs and update manifests at the stable paths
-# compiled into Firefox. %BUILD_TARGET% expands to the XPCOM ABI values below.
+# Publish complete MARs at immutable paths. The update manifests are baked into
+# the website image and reference these objects by Firefox build ID.
 TARGETS=(
-    "linux-x86_64:Linux_x86_64-gcc3"
-    "linux-aarch64:Linux_aarch64-gcc3"
-    "windows-x86_64:WINNT_x86_64-msvc-x64"
-    "macos-x86_64:Darwin_x86_64-gcc3"
-    "macos-aarch64:Darwin_aarch64-gcc3"
+    linux-x86_64
+    linux-aarch64
+    windows-x86_64
+    macos-x86_64
+    macos-aarch64
 )
 
-for target_mapping in "${TARGETS[@]}"; do
-    target="${target_mapping%%:*}"
-    build_target="${target_mapping#*:}"
+for target in "${TARGETS[@]}"; do
     mar_dir="$ARTIFACTS_DIR/$target/mar"
+    mar_file="$mar_dir/nightsedge-${VERSION}-${target}.complete.mar"
+    update_xml="$mar_dir/nightsedge-${VERSION}-${target}.update.xml"
 
-    [[ -d "$mar_dir" ]] || continue
-
-    while IFS= read -r -d '' mar_file; do
-        mar_name="$(basename "$mar_file")"
-        mc cp "$mar_file" "releases/$RELEASE_S3_BUCKET/mar/$target/$mar_name"
-    done < <(find "$mar_dir" -maxdepth 1 -type f -name '*.mar' -print0)
-
-    update_xml="$(find "$mar_dir" -maxdepth 1 -type f -name '*.update.xml' -print -quit)"
-    if [[ -n "$update_xml" ]]; then
-        mc cp "$update_xml" "releases/$RELEASE_S3_BUCKET/updates/$build_target.xml"
-        echo "==> Published update manifest for $build_target"
+    if [[ ! -f "$mar_file" ]]; then
+        echo "Error: release MAR not found: $mar_file" >&2
+        exit 1
     fi
+    if [[ ! -f "$update_xml" ]]; then
+        echo "Error: update manifest not found: $update_xml" >&2
+        exit 1
+    fi
+
+    build_id="$(
+        sed -n 's/.*buildID="\([0-9][0-9]*\)".*/\1/p' "$update_xml" |
+            head -1
+    )"
+    if [[ ! "$build_id" =~ ^[0-9]{14}$ ]]; then
+        echo "Error: invalid or missing buildID in $update_xml" >&2
+        exit 1
+    fi
+
+    mar_name="$(basename "$mar_file")"
+    mar_url="https://nightsedge.hydranet.dev/mar/$build_id/$target/$mar_name"
+    if ! grep -Fq "URL=\"$mar_url\"" "$update_xml"; then
+        echo "Error: $update_xml does not reference $mar_url" >&2
+        exit 1
+    fi
+
+    mc cp \
+        "$mar_file" \
+        "releases/$RELEASE_S3_BUCKET/mar/$build_id/$target/$mar_name"
+    echo "==> Published immutable MAR for $target build $build_id"
 done
