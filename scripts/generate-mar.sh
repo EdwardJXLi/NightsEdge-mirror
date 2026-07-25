@@ -164,6 +164,30 @@ if [[ -z "$MAR_CHANNEL_ID" ]]; then
     exit 1
 fi
 
+BUILD_ID=$(sed -n 's/^BuildID=//p' "$APPLICATION_INI" | head -1)
+if [[ ! "$BUILD_ID" =~ ^[0-9]{14}$ ]]; then
+    echo "Error: invalid BuildID in $APPLICATION_INI: $BUILD_ID" >&2
+    exit 1
+fi
+
+COMPILED_BUILD_ID_FILE="$OBJ_DIR/nightsedge-build-id.txt"
+if [[ ! -f "$COMPILED_BUILD_ID_FILE" ]]; then
+    echo "Error: compiled build ID record not found: $COMPILED_BUILD_ID_FILE" >&2
+    echo "       Re-run scripts/build.sh $TARGET before generating the MAR." >&2
+    exit 1
+fi
+read -r COMPILED_BUILD_ID < "$COMPILED_BUILD_ID_FILE"
+if [[ ! "$COMPILED_BUILD_ID" =~ ^[0-9]{14}$ ]]; then
+    echo "Error: invalid compiled build ID in $COMPILED_BUILD_ID_FILE: $COMPILED_BUILD_ID" >&2
+    exit 1
+fi
+if [[ "$BUILD_ID" != "$COMPILED_BUILD_ID" ]]; then
+    echo "Error: refusing to generate an update with mismatched build IDs" >&2
+    echo "       Compiled: $COMPILED_BUILD_ID" >&2
+    echo "       Packaged: $BUILD_ID" >&2
+    exit 1
+fi
+
 MAR="$MAR_TOOL" \
 MOZ_PRODUCT_VERSION="$MOZ_PRODUCT_VERSION" \
 MAR_CHANNEL_ID="$MAR_CHANNEL_ID" \
@@ -176,11 +200,6 @@ echo "==> MAR created: $MAR_FILE"
 # --- Generate update.xml ---
 MAR_HASH=$(sha512sum "$MAR_FILE" | cut -d' ' -f1)
 MAR_SIZE=$(stat -c%s "$MAR_FILE")
-BUILD_ID=$(grep '^BuildID=' "$APPLICATION_INI" | head -1 | cut -d= -f2-)
-if [[ ! "$BUILD_ID" =~ ^[0-9]{14}$ ]]; then
-    echo "Error: invalid BuildID in $APPLICATION_INI: $BUILD_ID" >&2
-    exit 1
-fi
 MAR_FILENAME=$(basename "$MAR_FILE")
 MAR_URL="${UPDATE_URL_BASE}/mar/${BUILD_ID}/${TARGET}/${MAR_FILENAME}"
 

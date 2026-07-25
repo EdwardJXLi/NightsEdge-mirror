@@ -15,11 +15,25 @@ fi
 # Extra Rust std target needed on top of the host toolchain, if any.
 RUST_TARGET=""
 case "$TARGET" in
-    linux-x86_64) ;;
-    linux-aarch64) RUST_TARGET="aarch64-unknown-linux-gnu" ;;
-    windows-x86_64) RUST_TARGET="x86_64-pc-windows-msvc" ;;
-    macos-x86_64)  RUST_TARGET="x86_64-apple-darwin" ;;
-    macos-aarch64) RUST_TARGET="aarch64-apple-darwin" ;;
+    linux-x86_64)
+        OBJ_PATTERN="obj-x86_64-pc-linux-gnu"
+        ;;
+    linux-aarch64)
+        RUST_TARGET="aarch64-unknown-linux-gnu"
+        OBJ_PATTERN="obj-aarch64-unknown-linux-gnu"
+        ;;
+    windows-x86_64)
+        RUST_TARGET="x86_64-pc-windows-msvc"
+        OBJ_PATTERN="obj-x86_64-pc-windows-msvc"
+        ;;
+    macos-x86_64)
+        RUST_TARGET="x86_64-apple-darwin"
+        OBJ_PATTERN="obj-x86_64-apple-darwin"
+        ;;
+    macos-aarch64)
+        RUST_TARGET="aarch64-apple-darwin"
+        OBJ_PATTERN="obj-aarch64-apple-darwin"
+        ;;
     *)
         echo "Error: unsupported target '$TARGET'"
         exit 1
@@ -52,11 +66,22 @@ if [[ -z "${RUST_VERSION:-}" ]]; then
     exit 1
 fi
 
+# Firefox regenerates build metadata for separate mach invocations. Keep the
+# compiled binary and package metadata on one ID so update comparisons cannot
+# repeatedly offer the same MAR.
+MOZ_BUILD_DATE="${MOZ_BUILD_DATE:-$(date -u +%Y%m%d%H%M%S)}"
+if [[ ! "$MOZ_BUILD_DATE" =~ ^[0-9]{14}$ ]]; then
+    echo "Error: MOZ_BUILD_DATE must be a 14-digit UTC timestamp: $MOZ_BUILD_DATE" >&2
+    exit 1
+fi
+export MOZ_BUILD_DATE
+
 echo "==> NightsEdge build: $TARGET"
 echo "    Firefox $VERSION (hg:$HG_COMMIT_HASH)"
 echo "    Track:   $FIREFOX_TRACK"
 echo "    Repo:    $UPSTREAM_REPO"
 echo "    Rust:    $RUST_VERSION"
+echo "    Build ID: $MOZ_BUILD_DATE"
 
 # --- Step 1: Restore pinned source ---
 "$SCRIPT_DIR/fetch-source.sh"
@@ -244,9 +269,46 @@ fi
 echo "==> Starting build..."
 ./mach build
 
+OBJ_DIR=$(find "$SOURCE_DIR" -maxdepth 1 -name "$OBJ_PATTERN" -type d | head -1)
+BUILD_ID_HEADER="$OBJ_DIR/buildid.h"
+if [[ -z "$OBJ_DIR" || ! -f "$BUILD_ID_HEADER" ]]; then
+    echo "Error: build ID header not found after compiling: $BUILD_ID_HEADER" >&2
+    exit 1
+fi
+
+COMPILED_BUILD_ID=$(awk '$2 == "MOZ_BUILDID" { print $3; exit }' "$BUILD_ID_HEADER")
+if [[ ! "$COMPILED_BUILD_ID" =~ ^[0-9]{14}$ ]]; then
+    echo "Error: invalid compiled build ID in $BUILD_ID_HEADER: $COMPILED_BUILD_ID" >&2
+    exit 1
+fi
+if [[ "$COMPILED_BUILD_ID" != "$MOZ_BUILD_DATE" ]]; then
+    echo "Error: compiled build ID does not match MOZ_BUILD_DATE" >&2
+    echo "       Compiled:       $COMPILED_BUILD_ID" >&2
+    echo "       MOZ_BUILD_DATE: $MOZ_BUILD_DATE" >&2
+    exit 1
+fi
+
+# Keep the ID captured immediately after compilation. generate-mar.sh checks
+# this record because a later packaging invocation may regenerate buildid.h.
+printf '%s\n' "$COMPILED_BUILD_ID" > "$OBJ_DIR/nightsedge-build-id.txt"
+
 # --- Step 9: Package ---
 echo "==> Packaging..."
 ./mach package
+
+APPLICATION_INI="$OBJ_DIR/dist/bin/application.ini"
+if [[ ! -f "$APPLICATION_INI" ]]; then
+    echo "Error: packaged application metadata not found: $APPLICATION_INI" >&2
+    exit 1
+fi
+
+PACKAGED_BUILD_ID=$(sed -n 's/^BuildID=//p' "$APPLICATION_INI" | head -1)
+if [[ "$PACKAGED_BUILD_ID" != "$COMPILED_BUILD_ID" ]]; then
+    echo "Error: packaged and compiled build IDs do not match" >&2
+    echo "       Compiled: $COMPILED_BUILD_ID" >&2
+    echo "       Packaged: $PACKAGED_BUILD_ID" >&2
+    exit 1
+fi
 
 # Apple Silicon kills Mach-Os whose linker ad-hoc signatures went stale during
 # packaging; re-sign the staged .app and rebuild the DMG from it.
@@ -260,10 +322,6 @@ if [[ "$TARGET" == macos-* ]]; then
             | tar -xz --strip-components=1 -C "$(dirname "$RCODESIGN")"
     fi
 
-    case "$TARGET" in
-        macos-x86_64)  OBJ_DIR="$SOURCE_DIR/obj-x86_64-apple-darwin" ;;
-        macos-aarch64) OBJ_DIR="$SOURCE_DIR/obj-aarch64-apple-darwin" ;;
-    esac
     STAGED_APP="$(find "$OBJ_DIR/dist" -mindepth 2 -maxdepth 2 -type d -name '*.app' | head -1)"
     if [[ -z "$STAGED_APP" ]]; then
         echo "Error: no staged .app found under $OBJ_DIR/dist" >&2

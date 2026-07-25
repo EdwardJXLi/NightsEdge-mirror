@@ -136,6 +136,10 @@ update XML files are baked into the website image at
 packages and homepage download links use
 `https://nightsedge.hydranet.dev/releases/<version>/`.
 
+`scripts/build.sh` pins one `MOZ_BUILD_DATE` across compilation and packaging.
+The build and MAR scripts reject artifacts whose compiled and packaged build
+IDs differ, preventing Firefox from repeatedly installing the same update.
+
 ---
 
 NightsEdge is independent from Mozilla. Firefox and the Firefox logos are
