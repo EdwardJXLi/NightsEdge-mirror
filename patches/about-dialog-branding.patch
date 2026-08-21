@@ -12,14 +12,15 @@
  
  ## Variables:
  ##   $displayUrl (String): URL to page with download instructions. Example: www.mozilla.org/firefox/nightly/
-@@ -78,9 +78,9 @@
- 
+@@ -79,10 +79,8 @@
  community-exp = <label data-l10n-name="community-exp-mozillaLink">{ -vendor-short-name }</label> is a <label data-l10n-name="community-exp-creditsLink">global community</label> working together to keep the Web open, public and accessible to all.
  
 -community-2 = { -brand-short-name } is designed by <label data-l10n-name="community-mozillaLink">{ -vendor-short-name }</label>, a <label data-l10n-name="community-creditsLink">global community</label> working together to keep the Web open, public and accessible to all.
 +nightsedge-fork-desc = NightsEdge is a fork of Firefox maintained by <label data-l10n-name="nightsedge-github-link">RadioactiveHydra / EdwardJXLi</label>.
  
 -helpus = Want to help? <label data-l10n-name="helpus-donateLink">Make a donation</label> or <label data-l10n-name="helpus-getInvolvedLink">get involved!</label>
+-
+-helpus-referrals = Want to help? <label data-l10n-name="helpus-donateLink">Make a donation</label>, <label data-l10n-name="helpus-shareFirefoxLink">Share { -brand-short-name }</label>, or <label data-l10n-name="helpus-getInvolvedLink">get involved!</label>
 +community-2 = Firefox is designed by { -vendor-short-name }, a <label data-l10n-name="community-creditsLink">global community</label> working together to keep the Web open, public and accessible to all.
  
  bottomLinks-license = Licensing Information
@@ -35,7 +36,7 @@
          >
  #ifdef XP_MACOSX
  #include macWindow.inc.xhtml
-@@ -124,14 +124,12 @@
+@@ -124,20 +124,12 @@
                <label is="text-link" useoriginprincipal="true" href="about:credits" data-l10n-name="community-exp-creditsLink"/>
              </description>
            </vbox>
@@ -50,6 +51,62 @@
 -            <label is="text-link" href="https://foundation.mozilla.org/?form=firefox-about" data-l10n-name="helpus-donateLink"/>
 -            <label is="text-link" href="https://www.mozilla.org/contribute/?utm_source=firefox-browser&#38;utm_medium=firefox-desktop&#38;utm_campaign=about-dialog" data-l10n-name="helpus-getInvolvedLink"/>
 -          </description>
+-          <description class="text-blurb" id="contributeDescReferrals" data-l10n-id="helpus-referrals" hidden="true">
+-            <label is="text-link" href="https://foundation.mozilla.org/?form=firefox-about" data-l10n-name="helpus-donateLink"/>
+-            <label is="text-link" useoriginprincipal="true" href="about:referrals" data-l10n-name="helpus-shareFirefoxLink"/>
+-            <label is="text-link" href="https://www.mozilla.org/contribute/?utm_source=firefox-browser&#38;utm_medium=firefox-desktop&#38;utm_campaign=about-dialog" data-l10n-name="helpus-getInvolvedLink"/>
+-          </description>
+-
          </vbox>
        </vbox>
      </hbox>
+--- a/browser/base/content/aboutDialog.js
++++ b/browser/base/content/aboutDialog.js
+@@ -12,11 +12,6 @@ var { AppConstants } = ChromeUtils.importESModule(
+   "resource://gre/modules/AppConstants.sys.mjs"
+ );
+-
+-const lazy = {};
+-ChromeUtils.defineESModuleGetters(lazy, {
+-  Referrals: "resource:///modules/referrals/Referrals.sys.mjs",
+-});
+-
++
+ if (AppConstants.MOZ_UPDATER) {
+   Services.scriptloader.loadSubScript(
+     "chrome://browser/content/aboutDialog-appUpdater.js",
+@@ -121,33 +116,6 @@ function init() {
+     }
+   }
+-
+-  // contributeDescReferrals contains the Share Firefox link, so we
+-  // toggle which description based on the referrals config flag
+-  let referralsEnabled = Services.prefs.getBoolPref(
+-    "browser.referrals.enabled",
+-    false
+-  );
+-  document.getElementById("contributeDesc").hidden = referralsEnabled;
+-  let contributeDescReferrals = document.getElementById(
+-    "contributeDescReferrals"
+-  );
+-  contributeDescReferrals.hidden = !referralsEnabled;
+-
+-  if (referralsEnabled) {
+-    contributeDescReferrals.addEventListener(
+-      "click",
+-      event => {
+-        if (
+-          event.target.closest('[data-l10n-name="helpus-shareFirefoxLink"]')
+-        ) {
+-          event.preventDefault();
+-          lazy.Referrals.openReferralsTab(window);
+-        }
+-      },
+-      true
+-    );
+-  }
+-
++
+   if (AppConstants.IS_ESR) {
+     document.getElementById("release").hidden = false;
+   }
