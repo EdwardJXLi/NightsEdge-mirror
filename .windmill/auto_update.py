@@ -120,11 +120,17 @@ def main(
             ["git", "-C", repo_dir, "log", "-1", "--pretty=%s"]
         ).stdout.strip()
         commit_url = f"{forgejo_base_url.rstrip('/')}/{repo_owner}/{repo_name}/commit/{after_sha}"
+        firefox_release_notes_url = (
+            f"https://www.firefox.com/en-US/firefox/{after_version}/releasenotes/"
+        )
 
         push_embed = {
             "title": f"NightsEdge update: {before_version} → {after_version}",
             "url": commit_url,
             "color": EMBED_BLUE,
+            "description": (
+                f"[Firefox {after_version} release notes]({firefox_release_notes_url})"
+            ),
             "fields": [
                 {"name": "Previous", "value": f"`{before_version}`", "inline": True},
                 {"name": "New", "value": f"`{after_version}`", "inline": True},
@@ -290,7 +296,10 @@ def main(
             "title": f"🎉 NightsEdge {after_version} released",
             "url": release_url,
             "color": EMBED_GREEN,
-            "description": f"[`{tag_name}`]({release_url}) is live.",
+            "description": (
+                f"[`{tag_name}`]({release_url}) is live.\n"
+                f"[Firefox {after_version} release notes]({firefox_release_notes_url})"
+            ),
         })
         log(f"Released {after_version} -> {release_url}")
         return {
