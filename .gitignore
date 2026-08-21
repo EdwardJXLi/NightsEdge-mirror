@@ -1,4 +1,7 @@
-# Never commit MAR private-key material or encoded signing databases.
+# Ignore FireFox source code
+firefox
+
+# Dont commit MAR private-key material.
 certs/*.b64
 certs/*.db
 certs/*.key
