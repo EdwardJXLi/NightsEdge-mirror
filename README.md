@@ -11,14 +11,11 @@ small set of branding, privacy, and interface changes.
 
 ## Overview
 
-- Uses Firefox Nightly branding with the display name **Firefox Nightly
-  (NightsEdge)** and the version string `hydra-<version>`.
-- Disables telemetry, data and crash reporting, studies, Pocket, sponsored
-  content, and recommendation services through build flags, default
-  preferences, and enterprise policies.
-- Does not build or package Firefox's standalone telemetry `pingsender`.
-- Uses the custom `nightsedge` update channel with self-hosted, signed MAR
-  updates.
+- Uses Firefox Nightly branding with the display name **Firefox Nightly (NightsEdge)**.
+- Disables telemetry, data and crash reporting, studies, Pocket, sponsored content, and recommendation services.
+- Removes Firefox's standalone telemetry `pingsender`.
+- Adds additional vertical-tabs sidebar theming options.
+- Uses the custom `nightsedge` update channel with self-hosted, signed MAR updates.
 - Builds packages for Linux, Windows, and macOS from a Linux x86_64 host.
 
 ## Building

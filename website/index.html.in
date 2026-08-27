@@ -42,12 +42,11 @@
 
     <ul>
       <li>Uses Firefox Nightly branding (hence the name).</li>
-      <li>Keeps theme backgrounds in the top toolbar by default, with an option to extend them across the vertical-tabs sidebar.</li>
-      <li>Slightly modifies in-browser text.</li>
-      <li>Keeps the About dialog available from the Help menu on macOS.</li>
-      <li>Loads NightsEdge's default preferences after Firefox's defaults.</li>
-      <li>Includes NightsEdge's enterprise policies in non-Mozilla builds.</li>
-      <li>Removes the standalone telemetry ping sender from the build.</li>
+      <li>Disables telemetry, data and crash reporting, studies, Pocket, sponsored content, and recommendation services.</li>
+      <li>Removes Firefox's standalone telemetry pingsender.</li>
+      <li>Adds additional vertical-tabs sidebar theming options.</li>
+      <li>Uses the custom nightsedge update channel with self-hosted, signed MAR updates.</li>
+      <li>Builds packages for Linux, Windows, and macOS from a Linux x86_64 host.</li>
     </ul>
 
     <h2 id="downloads">Downloads</h2>
