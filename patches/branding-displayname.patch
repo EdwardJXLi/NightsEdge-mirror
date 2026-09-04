@@ -35,3 +35,22 @@ index e84fdd0..dbcb524 100644
  brandShortName=Nightly
 -brandFullName=Firefox Nightly
 +brandFullName=Firefox Nightly (NightsEdge)
+diff --git a/python/mozbuild/mozbuild/backend/recursivemake.py b/python/mozbuild/mozbuild/backend/recursivemake.py
+--- a/python/mozbuild/mozbuild/backend/recursivemake.py
++++ b/python/mozbuild/mozbuild/backend/recursivemake.py
+@@ -2011,5 +2011,6 @@ class RecursiveMakeBackend(MakeBackend):
+             .replace(" ", "")
+         )
+         spec_name = f"{spec_id}.bundle.json"
++        spec_arg = make_quote(shell_quote(spec_name))
+         with self._write_file(mozpath.join(backend_file.objdir, spec_name)) as fh:
+             json.dump(resolved, fh, sort_keys=True, indent=2)
+@@ -2035,7 +2036,7 @@ class RecursiveMakeBackend(MakeBackend):
+             [self._pretty_path(p, backend_file) for p in inputs] + [spec_name]
+         )
+         rule.add_commands([
+-            f"$(call py_action,assemble_macos_bundle {safe_name},{spec_name})"
++            f"$(call py_action,assemble_macos_bundle {safe_name},{spec_arg})"
+         ])
+         fragment.dump(backend_file.fh, removal_guard=False)
+         if spec["stage"]:
