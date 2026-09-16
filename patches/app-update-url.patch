@@ -1,0 +1,9 @@
+diff --git a/build/application.ini.in b/build/application.ini.in
+--- a/build/application.ini.in
++++ b/build/application.ini.in
+@@ -53,4 +53,4 @@
+ #if MOZ_UPDATER
+ [AppUpdate]
+-URL=https://@MOZ_APPUPDATE_HOST@/update/6/%PRODUCT%/%VERSION%/%BUILD_ID%/%BUILD_TARGET%/%LOCALE%/%CHANNEL%/%OS_VERSION%/%SYSTEM_CAPABILITIES%/%DISTRIBUTION%/%DISTRIBUTION_VERSION%/update.xml
++URL=https://nightsedge.hydranet.dev/updates/%BUILD_TARGET%.xml
+ #endif

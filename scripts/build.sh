@@ -310,6 +310,25 @@ if [[ "$PACKAGED_BUILD_ID" != "$COMPILED_BUILD_ID" ]]; then
     exit 1
 fi
 
+EXPECTED_UPDATE_URL="https://nightsedge.hydranet.dev/updates/%BUILD_TARGET%.xml"
+if grep -q '"AppUpdateURL"' "$REPO_ROOT/policies/policies.json"; then
+    echo "Error: AppUpdateURL policy would override the built-in update URL" >&2
+    exit 1
+fi
+COMPILED_APP_INI_HEADER="$OBJ_DIR/build/application.ini.h"
+if [[ ! -f "$COMPILED_APP_INI_HEADER" ]] ||
+   ! grep -Fq "\"$EXPECTED_UPDATE_URL\"" "$COMPILED_APP_INI_HEADER"; then
+    echo "Error: compiled update URL does not point to NightsEdge: $COMPILED_APP_INI_HEADER" >&2
+    exit 1
+fi
+PACKAGED_UPDATE_URL=$(sed -n 's/^URL=//p' "$APPLICATION_INI" | head -1)
+if [[ "$PACKAGED_UPDATE_URL" != "$EXPECTED_UPDATE_URL" ]]; then
+    echo "Error: packaged update URL does not point to NightsEdge" >&2
+    echo "       Packaged: $PACKAGED_UPDATE_URL" >&2
+    echo "       Expected: $EXPECTED_UPDATE_URL" >&2
+    exit 1
+fi
+
 # Apple Silicon kills Mach-Os whose linker ad-hoc signatures went stale during
 # packaging; re-sign the staged .app and rebuild the DMG from it.
 if [[ "$TARGET" == macos-* ]]; then

@@ -108,6 +108,7 @@ Every patch in `patches/` is applied automatically during a build.
 | Patch | Change |
 | --- | --- |
 | `about-dialog-branding.patch` | Identifies the browser as NightsEdge and links to the maintainer in the About dialog. |
+| `app-update-url.patch` | Sets the built-in application update URL to NightsEdge's self-hosted manifests. |
 | `branding-displayname.patch` | Sets the desktop display name and a distinct macOS bundle name. |
 | `configurable-theme-background-sidebar.patch` | Keeps theme backgrounds in the top toolbox by default; set `browser.theme.background-image-on-sidebar.enabled` to `true` for a continuous vertical-tabs sidebar background. |
 | `default-browser-message.patch` | Replaces the default-browser confirmation text. |
