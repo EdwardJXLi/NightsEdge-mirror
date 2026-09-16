@@ -1,9 +1,8 @@
 # NightsEdge
 
 NightsEdge is a privacy-focused desktop Firefox build maintained by
-[RadioactiveHydra / EdwardJXLi](https://github.com/EdwardJXLi). It follows a
-pinned upstream Firefox revision and stays close to upstream while applying a
-small set of branding, privacy, and interface changes.
+[RadioactiveHydra / EdwardJXLi](https://github.com/EdwardJXLi). It follows
+upstream Firefox while applying a small set of branding, privacy, and interface changes.
 
 [Homepage](https://nightsedge.hydranet.dev/) ·
 [Downloads](https://nightsedge.hydranet.dev/#downloads) ·
@@ -11,12 +10,12 @@ small set of branding, privacy, and interface changes.
 
 ## Overview
 
-- Uses Firefox Nightly branding with the display name **Firefox Nightly (NightsEdge)**.
+- Uses Firefox Nightly branding.
 - Disables telemetry, data and crash reporting, studies, Pocket, sponsored content, and recommendation services.
 - Removes Firefox's standalone telemetry `pingsender`.
 - Adds additional vertical-tabs sidebar theming options.
 - Uses the custom `nightsedge` update channel with self-hosted, signed MAR updates.
-- Builds packages for Linux, Windows, and macOS from a Linux x86_64 host.
+- Additioanl QOL changes (UI text changes, additional options in menus, etc.)
 
 ## Building
 
