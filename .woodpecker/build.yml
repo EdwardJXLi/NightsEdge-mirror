@@ -293,7 +293,7 @@ steps:
     commands:
       - 'echo "==> Runner architecture: $(uname -m)"'
       - apt-get update && apt-get install -y curl zip
-      - curl -fsSL -o /usr/local/bin/mc https://dl.min.io/client/mc/release/linux-amd64/mc && chmod +x /usr/local/bin/mc
+      - bash scripts/install-mc.sh
       - mc alias set cache "https://$SCCACHE_ENDPOINT" "$CACHE_S3_ACCESS_KEY" "$CACHE_S3_SECRET_KEY"
       - |
         if [ -z "$(find artifacts -type f 2>/dev/null)" ]; then
@@ -365,7 +365,7 @@ steps:
     commands:
       - 'echo "==> Runner architecture: $(uname -m)"'
       - apt-get update && apt-get install -y ca-certificates curl
-      - curl -fsSL -o /usr/local/bin/mc https://dl.min.io/client/mc/release/linux-amd64/mc && chmod +x /usr/local/bin/mc
+      - bash scripts/install-mc.sh
       - bash scripts/upload-release-s3.sh
     when:
       - event: tag
