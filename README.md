@@ -95,7 +95,7 @@ pin.
 | `FIREFOX_VERSION` | Pinned upstream revision, Firefox version and track, release tag, and Rust version. |
 | `mozconfigs/common.mozconfig` | Shared branding, update-channel, privacy, optimization, and cache settings. |
 | `mozconfigs/<target>.mozconfig` | Target triple and platform-specific cross-compilation settings. |
-| `prefs/nightsedge.js` | Default privacy, UI, theme, and update preferences. |
+| `prefs/nightsedge.js` | Default privacy, AI, UI, theme, and update preferences. |
 | `policies/policies.json` | Locked enterprise policies applied to new and existing profiles. |
 | `.woodpecker/build.yml` | CI targets, cache backend, update URL, artifact uploads, releases, and site publishing. |
 | `website/` | Static homepage, nginx routing, and container definition. |

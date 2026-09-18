@@ -64,6 +64,17 @@ pref("browser.newtabpage.activity-stream.feeds.discoverystreamfeed", false, lock
 pref("extensions.htmlaboutaddons.recommendations.enabled", false, locked);
 pref("browser.preferences.moreFromMozilla", false, locked);
 
+// --- AI enhancements ---
+// These defaults are not locked; users can enable AI features in AI Controls.
+pref("browser.ai.control.default", "blocked");
+pref("browser.ml.chat.enabled", false);
+pref("browser.ml.chat.page", false);
+pref("browser.ml.linkPreview.enabled", false);
+pref("browser.tabs.groups.smart.enabled", false);
+pref("browser.tabs.groups.smart.userEnabled", false);
+pref("browser.translations.enable", false);
+pref("extensions.ml.enabled", false);
+
 // --- Firefox Home ---
 pref("browser.newtabpage.activity-stream.feeds.topsites", false);
 pref("browser.newtabpage.activity-stream.showWeather", false);
