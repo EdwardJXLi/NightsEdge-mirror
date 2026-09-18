@@ -8,7 +8,7 @@
     "CaptivePortal": false,
     "NetworkPrediction": false,
     "DNSOverHTTPS": {
-      "Enabled": false
+      "Enabled": true
     },
     "FirefoxHome": {
       "Pocket": false,
