@@ -20,7 +20,7 @@
  
 -helpus = Want to help? <label data-l10n-name="helpus-donateLink">Make a donation</label> or <label data-l10n-name="helpus-getInvolvedLink">get involved!</label>
 -
--helpus-referrals = Want to help? <label data-l10n-name="helpus-donateLink">Make a donation</label>, <label data-l10n-name="helpus-shareFirefoxLink">Share { -brand-short-name }</label>, or <label data-l10n-name="helpus-getInvolvedLink">get involved!</label>
+-helpus-referrals2 = Want to help? <label data-l10n-name="helpus-donateLink">Make a donation</label>, <label data-l10n-name="helpus-shareFirefoxLink">share { -brand-product-name }</label>, or <label data-l10n-name="helpus-getInvolvedLink">get involved!</label>
 +community-2 = Firefox is designed by { -vendor-short-name }, a <label data-l10n-name="community-creditsLink">global community</label> working together to keep the Web open, public and accessible to all.
  
  bottomLinks-license = Licensing Information
@@ -51,7 +51,7 @@
 -            <label is="text-link" href="https://foundation.mozilla.org/?form=firefox-about" data-l10n-name="helpus-donateLink"/>
 -            <label is="text-link" href="https://www.mozilla.org/contribute/?utm_source=firefox-browser&#38;utm_medium=firefox-desktop&#38;utm_campaign=about-dialog" data-l10n-name="helpus-getInvolvedLink"/>
 -          </description>
--          <description class="text-blurb" id="contributeDescReferrals" data-l10n-id="helpus-referrals" hidden="true">
+-          <description class="text-blurb" id="contributeDescReferrals" data-l10n-id="helpus-referrals2" hidden="true">
 -            <label is="text-link" href="https://foundation.mozilla.org/?form=firefox-about" data-l10n-name="helpus-donateLink"/>
 -            <label is="text-link" useoriginprincipal="true" href="about:referrals" data-l10n-name="helpus-shareFirefoxLink"/>
 -            <label is="text-link" href="https://www.mozilla.org/contribute/?utm_source=firefox-browser&#38;utm_medium=firefox-desktop&#38;utm_campaign=about-dialog" data-l10n-name="helpus-getInvolvedLink"/>
