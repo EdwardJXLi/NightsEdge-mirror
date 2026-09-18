@@ -100,6 +100,7 @@ pref("browser.newtabpage.activity-stream.unifiedAds.endpoint", "", locked);
 pref("browser.topsites.contile.enabled", false, locked);
 pref("browser.topsites.contile.endpoint", "", locked);
 pref("browser.topsites.useRemoteSetting", false, locked);
+pref("browser.newtabpage.activity-stream.default.sites", "", locked);
 pref("browser.urlbar.sponsoredTopSites", false, locked);
 pref("browser.urlbar.suggest.quicksuggest.sponsored", false, locked);
 pref("browser.partnerlink.attributionURL", "", locked);

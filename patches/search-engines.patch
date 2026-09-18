@@ -1,0 +1,24 @@
+diff --git a/toolkit/components/search/SearchEngineSelector.sys.mjs b/toolkit/components/search/SearchEngineSelector.sys.mjs
+--- a/toolkit/components/search/SearchEngineSelector.sys.mjs
++++ b/toolkit/components/search/SearchEngineSelector.sys.mjs
+@@ -31,6 +31,8 @@ const lazy = XPCOMUtils.declareLazy({
+     }),
+ });
+ 
++const NIGHTSEDGE_BUILTIN_SEARCH_ENGINES = new Set(["google", "bing", "ddg"]);
++
+ /**
+  * SearchEngineSelector parses the JSON configuration for
+  * search engines and returns the applicable engines depending
+@@ -230,7 +232,10 @@ export class SearchEngineSelector {
+     );
+ 
+     refinedSearchConfig.engines = refinedSearchConfig.engines.filter(
+-      e => !e.optional
++      // Apply this to both bundled and remotely updated search configurations.
++      e => !e.optional && NIGHTSEDGE_BUILTIN_SEARCH_ENGINES.has(e.identifier)
+     );
+ 
++    refinedSearchConfig.appDefaultEngineId = "google";
++
+     if (

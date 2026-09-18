@@ -115,6 +115,7 @@ Every patch in `patches/` is applied automatically during a build.
 | `package-default-preferences.patch` | Loads `prefs/nightsedge.js` after Firefox's defaults. |
 | `package-enterprise-policies.patch` | Includes `policies/policies.json` in non-Mozilla builds. |
 | `remove-pingsender.patch` | Removes the standalone telemetry pingsender. |
+| `search-engines.patch` | Limits application-provided search engines to Google, Bing, and DuckDuckGo. |
 
 ## Self-hosted updates
 
