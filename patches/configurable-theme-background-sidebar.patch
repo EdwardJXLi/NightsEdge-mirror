@@ -35,9 +35,9 @@ diff --git a/browser/themes/shared/browser-shared.css b/browser/themes/shared/br
 diff --git a/browser/themes/shared/tabbrowser/tabs.css b/browser/themes/shared/tabbrowser/tabs.css
 --- a/browser/themes/shared/tabbrowser/tabs.css
 +++ b/browser/themes/shared/tabbrowser/tabs.css
-@@ -2641,5 +2641,9 @@
+@@ -3047,5 +3047,9 @@
    &[expanded] {
-     --tab-icon-end-margin: 7.5px;
+     --tab-icon-margin-inline-end: 7.5px;
 -
 +    @media not -moz-pref("browser.theme.background-image-on-sidebar.enabled") {
 +      padding-block-start: var(--space-small);
