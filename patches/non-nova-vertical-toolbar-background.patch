@@ -1,0 +1,19 @@
+diff --git a/browser/themes/shared/browser-shared.css b/browser/themes/shared/browser-shared.css
+--- a/browser/themes/shared/browser-shared.css
++++ b/browser/themes/shared/browser-shared.css
+@@ -379,9 +379,12 @@
+   border-style: none;
+   background-color: transparent;
+   color: inherit;
+-  &:not(.browser-titlebar) {
+-    background-color: var(--toolbar-background-color);
+-    color: var(--toolbar-text-color);
++
++  @media (not -moz-pref("sidebar.verticalTabs")) or -moz-pref("browser.nova.enabled") {
++    &:not(.browser-titlebar) {
++      background-color: var(--toolbar-background-color);
++      color: var(--toolbar-text-color);
++    }
+   }
+ }
+ 
