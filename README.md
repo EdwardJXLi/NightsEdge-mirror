@@ -17,7 +17,7 @@ upstream Firefox while applying a small set of branding, privacy, and interface 
 - Only includes Google, Bing, and DuckDuckGo as built-in search engines.
 - Adds additional vertical-tabs sidebar theming options.
 - Uses the custom `nightsedge` update channel with self-hosted, signed MAR updates.
-- Additioanl QOL changes (UI text changes, additional options in menus, etc.)
+- Additional QOL changes (UI text changes, additional options in menus, etc.)
 
 ## Building
 
