@@ -68,7 +68,7 @@
 -
 -const lazy = {};
 -ChromeUtils.defineESModuleGetters(lazy, {
--  Referrals: "resource:///modules/referrals/Referrals.sys.mjs",
+-  Referrals: "moz-src:///browser/components/referrals/Referrals.sys.mjs",
 -});
 -
 +
