@@ -31,14 +31,14 @@
 
     <p>
       The best way to describe NightsEdge is that it is “un-Mozilla’d Firefox”
-      with Firefox Nightly branding (hence the name). Telemetry, crash reporting,
-      studies, Pocket, sponsored content, and recommendation services are all
-      disabled by default, while staying close to upstream Firefox.
+      with Firefox Nightly branding (hence the name). NightsEdge stays close to
+      upstream Firefox while disabling telemetry, crash reporting, studies,
+      Pocket, sponsored content, and recommendation services by default.
     </p>
 
     <p>The current version is: <b>hydra-@VERSION@</b></p>
 
-    <h2>Differences</h2>
+    <h2>Overview</h2>
 
     <ul>
       <li>Uses Firefox Nightly branding.</li>
@@ -46,9 +46,8 @@
       <li>Turns AI enhancements off by default.</li>
       <li>Removes Firefox's standalone telemetry pingsender.</li>
       <li>Only includes Google, Bing, and DuckDuckGo as built-in search engines.</li>
-      <li>Adds additional vertical-tabs sidebar theming options.</li>
-      <li>Uses the custom nightsedge update channel with self-hosted, signed MAR updates.</li>
-      <li>Additional QOL changes (UI text changes, additional options in menus, etc.)</li>
+      <li>Custom signed NightsEdge MAR automatic updates.</li>
+      <li>Additional QOL changes (optional UI tweaks, expanded menu options, etc.)</li>
     </ul>
 
     <h2 id="downloads">Downloads</h2>

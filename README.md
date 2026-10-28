@@ -15,9 +15,8 @@ upstream Firefox while applying a small set of branding, privacy, and interface 
 - Turns AI enhancements off by default.
 - Removes Firefox's standalone telemetry `pingsender`.
 - Only includes Google, Bing, and DuckDuckGo as built-in search engines.
-- Adds additional vertical-tabs sidebar theming options.
-- Uses the custom `nightsedge` update channel with self-hosted, signed MAR updates.
-- Additional QOL changes (UI text changes, additional options in menus, etc.)
+- Custom signed NightsEdge MAR automatic updates.
+- Additional QOL changes (optional UI tweaks, expanded menu options, etc.)
 
 ## Building
 
@@ -57,8 +56,8 @@ packages the browser. Artifacts are written under
 > - The checkout at `mozilla-release/` is forcibly restored to the pinned
 >   revision on every build. Do not keep source changes there.
 > - macOS builds are ad-hoc signed, but are not signed with an Apple Developer
->   ID or notarized. First launch may require right-clicking **Open** or running
->   `xattr -cr NightsEdge.app`.
+>   ID or notarized. First launch may require right-clicking the app and selecting
+>   **Open** or running `xattr -cr NightsEdge.app`.
 
 ### Compiler cache
 
