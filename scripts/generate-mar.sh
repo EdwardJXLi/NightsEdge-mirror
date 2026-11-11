@@ -193,7 +193,8 @@ MOZ_PRODUCT_VERSION="$MOZ_PRODUCT_VERSION" \
 MAR_CHANNEL_ID="$MAR_CHANNEL_ID" \
     "$SOURCE_DIR/tools/update-packaging/make_full_update.sh" \
     "$MAR_FILE" \
-    "$MAR_SOURCE_DIR"
+    "$MAR_SOURCE_DIR" \
+    firefox
 
 echo "==> MAR created: $MAR_FILE"
 
