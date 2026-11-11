@@ -131,6 +131,7 @@ pref("toolkit.telemetry.glean.upload.enabled", false);
 pref("extensions.pocket.enabled", false);
 
 // --- Theme appearance ---
+pref("browser.photon.enabled", false);
 // false: paint theme background images only behind the top toolbox (Firefox 149 behavior).
 // true: paint them behind both the toolbox and vertical-tabs sidebar (Firefox 150+ behavior).
 pref("browser.theme.background-image-on-sidebar.enabled", false);

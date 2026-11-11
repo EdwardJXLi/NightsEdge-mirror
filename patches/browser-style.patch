@@ -1,0 +1,649 @@
+Port the Waterfox browser style picker and Photon tab chrome.
+
+Source: https://github.com/BrowserWorks/Waterfox/tree/9230b1e71d7856ab94c7c619832be653bf7f1d4f/waterfox/browser
+
+diff --git a/browser/components/preferences/browser-style-nova.svg b/browser/components/preferences/browser-style-nova.svg
+new file mode 100644
+index 00000000..fc75810a
+--- /dev/null
++++ b/browser/components/preferences/browser-style-nova.svg
+@@ -0,0 +1,40 @@
++<!-- This Source Code Form is subject to the terms of the Mozilla Public
++   - License, v. 2.0. If a copy of the MPL was not distributed with this
++   - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
++<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 72" width="340" height="72">
++  <style>
++    .preview-dark { display: none; }
++    @media (prefers-color-scheme: dark) {
++      .preview-light { display: none; }
++      .preview-dark { display: inline; }
++    }
++  </style>
++  <defs>
++    <filter id="nova-sh-l" x="-30%" y="-40%" width="160%" height="200%"><feDropShadow dx="0" dy="1" stdDeviation="1.2" flood-color="#000000" flood-opacity="0.12"/></filter>
++    <filter id="nova-sh-d" x="-30%" y="-40%" width="160%" height="200%"><feDropShadow dx="0" dy="1" stdDeviation="1.2" flood-color="#000000" flood-opacity="0.4"/></filter>
++  </defs>
++  <g class="preview-light">
++    <rect x="1" y="1" width="338" height="70" rx="10" fill="#eaeaed" stroke="#dcdce3" stroke-width="1"/>
++    <rect x="9" y="31" width="96" height="32" rx="16" fill="#ffffff" filter="url(#nova-sh-l)"/>
++    <rect x="9.75" y="31.75" width="94.5" height="30.5" rx="15.25" fill="none" stroke="#764edd" stroke-width="1.5"/>
++    <rect x="20" y="40.5" width="13" height="13" rx="4" fill="#764edd"/>
++    <rect x="40" y="44.5" width="43.5" height="5" rx="2.5" fill="#7c7c87"/>
++    <rect x="122" y="40.5" width="13" height="13" rx="4" fill="#7c7c87"/>
++    <rect x="142" y="44.5" width="31.8" height="5" rx="2.5" fill="#7c7c87"/>
++    <rect x="224" y="40.5" width="13" height="13" rx="4" fill="#7c7c87"/>
++    <rect x="244" y="44.5" width="24.4" height="5" rx="2.5" fill="#7c7c87"/>
++    <path d="M318 49 h10 M323 44 v10" stroke="#7c7c87" stroke-width="2" stroke-linecap="round" fill="none"/>
++  </g>
++  <g class="preview-dark">
++    <rect x="1" y="1" width="338" height="70" rx="10" fill="#1c1b22" stroke="#35343f" stroke-width="1"/>
++    <rect x="9" y="31" width="96" height="32" rx="16" fill="#2b2a33" filter="url(#nova-sh-d)"/>
++    <rect x="9.75" y="31.75" width="94.5" height="30.5" rx="15.25" fill="none" stroke="#b89cff" stroke-width="1.5"/>
++    <rect x="20" y="40.5" width="13" height="13" rx="4" fill="#b89cff"/>
++    <rect x="40" y="44.5" width="43.5" height="5" rx="2.5" fill="#cfced8"/>
++    <rect x="122" y="40.5" width="13" height="13" rx="4" fill="#96959f"/>
++    <rect x="142" y="44.5" width="31.8" height="5" rx="2.5" fill="#96959f"/>
++    <rect x="224" y="40.5" width="13" height="13" rx="4" fill="#96959f"/>
++    <rect x="244" y="44.5" width="24.4" height="5" rx="2.5" fill="#96959f"/>
++    <path d="M318 49 h10 M323 44 v10" stroke="#8d8b99" stroke-width="2" stroke-linecap="round" fill="none"/>
++  </g>
++</svg>
+diff --git a/browser/components/preferences/browser-style-photon.svg b/browser/components/preferences/browser-style-photon.svg
+new file mode 100644
+index 00000000..f2586c1e
+--- /dev/null
++++ b/browser/components/preferences/browser-style-photon.svg
+@@ -0,0 +1,38 @@
++<!-- This Source Code Form is subject to the terms of the Mozilla Public
++   - License, v. 2.0. If a copy of the MPL was not distributed with this
++   - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
++<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 72" width="340" height="72">
++  <style>
++    .preview-dark { display: none; }
++    @media (prefers-color-scheme: dark) {
++      .preview-light { display: none; }
++      .preview-dark { display: inline; }
++    }
++  </style>
++  <g class="preview-light">
++    <rect x="1" y="1" width="338" height="70" rx="10" fill="#eaeaed" stroke="#dcdce3" stroke-width="1"/>
++    <path d="M9 71 L9 33 Q9 29 13 29 L103 29 Q107 29 107 33 L107 71 Z" fill="#ffffff" stroke="#7c7c87"/>
++    <rect x="10.5" y="29" width="95" height="2" rx="1" fill="#0a84ff"/>
++    <rect x="204.5" y="41" width="1" height="18" fill="#7c7c87"/>
++    <rect x="20" y="43.5" width="13" height="13" rx="4" fill="#6f6e7a"/>
++    <rect x="40" y="47.5" width="45.1" height="5" rx="2.5" fill="#7c7c87"/>
++    <rect x="118" y="43.5" width="13" height="13" rx="4" fill="#7c7c87"/>
++    <rect x="138" y="47.5" width="33.0" height="5" rx="2.5" fill="#7c7c87"/>
++    <rect x="216" y="43.5" width="13" height="13" rx="4" fill="#7c7c87"/>
++    <rect x="236" y="47.5" width="25.3" height="5" rx="2.5" fill="#7c7c87"/>
++    <path d="M306 49 h10 M311 44 v10" stroke="#7c7c87" stroke-width="2" stroke-linecap="round" fill="none"/>
++  </g>
++  <g class="preview-dark">
++    <rect x="1" y="1" width="338" height="70" rx="10" fill="#1c1b22" stroke="#35343f" stroke-width="1"/>
++    <path d="M9 71 L9 33 Q9 29 13 29 L103 29 Q107 29 107 33 L107 71 Z" fill="#2b2a33" stroke="#96959f"/>
++    <rect x="10.5" y="29" width="95" height="2" rx="1" fill="#0a84ff"/>
++    <rect x="204.5" y="41" width="1" height="18" fill="#96959f"/>
++    <rect x="20" y="43.5" width="13" height="13" rx="4" fill="#b9b8c2"/>
++    <rect x="40" y="47.5" width="45.1" height="5" rx="2.5" fill="#cfced8"/>
++    <rect x="118" y="43.5" width="13" height="13" rx="4" fill="#96959f"/>
++    <rect x="138" y="47.5" width="33.0" height="5" rx="2.5" fill="#96959f"/>
++    <rect x="216" y="43.5" width="13" height="13" rx="4" fill="#96959f"/>
++    <rect x="236" y="47.5" width="25.3" height="5" rx="2.5" fill="#96959f"/>
++    <path d="M306 49 h10 M311 44 v10" stroke="#8d8b99" stroke-width="2" stroke-linecap="round" fill="none"/>
++  </g>
++</svg>
+diff --git a/browser/components/preferences/browser-style-proton.svg b/browser/components/preferences/browser-style-proton.svg
+new file mode 100644
+index 00000000..0882d910
+--- /dev/null
++++ b/browser/components/preferences/browser-style-proton.svg
+@@ -0,0 +1,38 @@
++<!-- This Source Code Form is subject to the terms of the Mozilla Public
++   - License, v. 2.0. If a copy of the MPL was not distributed with this
++   - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
++<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 72" width="340" height="72">
++  <style>
++    .preview-dark { display: none; }
++    @media (prefers-color-scheme: dark) {
++      .preview-light { display: none; }
++      .preview-dark { display: inline; }
++    }
++  </style>
++  <defs>
++    <filter id="proton-sh-l" x="-50%" y="-50%" width="200%" height="220%"><feDropShadow dx="0" dy="0" stdDeviation="2" flood-color="#000000" flood-opacity="0.2"/></filter>
++    <filter id="proton-sh-d" x="-50%" y="-50%" width="200%" height="220%"><feDropShadow dx="0" dy="0" stdDeviation="2.6" flood-color="#000000" flood-opacity="0.5"/></filter>
++  </defs>
++  <g class="preview-light">
++    <rect x="1" y="1" width="338" height="70" rx="10" fill="#eaeaed" stroke="#dcdce3" stroke-width="1"/>
++    <rect x="9" y="30" width="96" height="34" rx="8" fill="#ffffff" stroke="#0062fa" filter="url(#proton-sh-l)"/>
++    <rect x="20" y="40.5" width="13" height="13" rx="4" fill="#0062fa"/>
++    <rect x="40" y="44.5" width="43.5" height="5" rx="2.5" fill="#7c7c87"/>
++    <rect x="122" y="40.5" width="13" height="13" rx="4" fill="#7c7c87"/>
++    <rect x="142" y="44.5" width="31.8" height="5" rx="2.5" fill="#7c7c87"/>
++    <rect x="224" y="40.5" width="13" height="13" rx="4" fill="#7c7c87"/>
++    <rect x="244" y="44.5" width="24.4" height="5" rx="2.5" fill="#7c7c87"/>
++    <path d="M318 49 h10 M323 44 v10" stroke="#7c7c87" stroke-width="2" stroke-linecap="round" fill="none"/>
++  </g>
++  <g class="preview-dark">
++    <rect x="1" y="1" width="338" height="70" rx="10" fill="#1c1b22" stroke="#35343f" stroke-width="1"/>
++    <rect x="9" y="30" width="96" height="34" rx="8" fill="#2b2a33" stroke="#00cadb" filter="url(#proton-sh-d)"/>
++    <rect x="20" y="40.5" width="13" height="13" rx="4" fill="#00cadb"/>
++    <rect x="40" y="44.5" width="43.5" height="5" rx="2.5" fill="#cfced8"/>
++    <rect x="122" y="40.5" width="13" height="13" rx="4" fill="#96959f"/>
++    <rect x="142" y="44.5" width="31.8" height="5" rx="2.5" fill="#96959f"/>
++    <rect x="224" y="40.5" width="13" height="13" rx="4" fill="#96959f"/>
++    <rect x="244" y="44.5" width="24.4" height="5" rx="2.5" fill="#96959f"/>
++    <path d="M318 49 h10 M323 44 v10" stroke="#8d8b99" stroke-width="2" stroke-linecap="round" fill="none"/>
++  </g>
++</svg>
+diff --git a/browser/components/preferences/config/appearance.mjs b/browser/components/preferences/config/appearance.mjs
+index 7675fab2..c5d8b427 100644
+--- a/browser/components/preferences/config/appearance.mjs
++++ b/browser/components/preferences/config/appearance.mjs
+@@ -21,6 +21,8 @@ ChromeUtils.defineLazyGetter(lazy, "WindowsUIUtils", () =>
+ 
+ const PREF_ICON_ID = "browser.shell.customIcon.id";
+ const PREF_UI_DENSITY = "browser.uidensity";
++const PREF_NOVA = "browser.nova.enabled";
++const PREF_PHOTON = "browser.photon.enabled";
+ 
+ const FORCED_COLORS_QUERY = matchMedia("(forced-colors)");
+ // The readout thumbnail follows this (chrome) document's color scheme, so a
+@@ -58,9 +60,38 @@ function isBrowserIconAvailable() {
+ Preferences.addAll([
+   { id: "layout.css.prefers-color-scheme.content-override", type: "int" },
+   { id: PREF_UI_DENSITY, type: "int" },
++  { id: PREF_NOVA, type: "bool" },
++  { id: PREF_PHOTON, type: "bool" },
+   { id: "browser.touchmode.auto", type: "bool" },
+ ]);
+ 
++Preferences.addSetting({ id: "browserStyleNova", pref: PREF_NOVA });
++Preferences.addSetting({ id: "browserStylePhoton", pref: PREF_PHOTON });
++
++Preferences.addSetting({
++  id: "browserStyle",
++  deps: ["browserStyleNova", "browserStylePhoton"],
++  get: (_, { browserStyleNova, browserStylePhoton }) =>
++    browserStyleNova.value
++      ? "nova"
++      : browserStylePhoton.value
++        ? "photon"
++        : "proton",
++  set(style, { browserStyleNova, browserStylePhoton }) {
++    if (
++      !["nova", "proton", "photon"].includes(style) ||
++      browserStyleNova.locked ||
++      browserStylePhoton.locked
++    ) {
++      return;
++    }
++    browserStylePhoton.value = style == "photon";
++    browserStyleNova.value = style == "nova";
++  },
++  disabled: ({ browserStyleNova, browserStylePhoton }) =>
++    browserStyleNova.locked || browserStylePhoton.locked,
++});
++
+ Preferences.addSetting({
+   id: "web-appearance-override-warning",
+   setup: emitChange => {
+@@ -171,8 +202,8 @@ Preferences.addSetting({
+ 
+ Preferences.addSetting({
+   id: "uiDensity",
+-  deps: ["uiDensityPref"],
+-  visible: () => Services.prefs.getBoolPref("browser.nova.enabled", false),
++  deps: ["uiDensityPref", "browserStyleNova"],
++  visible: ({ browserStyleNova }) => browserStyleNova.value,
+   // Map the browser.uidensity pref to one of the radio options. When the pref
+   // has no user value, gUIDensity (see browser.js) chooses the density
+   // automatically: small windows are auto-compacted based on
+@@ -260,6 +291,27 @@ Preferences.addSetting({
+ });
+ 
+ SettingGroupManager.registerGroups({
++  browserStyle: {
++    l10nId: "nightsedge-browser-style-group",
++    iconSrc: "chrome://browser/skin/window.svg",
++    headingLevel: 2,
++    items: [
++      {
++        id: "browserStyle",
++        l10nId: "nightsedge-browser-style-picker",
++        control: "moz-visual-picker",
++        controlAttrs: { class: "browser-style-picker" },
++        options: ["nova", "proton", "photon"].map(style => ({
++          value: style,
++          l10nId: `nightsedge-browser-style-${style}`,
++          controlAttrs: {
++            class: "setting-chooser-item",
++            imagesrc: `chrome://browser/content/preferences/browser-style-${style}.svg`,
++          },
++        })),
++      },
++    ],
++  },
+   appearance: {
+     l10nId: "appearance-group2",
+     iconSrc: "chrome://global/skin/icons/defaultFavicon.svg",
+diff --git a/browser/components/preferences/jar.mn b/browser/components/preferences/jar.mn
+index e6e04dab..cce19cf0 100644
+--- a/browser/components/preferences/jar.mn
++++ b/browser/components/preferences/jar.mn
+@@ -19,6 +19,9 @@ browser.jar:
+    content/browser/preferences/more-from-mozilla-qr-code-simple.svg
+    content/browser/preferences/browser-layout-horizontal.svg
+    content/browser/preferences/browser-layout-vertical.svg
++   content/browser/preferences/browser-style-nova.svg
++   content/browser/preferences/browser-style-proton.svg
++   content/browser/preferences/browser-style-photon.svg
+    content/browser/preferences/web-appearance-dark.svg
+    content/browser/preferences/web-appearance-light.svg
+    content/browser/preferences/etp-toggle-promo.svg
+diff --git a/browser/components/preferences/main.inc.xhtml b/browser/components/preferences/main.inc.xhtml
+index 5ba05e01..c398d106 100644
+--- a/browser/components/preferences/main.inc.xhtml
++++ b/browser/components/preferences/main.inc.xhtml
+@@ -46,6 +46,9 @@
+   <html:h1 data-l10n-id="language-and-appearance-header"/>
+ </hbox>
+ 
++<!-- Browser style -->
++<html:setting-group groupid="browserStyle" data-category="paneGeneral" data-srd-migrated="" hidden="true"></html:setting-group>
++
+ <!-- Website appearance -->
+ <html:setting-group groupid="appearance" data-category="paneGeneral" data-srd-migrated="" hidden="true"></html:setting-group>
+ 
+diff --git a/browser/components/preferences/main.js b/browser/components/preferences/main.js
+index 6dcfd4bd..1cb34d01 100644
+--- a/browser/components/preferences/main.js
++++ b/browser/components/preferences/main.js
+@@ -675,6 +675,7 @@ var gMainPane = {
+ 
+     // Initialize settings groups from the config object.
+     initSettingGroup("browserLayout");
++    initSettingGroup("browserStyle");
+     initSettingGroup("appearance");
+     initSettingGroup("drm");
+     initSettingGroup("contrast");
+diff --git a/browser/components/preferences/preferences.js b/browser/components/preferences/preferences.js
+index 8b3acf47..89b79cf3 100644
+--- a/browser/components/preferences/preferences.js
++++ b/browser/components/preferences/preferences.js
+@@ -263,6 +263,7 @@ const CONFIG_PANES = Object.freeze({
+   appearance: {
+     l10nId: "preferences-appearance-header",
+     groupIds: [
++      "browserStyle",
+       "appearance",
+       "browserTheme",
+       "browserIconEntry",
+diff --git a/browser/components/preferences/tests/browser-srd.toml b/browser/components/preferences/tests/browser-srd.toml
+index 76df8d74..7d4606e0 100644
+--- a/browser/components/preferences/tests/browser-srd.toml
++++ b/browser/components/preferences/tests/browser-srd.toml
+@@ -27,6 +27,8 @@ tags = "os_integration"
+ 
+ ["browser_appearance_pane.js"]
+ 
++["browser_browser_style.js"]
++
+ ["browser_backup_visibility.js"]
+ 
+ ["browser_backup_warning_banner.js"]
+diff --git a/browser/components/preferences/tests/browser.toml b/browser/components/preferences/tests/browser.toml
+index b01353d6..97c207a2 100644
+--- a/browser/components/preferences/tests/browser.toml
++++ b/browser/components/preferences/tests/browser.toml
+@@ -23,6 +23,8 @@ run-if = ["updater"]
+ 
+ ["browser_appearance_pane_xul.js"]
+ 
++["browser_browser_style.js"]
++
+ ["browser_backup_visibility.js"]
+ 
+ ["browser_backup_warning_banner.js"]
+diff --git a/browser/components/preferences/tests/browser_browser_style.js b/browser/components/preferences/tests/browser_browser_style.js
+new file mode 100644
+index 00000000..9be46c6b
+--- /dev/null
++++ b/browser/components/preferences/tests/browser_browser_style.js
+@@ -0,0 +1,106 @@
++/* Any copyright is dedicated to the Public Domain.
++ * http://creativecommons.org/publicdomain/zero/1.0/ */
++
++"use strict";
++
++add_task(async function test_browser_style_picker() {
++  await SpecialPowers.pushPrefEnv({
++    set: [
++      ["browser.nova.enabled", true],
++      ["browser.photon.enabled", false],
++      ["browser.uidensity", 1],
++    ],
++  });
++
++  await openPreferencesViaOpenPreferencesAPI(
++    SRD_PREF_VALUE ? "appearance" : "general",
++    { leaveOpen: true }
++  );
++  let win = gBrowser.selectedBrowser.contentWindow;
++  let doc = win.document;
++  await TestUtils.waitForCondition(
++    () =>
++      getSettingControl("browserStyle", win)?.controlEl?.children.length == 3,
++    "Wait for the browser style picker"
++  );
++  let control = getSettingControl("browserStyle", win);
++  let picker = control.controlEl;
++  await picker.updateComplete;
++  is(picker.value, "nova", "The picker reflects Nova");
++
++  for (let style of ["photon", "proton", "nova"]) {
++    let item = [...picker.children].find(option => option.value == style);
++    await item.updateComplete;
++    item.click();
++    await TestUtils.waitForCondition(
++      () => control.setting.value == style && picker.value == style,
++      `The picker selects ${style}`
++    );
++    is(
++      Services.prefs.getBoolPref("browser.nova.enabled"),
++      style == "nova",
++      `${style} sets the Nova preference`
++    );
++    is(
++      Services.prefs.getBoolPref("browser.photon.enabled"),
++      style == "photon",
++      `${style} sets the Photon preference`
++    );
++    is(
++      Services.prefs.getIntPref("browser.uidensity"),
++      1,
++      "Density is preserved"
++    );
++    if (SRD_PREF_VALUE) {
++      let density = getSettingControl("uiDensity", win);
++      await TestUtils.waitForCondition(
++        () => BrowserTestUtils.isHidden(density) == (style != "nova"),
++        "Density options follow the active browser style"
++      );
++    }
++  }
++
++  Services.prefs.setBoolPref("browser.nova.enabled", false);
++  await TestUtils.waitForCondition(
++    () => picker.value == "proton",
++    "The picker observes external Nova changes"
++  );
++  Services.prefs.setBoolPref("browser.photon.enabled", true);
++  await TestUtils.waitForCondition(
++    () => picker.value == "photon",
++    "The picker observes external Photon changes"
++  );
++
++  await doc.l10n.translateFragment(picker);
++  for (let item of picker.children) {
++    await item.updateComplete;
++    ok(item.label, "Each browser style has an accessible label");
++    ok(item.itemEl.getAttribute("aria-checked"), "Each item exposes selection");
++    let image = item.shadowRoot.querySelector("img");
++    await TestUtils.waitForCondition(
++      () => image.complete && image.naturalWidth > 0,
++      "The preview loads"
++    );
++  }
++
++  for (let pref of ["browser.nova.enabled", "browser.photon.enabled"]) {
++    Services.prefs.lockPref(pref);
++    try {
++      await TestUtils.waitForCondition(
++        () => picker.disabled,
++        "Locked style preferences disable the picker"
++      );
++      let value = control.setting.value;
++      control.setting.value = value == "nova" ? "photon" : "nova";
++      is(control.setting.value, value, "A locked preference prevents changes");
++    } finally {
++      Services.prefs.unlockPref(pref);
++    }
++    await TestUtils.waitForCondition(
++      () => !picker.disabled,
++      "Unlocking preferences enables the picker"
++    );
++  }
++
++  await BrowserTestUtils.removeTab(gBrowser.selectedTab);
++});
+diff --git a/browser/locales/en-US/browser/preferences/preferences.ftl b/browser/locales/en-US/browser/preferences/preferences.ftl
+index 7cf7485c..8527dcc0 100644
+--- a/browser/locales/en-US/browser/preferences/preferences.ftl
++++ b/browser/locales/en-US/browser/preferences/preferences.ftl
+@@ -376,6 +376,21 @@ appearance-group2 =
+   .label = Website appearance
+   .description = Some websites change their colors to match your preferences. Choose your color scheme.
+ 
++nightsedge-browser-style-group =
++  .label = Browser style
++
++nightsedge-browser-style-picker =
++  .aria-label = Browser style
++
++nightsedge-browser-style-nova =
++  .label = Nova
++
++nightsedge-browser-style-proton =
++  .label = Proton
++
++nightsedge-browser-style-photon =
++  .label = Photon
++
+ preferences-web-appearance-choice-auto3 =
+   .label = System
+   .title = Automatically change website backgrounds and content based on your system settings and { -brand-short-name } theme.
+diff --git a/browser/themes/shared/browser-photon.css b/browser/themes/shared/browser-photon.css
+new file mode 100644
+index 00000000..3e19d721
+--- /dev/null
++++ b/browser/themes/shared/browser-photon.css
+@@ -0,0 +1,147 @@
++/* This Source Code Form is subject to the terms of the Mozilla Public
++ * License, v. 2.0. If a copy of the MPL was not distributed with this
++ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
++
++/* Adapted from Waterfox's Lepton chrome styles at 9230b1e71d78:
++ * https://github.com/BrowserWorks/Waterfox/tree/9230b1e71d7856ab94c7c619832be653bf7f1d4f/waterfox/browser/themes/lepton
++ * Lepton derives from black7375/Firefox-UI-Fix at 6f02881a25d6. */
++
++@media (not -moz-pref("browser.nova.enabled")) and -moz-pref("browser.photon.enabled") {
++  #tabbrowser-tabs {
++    --tab-border-radius: 4px;
++  }
++
++  #tabbrowser-tabs[orient="horizontal"] {
++    --tab-margin-block: 2px;
++    --tabstrip-min-height: calc(var(--tab-min-height) + var(--tab-margin-block));
++    min-height: var(--tabstrip-min-height);
++  }
++
++  :root[uidensity="touch"] #tabbrowser-tabs[orient="horizontal"] {
++    --tab-margin-block: 4px;
++  }
++
++  #tabbrowser-tabs[orient="horizontal"] .tab-background {
++    position: relative;
++    margin-block-end: 0;
++    border-end-start-radius: 0;
++    border-end-end-radius: 0;
++  }
++
++  #tabbrowser-tabs[orient="horizontal"] tab-split-view-wrapper {
++    margin-block-end: 0;
++  }
++
++  #tabbrowser-tabs[orient="horizontal"] tab-group .tabbrowser-tab:is([selected], [multiselected]) .tab-group-line {
++    transform: translateY(calc(-1 * var(--tab-group-line-thickness)));
++  }
++
++  @media not (forced-colors) {
++    @media not -moz-pref("sidebar.verticalTabs") {
++      :root #nav-bar {
++        border-top: none;
++      }
++    }
++
++    #tabbrowser-tabs[orient="horizontal"] {
++      --tab-box-shadow-selected: none;
++    }
++
++    #tabbrowser-tabs[orient="horizontal"]:not([noshadowfortests]) .tab-background:is([selected], [multiselected]) {
++      filter: drop-shadow(0 0 2px color-mix(in srgb, currentColor 30%, transparent));
++    }
++
++    #tabbrowser-tabs[orient="horizontal"] .tabbrowser-tab[visuallyselected] .tab-background::before,
++    #tabbrowser-tabs[orient="horizontal"] .tabbrowser-tab[visuallyselected] .tab-background::after {
++      content: "";
++      position: absolute;
++      inset-block-end: 0;
++      width: 3px;
++      height: 3px;
++      background-color: var(--tab-background-color-selected);
++      clip-path: path("M 0 3 A 3 3 0 0 0 3 0 L 3 3 Z");
++      pointer-events: none;
++    }
++
++    #tabbrowser-tabs[orient="horizontal"] .tabbrowser-tab[visuallyselected] .tab-background::before {
++      left: -3px;
++    }
++
++    #tabbrowser-tabs[orient="horizontal"] .tabbrowser-tab[visuallyselected] .tab-background::after {
++      right: -3px;
++      transform: scaleX(-1);
++    }
++  }
++
++  #tabbrowser-tabs[orient="horizontal"] .tab-context-line {
++    position: relative;
++    height: 2px;
++    border-start-start-radius: var(--tab-border-radius);
++    border-start-end-radius: var(--tab-border-radius);
++  }
++
++  #tabbrowser-tabs[orient="horizontal"] .tabbrowser-tab:not([usercontextid]) .tab-context-line {
++    background-color: transparent;
++  }
++
++  #tabbrowser-tabs[orient="horizontal"] .tabbrowser-tab:is([selected], [multiselected]):not([usercontextid]) .tab-context-line {
++    background-color: var(--lwt-tab-line-color, var(--focus-outline-color));
++  }
++
++  #tabbrowser-tabs[orient="horizontal"] .tabbrowser-tab:hover:not([selected], [multiselected], [usercontextid]) .tab-context-line {
++    background-color: var(--toolbarseparator-color);
++  }
++
++  #tabbrowser-tabs[orient="horizontal"] .tabbrowser-tab[usercontextid] .tab-context-line {
++    margin: 0;
++  }
++
++  #tabbrowser-tabs[orient="horizontal"] .tab-stack::before,
++  #tabbrowser-tabs[orient="horizontal"] #tabs-newtab-button::before {
++    content: "";
++    position: absolute;
++    inset-block-start: 50%;
++    inset-inline-start: -1px;
++    width: 1px;
++    height: 20px;
++    transform: translateY(-50%);
++    background-color: var(--toolbarseparator-color);
++    opacity: 0;
++    pointer-events: none;
++  }
++
++  #tabbrowser-tabs[orient="horizontal"] .tabbrowser-tab:not([visuallyselected], [multiselected], :hover, :first-of-type) .tab-stack::before,
++  #tabbrowser-tabs[orient="horizontal"] #tabs-newtab-button:not(:hover, [open])::before {
++    opacity: 1;
++  }
++
++  #tabbrowser-tabs[orient="horizontal"] .tabbrowser-tab:is([visuallyselected], [multiselected], :hover) + .tabbrowser-tab .tab-stack::before,
++  #tabbrowser-tabs[orient="horizontal"]
++    .tabbrowser-tab:last-of-type:is([visuallyselected], [multiselected], :hover)
++    ~ #tabbrowser-arrowscrollbox-periphery
++    #tabs-newtab-button::before,
++  #tabbrowser-tabs[orient="horizontal"] tab-group:has(.tabbrowser-tab:last-child:is([selected], :hover)) + .tabbrowser-tab .tab-stack::before,
++  #tabbrowser-tabs[orient="horizontal"] tab-group[collapsed] + .tabbrowser-tab .tab-stack::before {
++    opacity: 0;
++  }
++
++  #tabbrowser-tabs[orient="horizontal"] #tabs-newtab-button {
++    align-items: stretch;
++    padding-block-start: var(--tab-margin-block);
++    padding-block-end: 0;
++  }
++
++  #tabbrowser-tabs[orient="horizontal"] #tabs-newtab-button > .toolbarbutton-icon {
++    border-start-start-radius: var(--tab-border-radius);
++    border-start-end-radius: var(--tab-border-radius);
++    border-end-start-radius: 0;
++    border-end-end-radius: 0;
++  }
++
++  @media (prefers-reduced-motion: no-preference) {
++    #tabbrowser-tabs[orient="horizontal"] .tab-stack::before,
++    #tabbrowser-tabs[orient="horizontal"] #tabs-newtab-button::before {
++      transition: opacity 200ms var(--animation-easing-function);
++    }
++  }
++}
+diff --git a/browser/themes/shared/browser-shared.css b/browser/themes/shared/browser-shared.css
+index 87ae6746..c0d6eb3b 100644
+--- a/browser/themes/shared/browser-shared.css
++++ b/browser/themes/shared/browser-shared.css
+@@ -34,6 +34,7 @@
+ @import url("chrome://browser/skin/customizableui/customizeMode.css");
+ @import url("chrome://browser/skin/UITour.css");
+ @import url("chrome://browser/skin/formautofill-notification.css");
++@import url("chrome://browser/skin/browser-photon.css");
+ 
+ :root,
+ body {
+diff --git a/browser/themes/shared/jar.inc.mn b/browser/themes/shared/jar.inc.mn
+index f30c5517..e20d9915 100644
+--- a/browser/themes/shared/jar.inc.mn
++++ b/browser/themes/shared/jar.inc.mn
+@@ -20,6 +20,7 @@
+   skin/classic/browser/blockedSite.css                         (../shared/blockedSite.css)
+   skin/classic/browser/browser-colors.css                      (../shared/browser-colors.css)
+   skin/classic/browser/browser-shared.css                      (../shared/browser-shared.css)
++  skin/classic/browser/browser-photon.css                      (../shared/browser-photon.css)
+   skin/classic/browser/formautofill-notification.css           (../shared/formautofill-notification.css)
+   skin/classic/browser/identity-credential-notification.css    (../shared/identity-credential-notification.css)
+   skin/classic/browser/menupanel.css                           (../shared/menupanel.css)
+diff --git a/browser/themes/shared/preferences/preferences.css b/browser/themes/shared/preferences/preferences.css
+index e30a31aa..b6ef287f 100644
+--- a/browser/themes/shared/preferences/preferences.css
++++ b/browser/themes/shared/preferences/preferences.css
+@@ -1275,6 +1275,22 @@ richlistitem .text-link:hover {
+   }
+ }
+ 
++.browser-style-picker .setting-chooser-item {
++  --visual-picker-item-border-color: var(--text-color-deemphasized);
++  --border-color-selected: var(--focus-outline-color);
++  --button-background-color-hover: color-mix(in srgb, var(--background-color-box) 95%, var(--text-color));
++  --button-background-color-active: color-mix(in srgb, var(--background-color-box) 90%, var(--text-color));
++  --button-background-color-ghost-hover: var(--button-background-color-hover);
++  --button-background-color-ghost-active: var(--button-background-color-active);
++
++  &::part(image) {
++    width: 100%;
++    margin-block: 0;
++    border: none;
++    box-shadow: none;
++  }
++}
++
+ #webAppearanceGroup .description-deemphasized {
+   margin-block-end: var(--space-large);
+ }
