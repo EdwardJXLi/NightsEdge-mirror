@@ -58,4 +58,12 @@ else
     git checkout --detach "$GIT_COMMIT_HASH"
 fi
 
+# Forced checkout leaves untracked files created by source patches behind.
+git apply --summary "$REPO_ROOT"/patches/*.patch |
+    while read -r action kind _mode path; do
+        if [[ "$action" == "create" && "$kind" == "mode" ]]; then
+            git clean -f -- "$path"
+        fi
+    done
+
 echo "==> Source ready at $SOURCE_DIR"
