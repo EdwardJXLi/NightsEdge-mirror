@@ -279,11 +279,11 @@ index 8b3acf47..89b79cf3 100644
        "appearance",
        "browserTheme",
        "browserIconEntry",
-diff --git a/browser/components/preferences/tests/browser-srd.toml b/browser/components/preferences/tests/browser-srd.toml
-index 76df8d74..7d4606e0 100644
---- a/browser/components/preferences/tests/browser-srd.toml
-+++ b/browser/components/preferences/tests/browser-srd.toml
-@@ -27,6 +27,8 @@ tags = "os_integration"
+diff --git a/browser/components/preferences/tests/browser.toml b/browser/components/preferences/tests/browser.toml
+index cd8ad61..1fa9ea7 100644
+--- a/browser/components/preferences/tests/browser.toml
++++ b/browser/components/preferences/tests/browser.toml
+@@ -28,6 +28,8 @@ run-if = ["updater"]
  
  ["browser_appearance_pane.js"]
  
@@ -292,33 +292,21 @@ index 76df8d74..7d4606e0 100644
  ["browser_backup_visibility.js"]
  
  ["browser_backup_warning_banner.js"]
-diff --git a/browser/components/preferences/tests/browser.toml b/browser/components/preferences/tests/browser.toml
-index b01353d6..97c207a2 100644
---- a/browser/components/preferences/tests/browser.toml
-+++ b/browser/components/preferences/tests/browser.toml
-@@ -23,6 +23,8 @@ run-if = ["updater"]
- 
- ["browser_appearance_pane_xul.js"]
- 
-+["browser_browser_style.js"]
-+
- ["browser_backup_visibility.js"]
- 
- ["browser_backup_warning_banner.js"]
 diff --git a/browser/components/preferences/tests/browser_browser_style.js b/browser/components/preferences/tests/browser_browser_style.js
 new file mode 100644
-index 00000000..9be46c6b
+index 00000000..67e9ac88
 --- /dev/null
 +++ b/browser/components/preferences/tests/browser_browser_style.js
-@@ -0,0 +1,106 @@
+@@ -0,0 +1,115 @@
 +/* Any copyright is dedicated to the Public Domain.
 + * http://creativecommons.org/publicdomain/zero/1.0/ */
 +
 +"use strict";
 +
-+add_task(async function test_browser_style_picker() {
++async function test_browser_style_picker(redesignEnabled) {
 +  await SpecialPowers.pushPrefEnv({
 +    set: [
++      ["browser.settings-redesign.enabled", redesignEnabled],
 +      ["browser.nova.enabled", true],
 +      ["browser.photon.enabled", false],
 +      ["browser.uidensity", 1],
@@ -326,7 +314,7 @@ index 00000000..9be46c6b
 +  });
 +
 +  await openPreferencesViaOpenPreferencesAPI(
-+    SRD_PREF_VALUE ? "appearance" : "general",
++    redesignEnabled ? "appearance" : "general",
 +    { leaveOpen: true }
 +  );
 +  let win = gBrowser.selectedBrowser.contentWindow;
@@ -364,7 +352,7 @@ index 00000000..9be46c6b
 +      1,
 +      "Density is preserved"
 +    );
-+    if (SRD_PREF_VALUE) {
++    if (redesignEnabled) {
 +      let density = getSettingControl("uiDensity", win);
 +      await TestUtils.waitForCondition(
 +        () => BrowserTestUtils.isHidden(density) == (style != "nova"),
@@ -416,6 +404,14 @@ index 00000000..9be46c6b
 +  }
 +
 +  await BrowserTestUtils.removeTab(gBrowser.selectedTab);
++}
++
++add_task(async function test_browser_style_picker_legacy() {
++  await test_browser_style_picker(false);
++});
++
++add_task(async function test_browser_style_picker_redesign() {
++  await test_browser_style_picker(true);
 +});
 diff --git a/browser/locales/en-US/browser/preferences/preferences.ftl b/browser/locales/en-US/browser/preferences/preferences.ftl
 index 7cf7485c..8527dcc0 100644

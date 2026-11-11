@@ -1,7 +1,7 @@
 diff --git a/toolkit/components/search/SearchEngineSelector.sys.mjs b/toolkit/components/search/SearchEngineSelector.sys.mjs
 --- a/toolkit/components/search/SearchEngineSelector.sys.mjs
 +++ b/toolkit/components/search/SearchEngineSelector.sys.mjs
-@@ -31,6 +31,8 @@ const lazy = XPCOMUtils.declareLazy({
+@@ -38,6 +38,8 @@ const lazy = XPCOMUtils.declareLazy({
      }),
  });
  
@@ -10,15 +10,31 @@ diff --git a/toolkit/components/search/SearchEngineSelector.sys.mjs b/toolkit/co
  /**
   * SearchEngineSelector parses the JSON configuration for
   * search engines and returns the applicable engines depending
-@@ -230,7 +232,10 @@ export class SearchEngineSelector {
-     );
+@@ -236,9 +238,6 @@ export class SearchEngineSelector {
+           deviceType: lazy.SearchDeviceType.NONE,
+         })
+       );
+-      refinedSearchConfig.engines = refinedSearchConfig.engines.filter(
+-        e => !e.optional
+-      );
+     } else {
+       refinedSearchConfig = this.#selector.filterEngineConfiguration(
+         new lazy.SearchUserEnvironment({
+@@ -252,11 +251,14 @@ export class SearchEngineSelector {
+           deviceType: lazy.SearchDeviceType.NONE,
+         })
+       );
+-      refinedSearchConfig.engines = refinedSearchConfig.engines.filter(
+-        e => !e.optional
+-      );
+     }
  
-     refinedSearchConfig.engines = refinedSearchConfig.engines.filter(
--      e => !e.optional
-+      // Apply this to both bundled and remotely updated search configurations.
++    // Apply this to both bundled and remotely updated search configurations.
++    refinedSearchConfig.engines = refinedSearchConfig.engines.filter(
 +      e => !e.optional && NIGHTSEDGE_BUILTIN_SEARCH_ENGINES.has(e.identifier)
-     );
- 
++    );
 +    refinedSearchConfig.appDefaultEngineId = "google";
 +
      if (
+       !refinedSearchConfig.appDefaultEngineId ||
+       !refinedSearchConfig.engines.find(
