@@ -1,3 +1,63 @@
+diff --git a/browser/base/content/browser-customtitlebar.js b/browser/base/content/browser-customtitlebar.js
+--- a/browser/base/content/browser-customtitlebar.js
++++ b/browser/base/content/browser-customtitlebar.js
+@@ -7,6 +7,7 @@ var CustomTitlebar = {
+   init() {
+     this._readPref();
+     Services.prefs.addObserver(this._prefName, this);
++    Services.prefs.addObserver("browser.nova.enabled", this);
+ 
+     this._initialized = true;
+     this._update();
+@@ -48,9 +49,13 @@ var CustomTitlebar = {
+     return document.documentElement.hasAttribute("customtitlebar");
+   },
+ 
+-  observe(subject, topic) {
++  observe(subject, topic, prefName) {
+     if (topic == "nsPref:changed") {
+-      this._readPref();
++      if (prefName == "browser.nova.enabled") {
++        TabBarVisibility.update();
++      } else {
++        this._readPref();
++      }
+     }
+   },
+ 
+@@ -84,5 +89,6 @@ var CustomTitlebar = {
+ 
+   uninit() {
+     Services.prefs.removeObserver(this._prefName, this);
++    Services.prefs.removeObserver("browser.nova.enabled", this);
+   },
+ };
+diff --git a/browser/components/tabbrowser/content/tab-bar-visibility.js b/browser/components/tabbrowser/content/tab-bar-visibility.js
+--- a/browser/components/tabbrowser/content/tab-bar-visibility.js
++++ b/browser/components/tabbrowser/content/tab-bar-visibility.js
+@@ -39,13 +39,14 @@ var TabBarVisibility = {
+     // window, so they share the titlebar's background and inactive styling.
+     let isTitlebar = CustomTitlebar.enabled && hideTabsToolbar;
+-    let titlebarIds = Services.prefs.getBoolPref("browser.nova.enabled")
+-      ? ["nav-bar", "PersonalToolbar"]
+-      : ["nav-bar"];
+-    for (let id of titlebarIds) {
+-      document
+-        .getElementById(id)
+-        .classList.toggle("browser-titlebar", isTitlebar);
+-    }
++    document
++      .getElementById("nav-bar")
++      .classList.toggle("browser-titlebar", isTitlebar);
++    document
++      .getElementById("PersonalToolbar")
++      .classList.toggle(
++        "browser-titlebar",
++        isTitlebar && Services.prefs.getBoolPref("browser.nova.enabled")
++      );
+ 
+     if (
+       hideTabsToolbar == tabsToolbar.collapsed &&
 diff --git a/browser/themes/shared/browser-shared.css b/browser/themes/shared/browser-shared.css
 --- a/browser/themes/shared/browser-shared.css
 +++ b/browser/themes/shared/browser-shared.css
@@ -17,3 +77,54 @@ diff --git a/browser/themes/shared/browser-shared.css b/browser/themes/shared/br
    }
  }
  
+diff --git a/browser/components/preferences/tests/browser_browser_style.js b/browser/components/preferences/tests/browser_browser_style.js
+--- a/browser/components/preferences/tests/browser_browser_style.js
++++ b/browser/components/preferences/tests/browser_browser_style.js
+@@ -113,3 +113,47 @@ add_task(async function test_browser_style_picker_legacy() {
+ add_task(async function test_browser_style_picker_redesign() {
+   await test_browser_style_picker(true);
+ });
++
++add_task(async function test_browser_style_toolbar_background() {
++  for (let verticalTabs of [true, false]) {
++    await SpecialPowers.pushPrefEnv({
++      set: [
++        ["sidebar.revamp", true],
++        ["sidebar.verticalTabs", verticalTabs],
++        ["browser.tabs.inTitlebar", 1],
++        ["browser.nova.enabled", false],
++        ["browser.photon.enabled", false],
++      ],
++    });
++
++    for (let style of ["photon", "nova", "proton", "nova", "photon"]) {
++      Services.prefs.setBoolPref("browser.photon.enabled", style == "photon");
++      Services.prefs.setBoolPref("browser.nova.enabled", style == "nova");
++
++      let freshWindow = await BrowserTestUtils.openNewBrowserWindow();
++      try {
++        for (let win of [window, freshWindow]) {
++          is(
++            win.document
++              .getElementById("PersonalToolbar")
++              .classList.contains("browser-titlebar"),
++            verticalTabs && win.CustomTitlebar.enabled && style == "nova",
++            `${style} bookmarks titlebar state with vertical tabs ${verticalTabs}`
++          );
++        }
++        is(
++          window.getComputedStyle(document.getElementById("PersonalToolbar"))
++            .backgroundColor,
++          freshWindow.getComputedStyle(
++            freshWindow.document.getElementById("PersonalToolbar")
++          ).backgroundColor,
++          `${style} bookmarks background matches a new window with vertical tabs ${verticalTabs}`
++        );
++      } finally {
++        await BrowserTestUtils.closeWindow(freshWindow);
++      }
++    }
++
++    await SpecialPowers.popPrefEnv();
++  }
++});
