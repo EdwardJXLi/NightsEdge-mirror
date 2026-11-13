@@ -1,0 +1,11 @@
+diff --git a/browser/themes/shared/tabbrowser/tabs.css b/browser/themes/shared/tabbrowser/tabs.css
+--- a/browser/themes/shared/tabbrowser/tabs.css
++++ b/browser/themes/shared/tabbrowser/tabs.css
+@@ -2580,6 +2580,7 @@
+   &[orient="vertical"] {
+     &::part(overflow-start-indicator),
+     &::part(overflow-end-indicator) {
++      display: none;
+       background-image: linear-gradient(to top, transparent 0%, light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.05)));
+       background-repeat: no-repeat;
+       pointer-events: none;
