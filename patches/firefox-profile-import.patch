@@ -1,9 +1,9 @@
 diff --git a/browser/components/migration/FirefoxProfileImport.sys.mjs b/browser/components/migration/FirefoxProfileImport.sys.mjs
 new file mode 100644
-index 0000000..76f1193
+index 0000000..60cb062
 --- /dev/null
 +++ b/browser/components/migration/FirefoxProfileImport.sys.mjs
-@@ -0,0 +1,261 @@
+@@ -0,0 +1,259 @@
 +/* This Source Code Form is subject to the terms of the Mozilla Public
 + * License, v. 2.0. If a copy of the MPL was not distributed with this file,
 + * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -210,13 +210,11 @@ index 0000000..76f1193
 +      "firefox-import"
 +    );
 +    previousDefault = profileService.defaultProfile;
-+    if (previousDefault && profileService.currentProfile === previousDefault) {
-+      profileService.defaultProfile = profile;
-+    }
++    profileService.defaultProfile = profile;
 +    await profileService.asyncFlush();
 +  } catch (error) {
 +    if (profile) {
-+      if (previousDefault && profileService.defaultProfile === profile) {
++      if (profileService.defaultProfile === profile) {
 +        profileService.defaultProfile = previousDefault;
 +      }
 +      profile.removeInBackground(true);
