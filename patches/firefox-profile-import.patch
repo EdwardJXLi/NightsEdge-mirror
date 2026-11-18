@@ -1,0 +1,404 @@
+diff --git a/browser/components/migration/FirefoxProfileImport.sys.mjs b/browser/components/migration/FirefoxProfileImport.sys.mjs
+new file mode 100644
+index 0000000..76f1193
+--- /dev/null
++++ b/browser/components/migration/FirefoxProfileImport.sys.mjs
+@@ -0,0 +1,261 @@
++/* This Source Code Form is subject to the terms of the Mozilla Public
++ * License, v. 2.0. If a copy of the MPL was not distributed with this file,
++ * You can obtain one at http://mozilla.org/MPL/2.0/. */
++
++import { AppConstants } from "resource://gre/modules/AppConstants.sys.mjs";
++import { FileUtils } from "resource://gre/modules/FileUtils.sys.mjs";
++
++const SKIPPED_PROFILE_ENTRIES = new Set([
++  ".parentlock",
++  "parent.lock",
++  "lock",
++  "addonStartup.json.lz4",
++  "cache2",
++  "startupCache",
++  "minidumps",
++  "signedInUser.json",
++  "weave",
++  "times.json",
++]);
++
++const RESET_IMPORTED_PREFS = new Map([
++  ["browser.profiles.created", false],
++  ["toolkit.profiles.storeID", ""],
++  ["services.sync.username", ""],
++]);
++
++function serializePrefs(prefs) {
++  return (
++    "\n" +
++    [...prefs]
++      .map(
++        ([name, value]) =>
++          `user_pref(${JSON.stringify(name)}, ${JSON.stringify(value)});\n`
++      )
++      .join("")
++  );
++}
++
++async function resetProfileIdentity(destination) {
++  await IOUtils.writeUTF8(
++    PathUtils.join(destination, "prefs.js"),
++    serializePrefs(RESET_IMPORTED_PREFS),
++    { mode: "append" }
++  );
++
++  // user.js loads after prefs.js on every startup. Remove imported identity
++  // overrides from it so later sign-in and profile grouping can persist.
++  const customPrefsPath = PathUtils.join(destination, "user.js");
++  if (!(await IOUtils.exists(customPrefsPath))) {
++    return;
++  }
++  const { PreferencesBackupResource } = ChromeUtils.importESModule(
++    "moz-src:///browser/components/backup/resources/PreferencesBackupResource.sys.mjs"
++  );
++  const prefs = PreferencesBackupResource.getPrefsFromBuffer(
++    await IOUtils.read(customPrefsPath)
++  );
++  const prefCount = prefs.size;
++  for (const name of RESET_IMPORTED_PREFS.keys()) {
++    prefs.delete(name);
++  }
++  if (prefs.size !== prefCount) {
++    await IOUtils.writeUTF8(customPrefsPath, serializePrefs(prefs));
++  }
++}
++
++let importInProgress = false;
++
++async function isLink(file) {
++  if (AppConstants.platform === "win") {
++    const attrs = await IOUtils.getWindowsAttributes(file.path);
++    return attrs.reparsePoint;
++  }
++  return file.isSymlink();
++}
++
++async function copyProfileDirectory(source, destination, skippedEntries) {
++  for (const path of await IOUtils.getChildren(source)) {
++    const entry = new FileUtils.File(path);
++    if (skippedEntries?.has(entry.leafName) || (await isLink(entry))) {
++      continue;
++    }
++
++    const target = PathUtils.join(destination, entry.leafName);
++    if (entry.isDirectory()) {
++      await IOUtils.makeDirectory(target, { permissions: 0o700 });
++      await copyProfileDirectory(path, target);
++    } else if (entry.isFile()) {
++      await IOUtils.copy(path, target, { noOverwrite: true });
++    }
++  }
++}
++
++function getFirefoxProfilesDirectory() {
++  if (AppConstants.platform !== "macosx") {
++    return Services.dirsvc.get("DefProfRt", Ci.nsIFile);
++  }
++
++  const path = Services.dirsvc.get("Home", Ci.nsIFile);
++  path.append("Library");
++  path.append("Application Support");
++  path.append("Firefox");
++  path.append("Profiles");
++  return path;
++}
++
++async function hasUnsafeLockFile(entries) {
++  // Gecko opens the native lock for writing. Only let it open an empty
++  // regular file, or create a new lock when none is present.
++  const filename =
++    AppConstants.platform === "win" ? "parent.lock" : ".parentlock";
++  const lockPath = entries.find(
++    path => PathUtils.filename(path).toLowerCase() === filename
++  );
++  if (!lockPath) {
++    return false;
++  }
++  const lock = new FileUtils.File(lockPath);
++  return (await isLink(lock)) || !lock.isFile() || lock.fileSize !== 0;
++}
++
++async function importProfile(win, alert) {
++  const picker = Cc["@mozilla.org/filepicker;1"].createInstance(
++    Ci.nsIFilePicker
++  );
++  const pickerTitle = await win.document.l10n.formatValue(
++    "preferences-import-firefox-profile-picker"
++  );
++  picker.init(win.browsingContext, pickerTitle, Ci.nsIFilePicker.modeGetFolder);
++  picker.displayDirectory = getFirefoxProfilesDirectory();
++  if (
++    (await new Promise(resolve => picker.open(resolve))) !==
++    Ci.nsIFilePicker.returnOK
++  ) {
++    return;
++  }
++
++  const source = picker.file;
++  if (!source || (await isLink(source))) {
++    await alert("invalid");
++    return;
++  }
++  source.normalize();
++  const profilesDir = Services.dirsvc.get("DefProfRt", Ci.nsIFile);
++  profilesDir.normalize();
++  const currentProfile = Services.dirsvc.get("ProfD", Ci.nsIFile);
++  currentProfile.normalize();
++  const sourcePrefs = source.clone();
++  sourcePrefs.append("prefs.js");
++  if (
++    source.equals(currentProfile) ||
++    source.equals(profilesDir) ||
++    source.contains(profilesDir) ||
++    !sourcePrefs.exists() ||
++    (await isLink(sourcePrefs)) ||
++    !sourcePrefs.isFile()
++  ) {
++    await alert("invalid");
++    return;
++  }
++
++  const profileService = Cc[
++    "@mozilla.org/toolkit/profile-service;1"
++  ].getService(Ci.nsIToolkitProfileService);
++  if (await hasUnsafeLockFile(await IOUtils.getChildren(source.path))) {
++    await alert("locked");
++    return;
++  }
++  let lock;
++  try {
++    lock = profileService.lockProfilePath(source);
++  } catch {
++    await alert("locked");
++    return;
++  }
++
++  let destination;
++  let profile;
++  let previousDefault;
++  try {
++    try {
++      destination = await IOUtils.createUniqueDirectory(
++        profilesDir.path,
++        "firefox-import",
++        0o700
++      );
++      await copyProfileDirectory(
++        source.path,
++        destination,
++        SKIPPED_PROFILE_ENTRIES
++      );
++
++      await resetProfileIdentity(destination);
++    } finally {
++      lock.unlock();
++    }
++
++    const profileName = await win.document.l10n.formatValue(
++      "preferences-import-firefox-profile-name"
++    );
++    profile = profileService.createUniqueProfile(
++      new FileUtils.File(destination),
++      profileName,
++      "firefox-import"
++    );
++    previousDefault = profileService.defaultProfile;
++    if (previousDefault && profileService.currentProfile === previousDefault) {
++      profileService.defaultProfile = profile;
++    }
++    await profileService.asyncFlush();
++  } catch (error) {
++    if (profile) {
++      if (previousDefault && profileService.defaultProfile === profile) {
++        profileService.defaultProfile = previousDefault;
++      }
++      profile.removeInBackground(true);
++    } else if (destination) {
++      await IOUtils.remove(destination, {
++        recursive: true,
++        retryReadonly: true,
++      });
++    }
++    throw error;
++  }
++
++  try {
++    Services.startup.createInstanceWithProfile(profile, []);
++  } catch {
++    await alert("launch-failed");
++  }
++}
++
++/**
++ * Copy a selected Firefox profile to a new profile and open it.
++ *
++ * @param {Window} win The preferences window that opened the picker.
++ */
++export async function importFirefoxProfile(win) {
++  if (importInProgress) {
++    return;
++  }
++
++  importInProgress = true;
++  const alert = async reason => {
++    if (!win.closed) {
++      const [title, message] = await win.document.l10n.formatValues([
++        { id: "preferences-import-firefox-profile-title" },
++        { id: `preferences-import-firefox-profile-${reason}` },
++      ]);
++      Services.prompt.alert(win, title, message);
++    }
++  };
++
++  try {
++    await importProfile(win, alert);
++  } catch {
++    await alert("failed");
++  } finally {
++    importInProgress = false;
++  }
++}
+diff --git a/browser/components/migration/moz.build b/browser/components/migration/moz.build
+index c2c35ea..73498ff 100644
+--- a/browser/components/migration/moz.build
++++ b/browser/components/migration/moz.build
+@@ -24,6 +24,7 @@ MOZ_SRC_FILES += [
+     "ChromeMigrationUtils.sys.mjs",
+     "ChromeProfileMigrator.sys.mjs",
+     "FileMigrators.sys.mjs",
++    "FirefoxProfileImport.sys.mjs",
+     "FirefoxProfileMigrator.sys.mjs",
+     "FirefoxSelectableProfileMigrator.sys.mjs",
+     "InternalTestingProfileMigrator.sys.mjs",
+diff --git a/browser/components/preferences/config/account-sync.mjs b/browser/components/preferences/config/account-sync.mjs
+index 664a7dc..536d2f2 100644
+--- a/browser/components/preferences/config/account-sync.mjs
++++ b/browser/components/preferences/config/account-sync.mjs
+@@ -30,6 +30,8 @@ const { Referrals } = ChromeUtils.importESModule(
+ );
+ const lazy = XPCOMUtils.declareLazy({
+   BackupService: "moz-src:///browser/components/backup/BackupService.sys.mjs",
++  FirefoxProfileImport:
++    "moz-src:///browser/components/migration/FirefoxProfileImport.sys.mjs",
+   Weave: "resource://services-sync/main.sys.mjs",
+
+   SelectableProfileService:
+@@ -686,6 +688,15 @@ Preferences.addSetting({
+   },
+ });
+
++Preferences.addSetting({
++  id: "import-firefox-profile",
++  visible: () =>
++    !Services.policies || Services.policies.isAllowed("profileImport"),
++  onUserClick() {
++    return lazy.FirefoxProfileImport.importFirefoxProfile(window);
++  },
++});
++
+ // Profiles section
+
+ Preferences.addSetting({
+@@ -1071,6 +1082,11 @@ SettingGroupManager.registerGroups({
+         l10nId: "preferences-data-migration-button",
+         control: "moz-box-button",
+       },
++      {
++        id: "import-firefox-profile",
++        l10nId: "preferences-import-firefox-profile",
++        control: "moz-box-button",
++      },
+     ],
+   },
+   profilePane: {
+diff --git a/browser/locales/en-US/browser/preferences/preferences.ftl b/browser/locales/en-US/browser/preferences/preferences.ftl
+index e36e667..005fb82 100644
+--- a/browser/locales/en-US/browser/preferences/preferences.ftl
++++ b/browser/locales/en-US/browser/preferences/preferences.ftl
+@@ -215,6 +215,16 @@ preferences-data-migration-button =
+     .label = Import data
+     .accesskey = m
+
++preferences-import-firefox-profile =
++    .label = Import Firefox profile
++preferences-import-firefox-profile-title = Import Firefox profile
++preferences-import-firefox-profile-picker = Choose a Firefox profile folder
++preferences-import-firefox-profile-name = Imported Firefox profile
++preferences-import-firefox-profile-invalid = Choose the folder that contains the Firefox profile you want to import.
++preferences-import-firefox-profile-locked = Close Firefox before you import its profile, or choose a writable copy of the profile folder.
++preferences-import-firefox-profile-failed = The Firefox profile could not be imported.
++preferences-import-firefox-profile-launch-failed = Your profile was imported. Open it from about:profiles.
++
+ preferences-profiles-group-header =
+     .heading = Profiles
+ preferences-profiles-subpane-description =
+diff --git a/dom/chrome-webidl/IOUtils.webidl b/dom/chrome-webidl/IOUtils.webidl
+index 9f997a6..333de39 100644
+--- a/dom/chrome-webidl/IOUtils.webidl
++++ b/dom/chrome-webidl/IOUtils.webidl
+@@ -778,6 +778,11 @@ dictionary WindowsFileAttributes {
+    * Whether or not the file is classified as a system file.
+    */
+   boolean system;
++  /**
++   * Whether the file is a reparse point, such as a symbolic link or junction.
++   * Reported by getWindowsAttributes only.
++   */
++  boolean reparsePoint;
+ };
+ #endif
+
+diff --git a/toolkit/profile/nsIToolkitProfileService.idl b/toolkit/profile/nsIToolkitProfileService.idl
+index 3dd5cdd..584adad 100644
+--- a/toolkit/profile/nsIToolkitProfileService.idl
++++ b/toolkit/profile/nsIToolkitProfileService.idl
+@@ -113,6 +113,11 @@ interface nsIToolkitProfileService : nsISupports
+      */
+     nsIToolkitProfile getProfileByDir(in nsIFile aRootDir, [optional] in nsIFile aLocalDir);
+
++    /**
++     * Lock a profile directory that does not belong to this profile service.
++     */
++    nsIProfileLock lockProfilePath(in nsIFile aRootDir);
++
+     /**
+      * Create a new profile.
+      *
+diff --git a/toolkit/profile/nsToolkitProfileService.cpp b/toolkit/profile/nsToolkitProfileService.cpp
+index afa921d..1a8c7df 100644
+--- a/toolkit/profile/nsToolkitProfileService.cpp
++++ b/toolkit/profile/nsToolkitProfileService.cpp
+@@ -2240,6 +2240,13 @@ nsresult NS_LockProfilePath(nsIFile* aPath, nsIFile* aTempPath,
+   return NS_OK;
+ }
+
++NS_IMETHODIMP
++nsToolkitProfileService::LockProfilePath(nsIFile* aRootDir,
++                                         nsIProfileLock** aResult) {
++  NS_ENSURE_ARG_POINTER(aRootDir);
++  return NS_LockProfilePath(aRootDir, aRootDir, nullptr, aResult);
++}
++
+ static void SaltProfileName(nsACString& aName) {
+   char salt[9];
+   NS_MakeRandomString(salt, 8);
+diff --git a/xpcom/ioutils/IOUtils.cpp b/xpcom/ioutils/IOUtils.cpp
+index a4b4018..1daffb0 100644
+--- a/xpcom/ioutils/IOUtils.cpp
++++ b/xpcom/ioutils/IOUtils.cpp
+@@ -1083,6 +1083,8 @@ already_AddRefed<Promise> IOUtils::GetWindowsAttributes(GlobalObject& aGlobal,
+                   attrs.mReadOnly.Construct(aAttrs & FILE_ATTRIBUTE_READONLY);
+                   attrs.mHidden.Construct(aAttrs & FILE_ATTRIBUTE_HIDDEN);
+                   attrs.mSystem.Construct(aAttrs & FILE_ATTRIBUTE_SYSTEM);
++                  attrs.mReparsePoint.Construct(aAttrs &
++                                                FILE_ATTRIBUTE_REPARSE_POINT);
+
+                   promise->MaybeResolve(attrs);
+                 },
