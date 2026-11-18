@@ -278,14 +278,14 @@ index c2c35ea..73498ff 100644
      "FirefoxSelectableProfileMigrator.sys.mjs",
      "InternalTestingProfileMigrator.sys.mjs",
 diff --git a/browser/components/preferences/config/account-sync.mjs b/browser/components/preferences/config/account-sync.mjs
-index 664a7dc..536d2f2 100644
+index 664a7dc..fb9bd17 100644
 --- a/browser/components/preferences/config/account-sync.mjs
 +++ b/browser/components/preferences/config/account-sync.mjs
 @@ -30,6 +30,8 @@ const { Referrals } = ChromeUtils.importESModule(
  );
  const lazy = XPCOMUtils.declareLazy({
    BackupService: "moz-src:///browser/components/backup/BackupService.sys.mjs",
-+  FirefoxProfileImport:
++  importFirefoxProfile:
 +    "moz-src:///browser/components/migration/FirefoxProfileImport.sys.mjs",
    Weave: "resource://services-sync/main.sys.mjs",
 
@@ -299,7 +299,7 @@ index 664a7dc..536d2f2 100644
 +  visible: () =>
 +    !Services.policies || Services.policies.isAllowed("profileImport"),
 +  onUserClick() {
-+    return lazy.FirefoxProfileImport.importFirefoxProfile(window);
++    return lazy.importFirefoxProfile(window);
 +  },
 +});
 +
